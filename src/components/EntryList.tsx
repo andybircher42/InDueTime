@@ -23,12 +23,10 @@ interface EntryListProps {
 function EntryRow({ item, onDelete }: EntryRowProps) {
   return (
     <View style={styles.entry}>
-      <View style={styles.entryInfo}>
-        <Text style={styles.entryName}>{item.name}</Text>
-        <Text style={styles.entryAge}>
-          {item.weeks}w {item.days}d
-        </Text>
-      </View>
+      <Text style={styles.entryName}>{item.name}</Text>
+      <Text style={styles.entryAge}>
+        {item.weeks}w {item.days}d
+      </Text>
       <Pressable
         onPress={() => onDelete(item.id)}
         style={styles.deleteButton}
@@ -180,8 +178,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     marginHorizontal: 16,
-    marginTop: 12,
-    padding: 16,
+    marginTop: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -189,18 +188,16 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
-  entryInfo: {
-    flex: 1,
-  },
   entryName: {
-    fontSize: 17,
+    flex: 1,
+    fontSize: 16,
     fontWeight: "600",
     color: "#333",
   },
   entryAge: {
     fontSize: 14,
     color: "#666",
-    marginTop: 2,
+    marginRight: 12,
   },
   deleteButton: {
     width: 32,
