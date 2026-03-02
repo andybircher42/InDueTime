@@ -1,4 +1,38 @@
-import { getDateError, getDateBounds, parseDateText } from "./dateUtils";
+import {
+  expandTwoDigitYear,
+  getDateError,
+  getDateBounds,
+  parseDateText,
+} from "./dateUtils";
+
+describe("expandTwoDigitYear", () => {
+  // now = March 2, 2026 → cutoff = 2036
+  const now = new Date(2026, 2, 2);
+
+  it("expands 26 to 2026", () => {
+    expect(expandTwoDigitYear(26, now)).toBe(2026);
+  });
+
+  it("expands 36 to 2036 (exactly 10 years ahead)", () => {
+    expect(expandTwoDigitYear(36, now)).toBe(2036);
+  });
+
+  it("expands 37 to 1937 (more than 10 years ahead)", () => {
+    expect(expandTwoDigitYear(37, now)).toBe(1937);
+  });
+
+  it("expands 0 to 2000", () => {
+    expect(expandTwoDigitYear(0, now)).toBe(2000);
+  });
+
+  it("expands 99 to 1999", () => {
+    expect(expandTwoDigitYear(99, now)).toBe(1999);
+  });
+
+  it("expands 40 to 1940", () => {
+    expect(expandTwoDigitYear(40, now)).toBe(1940);
+  });
+});
 
 describe("getDateError", () => {
   // Use a fixed "now" so range checks are deterministic: March 2, 2026
@@ -12,8 +46,13 @@ describe("getDateError", () => {
     expect(getDateError("6-15-2026", now)).toBeNull();
   });
 
-  it("returns null for valid date with 2-digit year", () => {
+  it("returns null for valid date with 2-digit year within 10 years", () => {
     expect(getDateError("6-15-26", now)).toBeNull();
+  });
+
+  it("treats 2-digit year as 1900s when more than 10 years in the future", () => {
+    // "99" → 1999, which is far in the past
+    expect(getDateError("6-15-99", now)).toBe("Date is too far in the past");
   });
 
   it("returns null for valid date with leading zeros", () => {
@@ -122,9 +161,14 @@ describe("parseDateText", () => {
     expect(date).toEqual(new Date(2026, 0, 5));
   });
 
-  it("parses a 2-digit year as 20xx", () => {
+  it("parses a 2-digit year as 20xx when within 10 years", () => {
     const date = parseDateText("6-15-26");
     expect(date).toEqual(new Date(2026, 5, 15));
+  });
+
+  it("parses a 2-digit year as 19xx when more than 10 years in the future", () => {
+    const date = parseDateText("6-15-99");
+    expect(date).toEqual(new Date(1999, 5, 15));
   });
 
   it("returns null for month 0", () => {

@@ -11,6 +11,17 @@ export function getDateBounds(now: Date = new Date()): {
   return { min, max };
 }
 
+export function expandTwoDigitYear(
+  shortYear: number,
+  now: Date = new Date(),
+): number {
+  const currentCentury = Math.floor(now.getFullYear() / 100) * 100;
+  const candidate = currentCentury + shortYear;
+  return candidate > now.getFullYear() + 10
+    ? candidate - 100
+    : candidate;
+}
+
 export function getDateError(
   text: string,
   now: Date = new Date(),
@@ -32,7 +43,7 @@ export function getDateError(
   }
   let year = parseInt(match[3], 10);
   if (year < 100) {
-    year += 2000;
+    year = expandTwoDigitYear(year, now);
   }
   const date = new Date(year, month - 1, day);
   if (
@@ -61,7 +72,7 @@ export function parseDateText(text: string): Date | null {
   const day = parseInt(match[2], 10);
   let year = parseInt(match[3], 10);
   if (year < 100) {
-    year += 2000;
+    year = expandTwoDigitYear(year);
   }
   if (month < 1 || month > 12) {
     return null;
