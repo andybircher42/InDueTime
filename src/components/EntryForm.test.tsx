@@ -176,6 +176,7 @@ describe('EntryForm — mode toggle', () => {
   it('starts in Due Date mode by default', () => {
     render(<EntryForm onAdd={jest.fn()} />);
 
+    expect(screen.getByLabelText('Due date')).toBeTruthy();
     expect(screen.getByLabelText('Select due date')).toBeTruthy();
     expect(screen.queryByLabelText('Weeks')).toBeNull();
     expect(screen.queryByLabelText('Days')).toBeNull();
@@ -188,6 +189,7 @@ describe('EntryForm — mode toggle', () => {
 
     expect(screen.getByLabelText('Weeks')).toBeTruthy();
     expect(screen.getByLabelText('Days')).toBeTruthy();
+    expect(screen.queryByLabelText('Due date')).toBeNull();
     expect(screen.queryByLabelText('Select due date')).toBeNull();
   });
 
@@ -197,6 +199,7 @@ describe('EntryForm — mode toggle', () => {
     fireEvent.press(screen.getByText('Weeks & Days'));
     fireEvent.press(screen.getByText('Due Date'));
 
+    expect(screen.getByLabelText('Due date')).toBeTruthy();
     expect(screen.getByLabelText('Select due date')).toBeTruthy();
     expect(screen.queryByLabelText('Weeks')).toBeNull();
     expect(screen.queryByLabelText('Days')).toBeNull();
@@ -252,13 +255,13 @@ describe('EntryForm — Due Date mode', () => {
     expect(onAdd).not.toHaveBeenCalled();
   });
 
-  it('displays the selected date on the button', () => {
+  it('displays the selected date in the text input', () => {
     render(<EntryForm onAdd={jest.fn()} />);
     fireEvent.press(screen.getByLabelText('Select due date'));
     fireEvent.press(screen.getByTestId('date-picker-trigger'));
 
     // Mock picker returns June 15, 2026
-    expect(screen.getByText('6/15/2026')).toBeTruthy();
+    expect(screen.getByLabelText('Due date').props.value).toBe('6/15/2026');
   });
 
   it('clears due date after submission', () => {
@@ -272,8 +275,79 @@ describe('EntryForm — Due Date mode', () => {
     fireEvent.press(screen.getByTestId('date-picker-trigger'));
     fireEvent.press(screen.getByText('Add'));
 
-    expect(screen.getByText('Select due date')).toBeTruthy();
+    expect(screen.getByLabelText('Due date').props.value).toBe('');
     expect(screen.queryByLabelText('Gestational age preview')).toBeNull();
+
+    jest.restoreAllMocks();
+  });
+});
+
+describe('EntryForm — typed date input', () => {
+  it('typing a valid date sets dueDate and shows gestational age preview', () => {
+    jest.spyOn(gestationalAge, 'computeGestationalAge').mockReturnValue({ weeks: 28, days: 3 });
+
+    render(<EntryForm onAdd={jest.fn()} />);
+
+    fireEvent.changeText(screen.getByLabelText('Due date'), '6/15/2026');
+
+    expect(screen.getByText('= 28w 3d')).toBeTruthy();
+
+    jest.restoreAllMocks();
+  });
+
+  it('typing an invalid month does not enable Add button', () => {
+    const onAdd = jest.fn();
+    render(<EntryForm onAdd={onAdd} />);
+
+    fireEvent.changeText(screen.getByLabelText('Name'), 'Baby');
+    fireEvent.changeText(screen.getByLabelText('Due date'), '13/1/2026');
+    fireEvent.press(screen.getByText('Add'));
+
+    expect(onAdd).not.toHaveBeenCalled();
+  });
+
+  it('typing non-date text does not enable Add button', () => {
+    const onAdd = jest.fn();
+    render(<EntryForm onAdd={onAdd} />);
+
+    fireEvent.changeText(screen.getByLabelText('Name'), 'Baby');
+    fireEvent.changeText(screen.getByLabelText('Due date'), 'abc');
+    fireEvent.press(screen.getByText('Add'));
+
+    expect(onAdd).not.toHaveBeenCalled();
+  });
+
+  it('typing an invalid day (Feb 30) does not enable Add button', () => {
+    const onAdd = jest.fn();
+    render(<EntryForm onAdd={onAdd} />);
+
+    fireEvent.changeText(screen.getByLabelText('Name'), 'Baby');
+    fireEvent.changeText(screen.getByLabelText('Due date'), '2/30/2026');
+    fireEvent.press(screen.getByText('Add'));
+
+    expect(onAdd).not.toHaveBeenCalled();
+  });
+
+  it('picking from calendar populates the text input', () => {
+    render(<EntryForm onAdd={jest.fn()} />);
+
+    fireEvent.press(screen.getByLabelText('Select due date'));
+    fireEvent.press(screen.getByTestId('date-picker-trigger'));
+
+    expect(screen.getByLabelText('Due date').props.value).toBe('6/15/2026');
+  });
+
+  it('clears text input after submission', () => {
+    jest.spyOn(gestationalAge, 'computeGestationalAge').mockReturnValue({ weeks: 28, days: 3 });
+
+    const onAdd = jest.fn();
+    render(<EntryForm onAdd={onAdd} />);
+
+    fireEvent.changeText(screen.getByLabelText('Name'), 'Baby');
+    fireEvent.changeText(screen.getByLabelText('Due date'), '6/15/2026');
+    fireEvent.press(screen.getByText('Add'));
+
+    expect(screen.getByLabelText('Due date').props.value).toBe('');
 
     jest.restoreAllMocks();
   });

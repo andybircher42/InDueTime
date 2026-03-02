@@ -25,6 +25,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
   const [weeks, setWeeks] = useState('');
   const [days, setDays] = useState('');
   const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [dateText, setDateText] = useState('');
   const [mode, setMode] = useState<InputMode>('dueDate');
   const [showPicker, setShowPicker] = useState(false);
 
@@ -41,6 +42,26 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
       ? weeksValid && daysValid
       : dueDate !== null);
 
+  const parseDateText = (text: string): Date | null => {
+    const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (!match) return null;
+    const month = parseInt(match[1], 10);
+    const day = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+    if (month < 1 || month > 12) return null;
+    if (day < 1 || day > 31) return null;
+    const date = new Date(year, month - 1, day);
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+      return null;
+    }
+    return date;
+  };
+
+  const handleDateTextChange = (text: string) => {
+    setDateText(text);
+    setDueDate(parseDateText(text));
+  };
+
   const handleAdd = () => {
     if (!canAdd) return;
 
@@ -54,6 +75,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
     setWeeks('');
     setDays('');
     setDueDate(null);
+    setDateText('');
     Keyboard.dismiss();
   };
 
@@ -61,6 +83,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
     setShowPicker(Platform.OS === 'ios');
     if (selected) {
       setDueDate(selected);
+      setDateText(formatDate(selected));
     }
   };
 
@@ -157,15 +180,23 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
         <View>
           <View style={styles.ageRow}>
             <View style={styles.inputWithHint}>
-              <Pressable
-                style={styles.dateButton}
-                onPress={() => setShowPicker(true)}
-                accessibilityLabel="Select due date"
-              >
-                <Text style={dueDate ? styles.dateText : styles.datePlaceholder}>
-                  {dueDate ? formatDate(dueDate) : 'Select due date'}
-                </Text>
-              </Pressable>
+              <Text style={styles.label}>Due Date</Text>
+              <View style={styles.dateInputRow}>
+                <TextInput
+                  style={styles.dateTextInput}
+                  accessibilityLabel="Due date"
+                  placeholder="M/D/YYYY"
+                  value={dateText}
+                  onChangeText={handleDateTextChange}
+                />
+                <Pressable
+                  style={styles.calendarButton}
+                  onPress={() => setShowPicker(true)}
+                  accessibilityLabel="Select due date"
+                >
+                  <Text style={styles.calendarButtonText}>Pick</Text>
+                </Pressable>
+              </View>
             </View>
             <Pressable
               style={[styles.addButton, !canAdd && styles.addButtonDisabled]}
@@ -256,21 +287,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#fafafa',
   },
-  dateButton: {
+  dateInputRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  dateTextInput: {
+    flex: 1,
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
+    fontSize: 16,
     backgroundColor: '#fafafa',
+  },
+  calendarButton: {
+    borderWidth: 1,
+    borderColor: '#4a90d9',
+    borderRadius: 8,
+    paddingHorizontal: 12,
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
-  dateText: {
-    fontSize: 16,
-    color: '#000',
-  },
-  datePlaceholder: {
-    fontSize: 16,
-    color: '#999',
+  calendarButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4a90d9',
   },
   preview: {
     marginTop: 8,
