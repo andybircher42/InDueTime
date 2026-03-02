@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
+import * as Updates from "expo-updates";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -40,6 +41,17 @@ export default function App() {
     loadEntries()
       .then(setEntries)
       .catch((e) => console.error("Failed to load entries", e));
+
+    if (!__DEV__) {
+      Updates.checkForUpdateAsync()
+        .then(async (update) => {
+          if (update.isAvailable) {
+            await Updates.fetchUpdateAsync();
+            await Updates.reloadAsync();
+          }
+        })
+        .catch((e) => console.error("Failed to check for updates", e));
+    }
   }, []);
 
   const handleAdd = ({
