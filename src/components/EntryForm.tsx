@@ -18,16 +18,16 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
   const [weeks, setWeeks] = useState('');
   const [days, setDays] = useState('');
 
+  const w = weeks ? parseInt(weeks, 10) : 0;
+  const d = days ? parseInt(days, 10) : 0;
+  const weeksValid = !weeks || (!isNaN(w) && w >= 0 && w <= 44);
+  const daysValid = !days || (!isNaN(d) && d >= 0 && d <= 6);
+  const canAdd = !!name.trim() && weeksValid && daysValid;
+
   const handleAdd = () => {
-    const trimmedName = name.trim();
-    if (!trimmedName) return;
+    if (!canAdd) return;
 
-    const w = parseInt(weeks, 10) || 0;
-    const d = parseInt(days, 10) || 0;
-
-    if (w < 0 || w > 44 || d < 0 || d > 6) return;
-
-    onAdd({ name: trimmedName, weeks: w, days: d });
+    onAdd({ name: name.trim(), weeks: w, days: d });
 
     setName('');
     setWeeks('');
@@ -74,9 +74,9 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
           />
         </View>
         <Pressable
-          style={[styles.addButton, !name.trim() && styles.addButtonDisabled]}
+          style={[styles.addButton, !canAdd && styles.addButtonDisabled]}
           onPress={handleAdd}
-          disabled={!name.trim()}
+          disabled={!canAdd}
         >
           <Text style={styles.addButtonText}>Add</Text>
         </Pressable>

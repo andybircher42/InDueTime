@@ -80,6 +80,34 @@ describe('EntryForm', () => {
     expect(screen.getByPlaceholderText('0-6 days')).toBeTruthy();
   });
 
+  it('disables Add button when weeks is out of range', () => {
+    const onAdd = jest.fn();
+    render(<EntryForm onAdd={onAdd} />);
+
+    fireEvent.changeText(screen.getByLabelText('Name'), 'Baby');
+    fireEvent.changeText(screen.getByLabelText('Weeks'), '45');
+    fireEvent.press(screen.getByText('Add'));
+    expect(onAdd).not.toHaveBeenCalled();
+
+    fireEvent.changeText(screen.getByLabelText('Weeks'), '42');
+    fireEvent.press(screen.getByText('Add'));
+    expect(onAdd).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables Add button when days is out of range', () => {
+    const onAdd = jest.fn();
+    render(<EntryForm onAdd={onAdd} />);
+
+    fireEvent.changeText(screen.getByLabelText('Name'), 'Baby');
+    fireEvent.changeText(screen.getByLabelText('Days'), '7');
+    fireEvent.press(screen.getByText('Add'));
+    expect(onAdd).not.toHaveBeenCalled();
+
+    fireEvent.changeText(screen.getByLabelText('Days'), '6');
+    fireEvent.press(screen.getByText('Add'));
+    expect(onAdd).toHaveBeenCalledTimes(1);
+  });
+
   it('Add button is disabled when name is empty and enabled when name is entered', () => {
     const onAdd = jest.fn();
     render(<EntryForm onAdd={onAdd} />);
