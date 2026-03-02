@@ -1,3 +1,4 @@
+/** Returns the min and max allowable due dates (1 month ago to 42 weeks ahead). */
 export function getDateBounds(now: Date = new Date()): {
   min: Date;
   max: Date;
@@ -11,6 +12,7 @@ export function getDateBounds(now: Date = new Date()): {
   return { min, max };
 }
 
+/** Expands a 2-digit year to 4 digits, using the previous century if more than 10 years in the future. */
 export function expandTwoDigitYear(
   shortYear: number,
   now: Date = new Date(),
@@ -22,6 +24,27 @@ export function expandTwoDigitYear(
     : candidate;
 }
 
+const DATE_PATTERN = /^(\d{1,2})-(\d{1,2})-(\d{2,4})$/;
+
+/** Extracts month, day, and year from a MM-DD-YYYY or M-D-YY text string, expanding 2-digit years. */
+export function parseDateParts(
+  text: string,
+  now: Date = new Date(),
+): { month: number; day: number; year: number; raw: RegExpMatchArray } | null {
+  const match = text.match(DATE_PATTERN);
+  if (!match) {
+    return null;
+  }
+  const month = parseInt(match[1], 10);
+  const day = parseInt(match[2], 10);
+  let year = parseInt(match[3], 10);
+  if (year < 100) {
+    year = expandTwoDigitYear(year, now);
+  }
+  return { month, day, year, raw: match };
+}
+
+/** Validates a date text string and returns a user-facing error message, or null if valid. */
 export function getDateError(
   text: string,
   now: Date = new Date(),
@@ -29,21 +52,16 @@ export function getDateError(
   if (!text) {
     return null;
   }
-  const match = text.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
-  if (!match) {
+  const parts = parseDateParts(text, now);
+  if (!parts) {
     return "Enter date as MM-DD-YYYY";
   }
-  const month = parseInt(match[1], 10);
+  const { month, day, year, raw } = parts;
   if (month < 1 || month > 12) {
     return "Month must be 1\u201312";
   }
-  const day = parseInt(match[2], 10);
   if (day < 1 || day > 31) {
     return "Day must be 1\u201331";
-  }
-  let year = parseInt(match[3], 10);
-  if (year < 100) {
-    year = expandTwoDigitYear(year, now);
   }
   const date = new Date(year, month - 1, day);
   if (
@@ -51,7 +69,7 @@ export function getDateError(
     date.getMonth() !== month - 1 ||
     date.getDate() !== day
   ) {
-    return `${match[1]}-${match[2]} is not a valid date`;
+    return `${raw[1]}-${raw[2]} is not a valid date`;
   }
   const { min, max } = getDateBounds(now);
   if (date < min) {
@@ -63,17 +81,16 @@ export function getDateError(
   return null;
 }
 
-export function parseDateText(text: string): Date | null {
-  const match = text.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
-  if (!match) {
+/** Parses a date text string into a Date object, or null if the date is invalid. */
+export function parseDateText(
+  text: string,
+  now: Date = new Date(),
+): Date | null {
+  const parts = parseDateParts(text, now);
+  if (!parts) {
     return null;
   }
-  const month = parseInt(match[1], 10);
-  const day = parseInt(match[2], 10);
-  let year = parseInt(match[3], 10);
-  if (year < 100) {
-    year = expandTwoDigitYear(year);
-  }
+  const { month, day, year } = parts;
   if (month < 1 || month > 12) {
     return null;
   }
@@ -91,6 +108,21 @@ export function parseDateText(text: string): Date | null {
   return date;
 }
 
+/** Normalizes a date text string to MM-DD-YYYY format, or null if the pattern doesn't match. */
+export function formatDateInput(
+  text: string,
+  now: Date = new Date(),
+): string | null {
+  const parts = parseDateParts(text, now);
+  if (!parts) {
+    return null;
+  }
+  const month = String(parts.month).padStart(2, "0");
+  const day = String(parts.day).padStart(2, "0");
+  return `${month}-${day}-${parts.year}`;
+}
+
+/** Formats a Date as an ISO date string (YYYY-MM-DD). */
 export function toISODateString(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");

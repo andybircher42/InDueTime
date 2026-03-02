@@ -22,6 +22,7 @@ function pickRandom<T>(arr: T[], count: number): T[] {
   return shuffled.slice(0, count);
 }
 
+/** Generates 10 randomized seed entries with due dates spread across ~4 months. */
 export function generateSeedEntries(): Entry[] {
   const names = pickRandom(FIRST_NAMES, 10);
   const today = new Date();
@@ -44,6 +45,7 @@ export function generateSeedEntries(): Entry[] {
   });
 }
 
+/** Dev-only toolbar with Seed Data and Reset HIPAA buttons. */
 export default function DevToolbar({
   onSeedData,
   onResetAgreement,

@@ -1,13 +1,4 @@
 /**
- * Computes gestational age from a due date.
- *
- * Uses the standard obstetric formula: a due date is 280 days (40 weeks)
- * from the last menstrual period (LMP), so gestational age in days =
- * 280 - days_until_due_date.
- *
- * Result is clamped to 0–308 days (0w0d to 44w0d).
- */
-/**
  * Computes a due date from a gestational age in weeks and days.
  *
  * Inverse of computeGestationalAge: dueDate = today + (280 - totalDays) days.
@@ -27,6 +18,15 @@ export function computeDueDate(
   return result;
 }
 
+/**
+ * Computes gestational age from a due date.
+ *
+ * Uses the standard obstetric formula: a due date is 280 days (40 weeks)
+ * from the last menstrual period (LMP), so gestational age in days =
+ * 280 - days_until_due_date.
+ *
+ * Result is clamped to 0–308 days (0w0d to 44w0d).
+ */
 export function computeGestationalAge(
   dueDate: Date,
   today: Date = new Date(),

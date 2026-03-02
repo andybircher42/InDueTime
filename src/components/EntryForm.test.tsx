@@ -613,7 +613,7 @@ describe("EntryForm — typed date input", () => {
     fireEvent.changeText(input, "2-30-2026");
     fireEvent(input, "blur");
 
-    expect(screen.getByText("2-30 is not a valid date")).toBeTruthy();
+    expect(screen.getByText("02-30 is not a valid date")).toBeTruthy();
   });
 
   it("clears date error when user starts typing again", () => {
