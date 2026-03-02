@@ -105,8 +105,8 @@ describe("EntryForm — Gestational Age mode", () => {
     render(<EntryForm onAdd={jest.fn()} />);
     switchToWeeksDays();
 
-    expect(screen.getByPlaceholderText("0-42 weeks")).toBeTruthy();
-    expect(screen.getByPlaceholderText("0-6 days")).toBeTruthy();
+    expect(screen.getByPlaceholderText("0-42")).toBeTruthy();
+    expect(screen.getByPlaceholderText("0-6")).toBeTruthy();
   });
 
   it("rejects non-numeric input in weeks and days fields", () => {
@@ -344,7 +344,7 @@ describe("EntryForm — Due Date mode", () => {
     fireEvent.press(screen.getByTestId("date-picker-trigger"));
 
     // Mock picker returns June 15, 2026
-    expect(screen.getByLabelText("Due date").props.value).toBe("06/15/2026");
+    expect(screen.getByLabelText("Due date").props.value).toBe("06-15-2026");
   });
 
   it("clears due date after submission", () => {
@@ -383,7 +383,7 @@ describe("EntryForm — typed date input", () => {
 
     render(<EntryForm onAdd={jest.fn()} />);
 
-    fireEvent.changeText(screen.getByLabelText("Due date"), "6/15/2026");
+    fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
 
     expect(screen.getByText("Gestational Age -> 28w 3d")).toBeTruthy();
 
@@ -395,7 +395,7 @@ describe("EntryForm — typed date input", () => {
     render(<EntryForm onAdd={onAdd} />);
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
-    fireEvent.changeText(screen.getByLabelText("Due date"), "13/1/2026");
+    fireEvent.changeText(screen.getByLabelText("Due date"), "13-1-2026");
     fireEvent.press(screen.getByText("Add"));
 
     expect(onAdd).not.toHaveBeenCalled();
@@ -417,7 +417,7 @@ describe("EntryForm — typed date input", () => {
     render(<EntryForm onAdd={onAdd} />);
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
-    fireEvent.changeText(screen.getByLabelText("Due date"), "2/30/2026");
+    fireEvent.changeText(screen.getByLabelText("Due date"), "2-30-2026");
     fireEvent.press(screen.getByText("Add"));
 
     expect(onAdd).not.toHaveBeenCalled();
@@ -429,7 +429,7 @@ describe("EntryForm — typed date input", () => {
     fireEvent.press(screen.getByLabelText("Select due date"));
     fireEvent.press(screen.getByTestId("date-picker-trigger"));
 
-    expect(screen.getByLabelText("Due date").props.value).toBe("06/15/2026");
+    expect(screen.getByLabelText("Due date").props.value).toBe("06-15-2026");
   });
 
   it("accepts a 2-digit year as 20xx", () => {
@@ -441,7 +441,7 @@ describe("EntryForm — typed date input", () => {
     render(<EntryForm onAdd={onAdd} />);
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
-    fireEvent.changeText(screen.getByLabelText("Due date"), "6/15/26");
+    fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-26");
     fireEvent.press(screen.getByText("Add"));
 
     expect(onAdd).toHaveBeenCalledTimes(1);
@@ -458,7 +458,7 @@ describe("EntryForm — typed date input", () => {
     render(<EntryForm onAdd={onAdd} />);
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
-    fireEvent.changeText(screen.getByLabelText("Due date"), "3/5/2026");
+    fireEvent.changeText(screen.getByLabelText("Due date"), "3-5-2026");
     fireEvent.press(screen.getByText("Add"));
 
     expect(onAdd).toHaveBeenCalledTimes(1);
@@ -466,40 +466,40 @@ describe("EntryForm — typed date input", () => {
     jest.restoreAllMocks();
   });
 
-  it('replaces non-numeric characters with "/"', () => {
+  it('replaces non-numeric characters with "-"', () => {
     render(<EntryForm onAdd={jest.fn()} />);
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "6-15-2026");
-    expect(input.props.value).toBe("6/15/2026");
+    expect(input.props.value).toBe("6-15-2026");
 
     fireEvent.changeText(input, "6.15.2026");
-    expect(input.props.value).toBe("6/15/2026");
+    expect(input.props.value).toBe("6-15-2026");
 
     fireEvent.changeText(input, "6 15 2026");
-    expect(input.props.value).toBe("6/15/2026");
+    expect(input.props.value).toBe("6-15-2026");
   });
 
-  it('auto-inserts "/" after two-digit month', () => {
+  it('auto-inserts "-" after two-digit month', () => {
     render(<EntryForm onAdd={jest.fn()} />);
     const input = screen.getByLabelText("Due date");
 
-    // Simulate typing "06" — should become "06/"
+    // Simulate typing "06" — should become "06-"
     fireEvent.changeText(input, "06");
-    expect(input.props.value).toBe("06/");
+    expect(input.props.value).toBe("06-");
   });
 
-  it('auto-inserts "/" after two-digit day', () => {
+  it('auto-inserts "-" after two-digit day', () => {
     render(<EntryForm onAdd={jest.fn()} />);
     const input = screen.getByLabelText("Due date");
 
     // Simulate typing month then day
-    fireEvent.changeText(input, "06/");
-    fireEvent.changeText(input, "06/15");
-    expect(input.props.value).toBe("06/15/");
+    fireEvent.changeText(input, "06-");
+    fireEvent.changeText(input, "06-15");
+    expect(input.props.value).toBe("06-15-");
   });
 
-  it("normalizes date to MM/DD/YYYY on blur", () => {
+  it("normalizes date to MM-DD-YYYY on blur", () => {
     jest
       .spyOn(gestationalAge, "computeGestationalAge")
       .mockReturnValue({ weeks: 28, days: 3 });
@@ -507,11 +507,11 @@ describe("EntryForm — typed date input", () => {
     render(<EntryForm onAdd={jest.fn()} />);
     const input = screen.getByLabelText("Due date");
 
-    fireEvent.changeText(input, "6/5/26");
-    expect(input.props.value).toBe("6/5/26");
+    fireEvent.changeText(input, "6-5-26");
+    expect(input.props.value).toBe("6-5-26");
 
     fireEvent(input, "blur");
-    expect(input.props.value).toBe("06/05/2026");
+    expect(input.props.value).toBe("06-05-2026");
 
     jest.restoreAllMocks();
   });
@@ -525,7 +525,7 @@ describe("EntryForm — typed date input", () => {
     render(<EntryForm onAdd={onAdd} />);
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
-    fireEvent.changeText(screen.getByLabelText("Due date"), "6/15/2026");
+    fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
     fireEvent.press(screen.getByText("Add"));
 
     expect(screen.getByLabelText("Due date").props.value).toBe("");
@@ -542,7 +542,7 @@ describe("EntryForm — typed date input", () => {
   it("shows no error for a valid date", () => {
     render(<EntryForm onAdd={jest.fn()} />);
 
-    fireEvent.changeText(screen.getByLabelText("Due date"), "6/15/2026");
+    fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
 
     expect(screen.queryByLabelText("Date error")).toBeNull();
   });
@@ -551,19 +551,19 @@ describe("EntryForm — typed date input", () => {
     render(<EntryForm onAdd={jest.fn()} />);
     const input = screen.getByLabelText("Due date");
 
-    fireEvent.changeText(input, "6/15");
+    fireEvent.changeText(input, "6-15");
     expect(screen.queryByLabelText("Date error")).toBeNull();
 
     fireEvent(input, "blur");
     expect(screen.getByLabelText("Date error")).toBeTruthy();
-    expect(screen.getByText("Enter date as MM/DD/YYYY")).toBeTruthy();
+    expect(screen.getByText("Enter date as MM-DD-YYYY")).toBeTruthy();
   });
 
   it("shows error for invalid month after blur", () => {
     render(<EntryForm onAdd={jest.fn()} />);
     const input = screen.getByLabelText("Due date");
 
-    fireEvent.changeText(input, "13/1/2026");
+    fireEvent.changeText(input, "13-1-2026");
     fireEvent(input, "blur");
 
     expect(screen.getByText(/Month must be/)).toBeTruthy();
@@ -573,7 +573,7 @@ describe("EntryForm — typed date input", () => {
     render(<EntryForm onAdd={jest.fn()} />);
     const input = screen.getByLabelText("Due date");
 
-    fireEvent.changeText(input, "1/32/2026");
+    fireEvent.changeText(input, "1-32-2026");
     fireEvent(input, "blur");
 
     expect(screen.getByText(/Day must be/)).toBeTruthy();
@@ -583,17 +583,17 @@ describe("EntryForm — typed date input", () => {
     render(<EntryForm onAdd={jest.fn()} />);
     const input = screen.getByLabelText("Due date");
 
-    fireEvent.changeText(input, "2/30/2026");
+    fireEvent.changeText(input, "2-30-2026");
     fireEvent(input, "blur");
 
-    expect(screen.getByText("2/30 is not a valid date")).toBeTruthy();
+    expect(screen.getByText("2-30 is not a valid date")).toBeTruthy();
   });
 
   it("clears date error when user starts typing again", () => {
     render(<EntryForm onAdd={jest.fn()} />);
     const input = screen.getByLabelText("Due date");
 
-    fireEvent.changeText(input, "13/1/2026");
+    fireEvent.changeText(input, "13-1-2026");
     fireEvent(input, "blur");
     expect(screen.getByLabelText("Date error")).toBeTruthy();
 
@@ -620,7 +620,7 @@ describe("EntryForm — dueDate in onAdd callback", () => {
     render(<EntryForm onAdd={onAdd} />);
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
-    fireEvent.changeText(screen.getByLabelText("Due date"), "6/15/2026");
+    fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
     fireEvent.press(screen.getByText("Add"));
 
     expect(onAdd).toHaveBeenCalledWith(
@@ -648,4 +648,3 @@ describe("EntryForm — dueDate in onAdd callback", () => {
     );
   });
 });
-

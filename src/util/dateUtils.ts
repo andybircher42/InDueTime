@@ -18,9 +18,9 @@ export function getDateError(
   if (!text) {
     return null;
   }
-  const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  const match = text.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
   if (!match) {
-    return "Enter date as MM/DD/YYYY";
+    return "Enter date as MM-DD-YYYY";
   }
   const month = parseInt(match[1], 10);
   if (month < 1 || month > 12) {
@@ -40,7 +40,7 @@ export function getDateError(
     date.getMonth() !== month - 1 ||
     date.getDate() !== day
   ) {
-    return `${match[1]}/${match[2]} is not a valid date`;
+    return `${match[1]}-${match[2]} is not a valid date`;
   }
   const { min, max } = getDateBounds(now);
   if (date < min) {
@@ -53,7 +53,7 @@ export function getDateError(
 }
 
 export function parseDateText(text: string): Date | null {
-  const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  const match = text.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
   if (!match) {
     return null;
   }

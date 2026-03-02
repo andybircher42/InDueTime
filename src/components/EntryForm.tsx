@@ -65,12 +65,12 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
 
   const handleDateTextChange = (text: string) => {
     setDateTouched(false);
-    let updated = text.replace(/[^\d/]/g, "/");
+    let updated = text.replace(/[^\d-]/g, "-");
     if (text.length > dateText.length) {
       if (/^\d{2}$/.test(updated)) {
-        updated += "/";
-      } else if (/^\d{1,2}\/\d{2}$/.test(updated)) {
-        updated += "/";
+        updated += "-";
+      } else if (/^\d{1,2}-\d{2}$/.test(updated)) {
+        updated += "-";
       }
     }
     setDateText(updated);
@@ -118,7 +118,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
   const formatDate = (date: Date) => {
     const m = String(date.getMonth() + 1).padStart(2, "0");
     const d = String(date.getDate()).padStart(2, "0");
-    return `${m}/${d}/${date.getFullYear()}`;
+    return `${m}-${d}-${date.getFullYear()}`;
   };
 
   return (
@@ -178,7 +178,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
             <TextInput
               style={[styles.numberInput, showWeeksError && styles.inputError]}
               accessibilityLabel="Weeks"
-              placeholder={"0-42 weeks"}
+              placeholder={"0-42"}
               value={weeks}
               onChangeText={(text) => {
                 if (/^\d*$/.test(text)) {
@@ -202,7 +202,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
             <TextInput
               style={[styles.numberInput, showDaysError && styles.inputError]}
               accessibilityLabel="Days"
-              placeholder={"0-6 days"}
+              placeholder={"0-6"}
               value={days}
               onChangeText={(text) => {
                 if (/^\d*$/.test(text)) {
@@ -248,7 +248,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
                     showDateError && styles.inputError,
                   ]}
                   accessibilityLabel="Due date"
-                  placeholder="MM/DD/YYYY"
+                  placeholder="MM-DD-YYYY"
                   value={dateText}
                   keyboardType="number-pad"
                   onChangeText={handleDateTextChange}
