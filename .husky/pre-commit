@@ -1,0 +1,3 @@
+npx expo-doctor
+npm test
+npm run lint
