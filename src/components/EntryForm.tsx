@@ -182,6 +182,13 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
             <View style={styles.inputWithHint}>
               <Text style={styles.label}>Due Date</Text>
               <View style={styles.dateInputRow}>
+                <Pressable
+                    style={styles.calendarButton}
+                    onPress={() => setShowPicker(true)}
+                    accessibilityLabel="Select due date"
+                >
+                  <Text style={styles.calendarButtonText}>📅</Text>
+                </Pressable>
                 <TextInput
                   style={styles.dateTextInput}
                   accessibilityLabel="Due date"
@@ -189,13 +196,6 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
                   value={dateText}
                   onChangeText={handleDateTextChange}
                 />
-                <Pressable
-                  style={styles.calendarButton}
-                  onPress={() => setShowPicker(true)}
-                  accessibilityLabel="Select due date"
-                >
-                  <Text style={styles.calendarButtonText}>📅</Text>
-                </Pressable>
               </View>
             </View>
             <Pressable
