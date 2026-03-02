@@ -19,7 +19,23 @@ interface EntryFormProps {
   onAdd: (entry: { name: string; weeks: number; days: number }) => void;
 }
 
-export function getDateError(text: string): string | null {
+export function getDateBounds(now: Date = new Date()): {
+  min: Date;
+  max: Date;
+} {
+  const min = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+  const max = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 7 * 42,
+  );
+  return { min, max };
+}
+
+export function getDateError(
+  text: string,
+  now: Date = new Date(),
+): string | null {
   if (!text) {
     return null;
   }
@@ -46,6 +62,13 @@ export function getDateError(text: string): string | null {
     date.getDate() !== day
   ) {
     return `${match[1]}/${match[2]} is not a valid date`;
+  }
+  const { min, max } = getDateBounds(now);
+  if (date < min) {
+    return "Date is too far in the past";
+  }
+  if (date > max) {
+    return "Date is too far in the future";
   }
   return null;
 }
@@ -98,15 +121,15 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
   const weeksError = weeks && !weeksValid ? "Weeks must be 0\u201342" : null;
   const daysError = days && !daysValid ? "Days must be 0\u20136" : null;
 
-  const computed = dueDate ? computeGestationalAge(dueDate) : null;
+  const dateError = getDateError(dateText);
+  const computed =
+    dueDate && !dateError ? computeGestationalAge(dueDate) : null;
 
   const canAdd =
     !!name.trim() &&
     (mode === "weeksDays"
       ? !!weeks && !!days && weeksValid && daysValid
-      : dueDate !== null);
-
-  const dateError = getDateError(dateText);
+      : dueDate !== null && !dateError);
   const showWeeksError = weeksTouched && weeksError;
   const showDaysError = daysTouched && daysError;
   const showDateError = dateTouched && dateError;
@@ -321,6 +344,8 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
               mode="date"
               display="default"
               onChange={handleDateChange}
+              minimumDate={getDateBounds().min}
+              maximumDate={getDateBounds().max}
             />
           )}
         </View>

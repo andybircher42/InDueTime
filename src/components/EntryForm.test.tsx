@@ -1,5 +1,9 @@
 import { render, screen, fireEvent } from "@testing-library/react-native";
-import EntryForm, { getDateError, parseDateText } from "./EntryForm";
+import EntryForm, {
+  getDateError,
+  getDateBounds,
+  parseDateText,
+} from "./EntryForm";
 import * as gestationalAge from "../gestationalAge";
 
 /** Helper: switch to Weeks & Days mode (Due Date is the default). */
@@ -257,6 +261,14 @@ describe("EntryForm — mode toggle", () => {
 });
 
 describe("EntryForm — Due Date mode", () => {
+  beforeEach(() => {
+    jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it("shows date picker when button is pressed", () => {
     render(<EntryForm onAdd={jest.fn()} />);
 
@@ -339,6 +351,14 @@ describe("EntryForm — Due Date mode", () => {
 });
 
 describe("EntryForm — typed date input", () => {
+  beforeEach(() => {
+    jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it("typing a valid date sets dueDate and shows gestational age preview", () => {
     jest
       .spyOn(gestationalAge, "computeGestationalAge")
@@ -421,7 +441,7 @@ describe("EntryForm — typed date input", () => {
     render(<EntryForm onAdd={onAdd} />);
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
-    fireEvent.changeText(screen.getByLabelText("Due date"), "1/5/2026");
+    fireEvent.changeText(screen.getByLabelText("Due date"), "3/5/2026");
     fireEvent.press(screen.getByText("Add"));
 
     expect(onAdd).toHaveBeenCalledTimes(1);
@@ -549,64 +569,101 @@ describe("EntryForm — typed date input", () => {
 });
 
 describe("getDateError", () => {
+  // Use a fixed "now" so range checks are deterministic: March 2, 2026
+  const now = new Date(2026, 2, 2);
+
   it("returns null for empty string", () => {
-    expect(getDateError("")).toBeNull();
+    expect(getDateError("", now)).toBeNull();
   });
 
   it("returns null for valid date", () => {
-    expect(getDateError("6/15/2026")).toBeNull();
+    expect(getDateError("6/15/2026", now)).toBeNull();
   });
 
   it("returns null for valid date with 2-digit year", () => {
-    expect(getDateError("6/15/26")).toBeNull();
+    expect(getDateError("6/15/26", now)).toBeNull();
   });
 
   it("returns null for valid date with leading zeros", () => {
-    expect(getDateError("06/05/2026")).toBeNull();
+    expect(getDateError("06/05/2026", now)).toBeNull();
   });
 
   it("returns format error for incomplete input", () => {
-    expect(getDateError("6/15")).toBe("Enter date as MM/DD/YYYY");
+    expect(getDateError("6/15", now)).toBe("Enter date as MM/DD/YYYY");
   });
 
   it("returns format error for text without slashes", () => {
-    expect(getDateError("abc")).toBe("Enter date as MM/DD/YYYY");
+    expect(getDateError("abc", now)).toBe("Enter date as MM/DD/YYYY");
   });
 
   it("returns format error for too many digits in month", () => {
-    expect(getDateError("123/1/2026")).toBe("Enter date as MM/DD/YYYY");
+    expect(getDateError("123/1/2026", now)).toBe("Enter date as MM/DD/YYYY");
   });
 
   it("returns month error for month 0", () => {
-    expect(getDateError("0/15/2026")).toMatch(/Month must be/);
+    expect(getDateError("0/15/2026", now)).toMatch(/Month must be/);
   });
 
   it("returns month error for month 13", () => {
-    expect(getDateError("13/15/2026")).toMatch(/Month must be/);
+    expect(getDateError("13/15/2026", now)).toMatch(/Month must be/);
   });
 
   it("returns day error for day 0", () => {
-    expect(getDateError("6/0/2026")).toMatch(/Day must be/);
+    expect(getDateError("6/0/2026", now)).toMatch(/Day must be/);
   });
 
   it("returns day error for day 32", () => {
-    expect(getDateError("6/32/2026")).toMatch(/Day must be/);
+    expect(getDateError("6/32/2026", now)).toMatch(/Day must be/);
   });
 
   it("returns invalid date error for Feb 30", () => {
-    expect(getDateError("2/30/2026")).toBe("2/30 is not a valid date");
+    expect(getDateError("2/30/2026", now)).toBe("2/30 is not a valid date");
   });
 
   it("returns invalid date error for Feb 29 in non-leap year", () => {
-    expect(getDateError("2/29/2027")).toBe("2/29 is not a valid date");
+    expect(getDateError("2/29/2027", now)).toBe("2/29 is not a valid date");
   });
 
   it("returns null for Feb 29 in leap year", () => {
-    expect(getDateError("2/29/2028")).toBeNull();
+    const nowForLeapYear = new Date(2028, 0, 1);
+    expect(getDateError("2/29/2028", nowForLeapYear)).toBeNull();
   });
 
   it("returns invalid date error for Apr 31", () => {
-    expect(getDateError("4/31/2026")).toBe("4/31 is not a valid date");
+    expect(getDateError("4/31/2026", now)).toBe("4/31 is not a valid date");
+  });
+
+  it("returns error for date more than 1 month in the past", () => {
+    expect(getDateError("1/1/2026", now)).toBe("Date is too far in the past");
+  });
+
+  it("returns null for date exactly 1 month in the past", () => {
+    expect(getDateError("2/2/2026", now)).toBeNull();
+  });
+
+  it("returns error for date more than 42 weeks in the future", () => {
+    // 42 weeks from March 2 = Dec 21, 2026; Dec 22 should fail
+    expect(getDateError("12/22/2026", now)).toBe(
+      "Date is too far in the future",
+    );
+  });
+
+  it("returns null for date exactly 42 weeks in the future", () => {
+    expect(getDateError("12/21/2026", now)).toBeNull();
+  });
+});
+
+describe("getDateBounds", () => {
+  it("returns min as 1 month before now", () => {
+    const now = new Date(2026, 2, 2);
+    const { min } = getDateBounds(now);
+    expect(min).toEqual(new Date(2026, 1, 2));
+  });
+
+  it("returns max as 40 weeks after now", () => {
+    const now = new Date(2026, 2, 2);
+    const { max } = getDateBounds(now);
+    expect(max).toEqual(new Date(2026, 2, 2 + 294));
   });
 });
 
