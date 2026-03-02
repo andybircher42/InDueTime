@@ -1,6 +1,17 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Entry } from '../storage';
 
-function EntryRow({ item, onDelete }) {
+interface EntryRowProps {
+  item: Entry;
+  onDelete: (id: string) => void;
+}
+
+interface EntryListProps {
+  entries: Entry[];
+  onDelete: (id: string) => void;
+}
+
+function EntryRow({ item, onDelete }: EntryRowProps) {
   return (
     <View style={styles.entry}>
       <View style={styles.entryInfo}>
@@ -21,14 +32,14 @@ function EntryRow({ item, onDelete }) {
   );
 }
 
-export default function EntryList({ entries, onDelete }) {
+export default function EntryList({ entries, onDelete }: EntryListProps) {
   return (
     <FlatList
       data={entries}
       renderItem={({ item }) => <EntryRow item={item} onDelete={onDelete} />}
       keyExtractor={(item) => item.id}
       style={styles.list}
-      contentContainerStyle={entries.length === 0 && styles.emptyList}
+      contentContainerStyle={entries.length === 0 ? styles.emptyList : undefined}
       ListEmptyComponent={
         <Text style={styles.emptyText}>No entries yet</Text>
       }
