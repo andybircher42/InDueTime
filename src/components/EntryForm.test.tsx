@@ -49,12 +49,12 @@ describe('EntryForm', () => {
     expect(onAdd).not.toHaveBeenCalled();
   });
 
-  it('does not call onAdd when weeks > 42', () => {
+  it('does not call onAdd when weeks > 44', () => {
     const onAdd = jest.fn();
     render(<EntryForm onAdd={onAdd} />);
 
     fireEvent.changeText(screen.getByPlaceholderText('Name'), 'Baby');
-    fireEvent.changeText(screen.getByPlaceholderText('Weeks'), '43');
+    fireEvent.changeText(screen.getByPlaceholderText('Weeks'), '45');
     fireEvent.changeText(screen.getByPlaceholderText('Days'), '0');
     fireEvent.press(screen.getByText('Add'));
 
@@ -71,6 +71,23 @@ describe('EntryForm', () => {
     fireEvent.press(screen.getByText('Add'));
 
     expect(onAdd).not.toHaveBeenCalled();
+  });
+
+  it('shows range hints', () => {
+    render(<EntryForm onAdd={jest.fn()} />);
+
+    expect(screen.getByText('0–42')).toBeTruthy();
+    expect(screen.getByText('0–6')).toBeTruthy();
+  });
+
+  it('keeps range hints visible while typing', () => {
+    render(<EntryForm onAdd={jest.fn()} />);
+
+    fireEvent.changeText(screen.getByPlaceholderText('Weeks'), '10');
+    fireEvent.changeText(screen.getByPlaceholderText('Days'), '3');
+
+    expect(screen.getByText('0–42')).toBeTruthy();
+    expect(screen.getByText('0–6')).toBeTruthy();
   });
 
   it('Add button is disabled when name is empty and enabled when name is entered', () => {

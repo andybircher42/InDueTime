@@ -25,7 +25,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
     const w = parseInt(weeks, 10) || 0;
     const d = parseInt(days, 10) || 0;
 
-    if (w < 0 || w > 42 || d < 0 || d > 6) return;
+    if (w < 0 || w > 44 || d < 0 || d > 6) return;
 
     onAdd({ name: trimmedName, weeks: w, days: d });
 
@@ -45,24 +45,30 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
         returnKeyType="next"
       />
       <View style={styles.ageRow}>
-        <TextInput
-          style={styles.numberInput}
-          placeholder="Weeks"
-          value={weeks}
-          onChangeText={setWeeks}
-          keyboardType="number-pad"
-          maxLength={2}
-          returnKeyType="next"
-        />
-        <TextInput
-          style={styles.numberInput}
-          placeholder="Days"
-          value={days}
-          onChangeText={setDays}
-          keyboardType="number-pad"
-          maxLength={1}
-          returnKeyType="done"
-        />
+        <View style={styles.inputWithHint}>
+          <TextInput
+            style={styles.numberInput}
+            placeholder="Weeks"
+            value={weeks}
+            onChangeText={setWeeks}
+            keyboardType="number-pad"
+            maxLength={2}
+            returnKeyType="next"
+          />
+          <Text style={styles.hintText}>0–42</Text>
+        </View>
+        <View style={styles.inputWithHint}>
+          <TextInput
+            style={styles.numberInput}
+            placeholder="Days"
+            value={days}
+            onChangeText={setDays}
+            keyboardType="number-pad"
+            maxLength={1}
+            returnKeyType="done"
+          />
+          <Text style={styles.hintText}>0–6</Text>
+        </View>
         <Pressable
           style={[styles.addButton, !name.trim() && styles.addButtonDisabled]}
           onPress={handleAdd}
@@ -95,14 +101,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
   },
-  numberInput: {
+  inputWithHint: {
     flex: 1,
+  },
+  numberInput: {
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     backgroundColor: '#fafafa',
+  },
+  hintText: {
+    fontSize: 11,
+    color: '#999',
+    marginTop: 2,
+    marginLeft: 4,
   },
   addButton: {
     backgroundColor: '#4a90d9',
