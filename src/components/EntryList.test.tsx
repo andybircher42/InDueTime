@@ -50,4 +50,185 @@ describe("EntryList", () => {
     expect(screen.getByText("Baby B")).toBeTruthy();
     expect(screen.getByText("Baby C")).toBeTruthy();
   });
+
+  it("sorts by due date descending (oldest gestational age first) by default", () => {
+    const entries = [
+      { id: "1", name: "Young", weeks: 10, days: 0 },
+      { id: "2", name: "Old", weeks: 35, days: 2 },
+      { id: "3", name: "Middle", weeks: 20, days: 5 },
+    ];
+    render(<EntryList entries={entries} onDelete={jest.fn()} />);
+
+    const names = screen.getAllByText(/Young|Old|Middle/);
+    expect(names[0]).toHaveTextContent("Old");
+    expect(names[1]).toHaveTextContent("Middle");
+    expect(names[2]).toHaveTextContent("Young");
+  });
+
+  it("toggles due date to ascending when tapped again", () => {
+    const entries = [
+      { id: "1", name: "Young", weeks: 10, days: 0 },
+      { id: "2", name: "Old", weeks: 35, days: 2 },
+      { id: "3", name: "Middle", weeks: 20, days: 5 },
+    ];
+    render(<EntryList entries={entries} onDelete={jest.fn()} />);
+
+    fireEvent.press(screen.getByText(/Due Date/));
+
+    const names = screen.getAllByText(/Young|Old|Middle/);
+    expect(names[0]).toHaveTextContent("Young");
+    expect(names[1]).toHaveTextContent("Middle");
+    expect(names[2]).toHaveTextContent("Old");
+  });
+
+  it("sorts by name ascending when Name sort is selected", () => {
+    const entries = [
+      { id: "1", name: "Charlie", weeks: 10, days: 0 },
+      { id: "2", name: "Alice", weeks: 35, days: 2 },
+      { id: "3", name: "Bob", weeks: 20, days: 5 },
+    ];
+    render(<EntryList entries={entries} onDelete={jest.fn()} />);
+
+    fireEvent.press(screen.getByText("Name"));
+
+    const names = screen.getAllByText(/Alice|Bob|Charlie/);
+    expect(names[0]).toHaveTextContent("Alice");
+    expect(names[1]).toHaveTextContent("Bob");
+    expect(names[2]).toHaveTextContent("Charlie");
+  });
+
+  it("toggles name to descending when tapped again", () => {
+    const entries = [
+      { id: "1", name: "Charlie", weeks: 10, days: 0 },
+      { id: "2", name: "Alice", weeks: 35, days: 2 },
+      { id: "3", name: "Bob", weeks: 20, days: 5 },
+    ];
+    render(<EntryList entries={entries} onDelete={jest.fn()} />);
+
+    fireEvent.press(screen.getByText("Name"));
+    fireEvent.press(screen.getByText(/Name/));
+
+    const names = screen.getAllByText(/Alice|Bob|Charlie/);
+    expect(names[0]).toHaveTextContent("Charlie");
+    expect(names[1]).toHaveTextContent("Bob");
+    expect(names[2]).toHaveTextContent("Alice");
+  });
+
+  it("resets to default direction when switching sort field", () => {
+    const entries = [
+      { id: "1", name: "Charlie", weeks: 10, days: 0 },
+      { id: "2", name: "Alice", weeks: 35, days: 2 },
+      { id: "3", name: "Bob", weeks: 20, days: 5 },
+    ];
+    render(<EntryList entries={entries} onDelete={jest.fn()} />);
+
+    // Toggle due date to ascending
+    fireEvent.press(screen.getByText(/Due Date/));
+    // Switch to name — should default to ascending (A-Z)
+    fireEvent.press(screen.getByText("Name"));
+
+    const names = screen.getAllByText(/Alice|Bob|Charlie/);
+    expect(names[0]).toHaveTextContent("Alice");
+    expect(names[1]).toHaveTextContent("Bob");
+    expect(names[2]).toHaveTextContent("Charlie");
+
+    // Switch back to due date — should reset to descending (oldest first)
+    fireEvent.press(screen.getByText(/Due Date/));
+
+    const names2 = screen.getAllByText(/Alice|Bob|Charlie/);
+    expect(names2[0]).toHaveTextContent("Alice");
+    expect(names2[1]).toHaveTextContent("Bob");
+    expect(names2[2]).toHaveTextContent("Charlie");
+  });
+
+  it("shows direction arrow on active sort button", () => {
+    const entries = [{ id: "1", name: "Baby", weeks: 10, days: 0 }];
+    render(<EntryList entries={entries} onDelete={jest.fn()} />);
+
+    // Default: due date descending
+    expect(screen.getByText(/Due Date ↓/)).toBeTruthy();
+
+    // Toggle to ascending
+    fireEvent.press(screen.getByText(/Due Date/));
+    expect(screen.getByText(/Due Date ↑/)).toBeTruthy();
+
+    // Switch to name — ascending by default
+    fireEvent.press(screen.getByText("Name"));
+    expect(screen.getByText(/Name ↑/)).toBeTruthy();
+
+    // Toggle name to descending
+    fireEvent.press(screen.getByText(/Name/));
+    expect(screen.getByText(/Name ↓/)).toBeTruthy();
+  });
+
+  it("breaks due date ties by name ascending", () => {
+    const entries = [
+      { id: "1", name: "Charlie", weeks: 20, days: 0 },
+      { id: "2", name: "Alice", weeks: 20, days: 0 },
+      { id: "3", name: "Bob", weeks: 20, days: 0 },
+    ];
+    render(<EntryList entries={entries} onDelete={jest.fn()} />);
+
+    const names = screen.getAllByText(/Alice|Bob|Charlie/);
+    expect(names[0]).toHaveTextContent("Alice");
+    expect(names[1]).toHaveTextContent("Bob");
+    expect(names[2]).toHaveTextContent("Charlie");
+  });
+
+  it("keeps name-ascending tiebreaker when toggling due date direction", () => {
+    const entries = [
+      { id: "1", name: "Charlie", weeks: 20, days: 0 },
+      { id: "2", name: "Alice", weeks: 20, days: 0 },
+      { id: "3", name: "Bob", weeks: 20, days: 0 },
+    ];
+    render(<EntryList entries={entries} onDelete={jest.fn()} />);
+
+    // Toggle due date to ascending
+    fireEvent.press(screen.getByText(/Due Date/));
+
+    const names = screen.getAllByText(/Alice|Bob|Charlie/);
+    expect(names[0]).toHaveTextContent("Alice");
+    expect(names[1]).toHaveTextContent("Bob");
+    expect(names[2]).toHaveTextContent("Charlie");
+  });
+
+  it("breaks name ties by due date descending", () => {
+    const entries = [
+      { id: "1", name: "Sam", weeks: 10, days: 0 },
+      { id: "2", name: "Sam", weeks: 30, days: 0 },
+      { id: "3", name: "Sam", weeks: 20, days: 0 },
+    ];
+    render(<EntryList entries={entries} onDelete={jest.fn()} />);
+
+    fireEvent.press(screen.getByText("Name"));
+
+    const ages = screen.getAllByText(/\d+w \d+d/);
+    expect(ages[0]).toHaveTextContent("30w 0d");
+    expect(ages[1]).toHaveTextContent("20w 0d");
+    expect(ages[2]).toHaveTextContent("10w 0d");
+  });
+
+  it("keeps due-date-descending tiebreaker when toggling name direction", () => {
+    const entries = [
+      { id: "1", name: "Sam", weeks: 10, days: 0 },
+      { id: "2", name: "Sam", weeks: 30, days: 0 },
+      { id: "3", name: "Sam", weeks: 20, days: 0 },
+    ];
+    render(<EntryList entries={entries} onDelete={jest.fn()} />);
+
+    fireEvent.press(screen.getByText("Name"));
+    fireEvent.press(screen.getByText(/Name/));
+
+    const ages = screen.getAllByText(/\d+w \d+d/);
+    expect(ages[0]).toHaveTextContent("30w 0d");
+    expect(ages[1]).toHaveTextContent("20w 0d");
+    expect(ages[2]).toHaveTextContent("10w 0d");
+  });
+
+  it("does not show sort controls when list is empty", () => {
+    render(<EntryList entries={[]} onDelete={jest.fn()} />);
+
+    expect(screen.queryByText(/Due Date/)).toBeNull();
+    expect(screen.queryByText(/Name/)).toBeNull();
+  });
 });
