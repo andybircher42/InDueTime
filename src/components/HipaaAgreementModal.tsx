@@ -7,7 +7,12 @@ import {
   View,
 } from 'react-native';
 
-export default function HipaaAgreementModal({ visible, onAccept }) {
+interface HipaaAgreementModalProps {
+  visible: boolean;
+  onAccept: () => void;
+}
+
+export default function HipaaAgreementModal({ visible, onAccept }: HipaaAgreementModalProps) {
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.modalOverlay}>
