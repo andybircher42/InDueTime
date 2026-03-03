@@ -289,4 +289,21 @@ describe("EntryList", () => {
     expect(onDeleteAll).not.toHaveBeenCalled();
     alertSpy.mockRestore();
   });
+
+  it("renders delete background behind entry rows", () => {
+    const entries = [{ id: "1", name: "Baby", weeks: 10, days: 0 }];
+    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+
+    expect(screen.getByTestId("delete-background")).toBeTruthy();
+  });
+
+  it("renders a delete background for each entry", () => {
+    const entries = [
+      { id: "1", name: "Baby A", weeks: 10, days: 0 },
+      { id: "2", name: "Baby B", weeks: 20, days: 5 },
+    ];
+    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+
+    expect(screen.getAllByTestId("delete-background")).toHaveLength(2);
+  });
 });

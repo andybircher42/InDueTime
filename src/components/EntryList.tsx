@@ -1,5 +1,15 @@
-import { useMemo, useState } from "react";
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { useMemo, useRef, useState } from "react";
+import {
+  Alert,
+  Animated,
+  FlatList,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Entry } from "../storage";
 
 type SortBy = "dueDate" | "name";
@@ -9,6 +19,8 @@ const DEFAULT_DIR: Record<SortBy, SortDir> = {
   dueDate: "desc",
   name: "asc",
 };
+
+const SWIPE_THRESHOLD = 100;
 
 interface EntryRowProps {
   item: Entry;
@@ -21,20 +33,60 @@ interface EntryListProps {
   onDeleteAll: () => void;
 }
 
+/** Individual entry row with swipe-to-delete support. */
 function EntryRow({ item, onDelete }: EntryRowProps) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const onDeleteRef = useRef(onDelete);
+  onDeleteRef.current = onDelete;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dx) > 5,
+      onPanResponderMove: (_, gestureState) => {
+        translateX.setValue(gestureState.dx);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (Math.abs(gestureState.dx) > SWIPE_THRESHOLD) {
+          const direction = gestureState.dx > 0 ? 1 : -1;
+          Animated.timing(translateX, {
+            toValue: direction * 500,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => onDeleteRef.current(item.id));
+        } else {
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    }),
+  ).current;
+
   return (
-    <View style={styles.entry}>
-      <Text style={styles.entryName}>{item.name}</Text>
-      <Text style={styles.entryAge}>
-        {item.weeks}w {item.days}d
-      </Text>
-      <Pressable
-        onPress={() => onDelete(item.id)}
-        style={styles.deleteButton}
-        hitSlop={8}
+    <View style={styles.entryWrapper}>
+      <View style={styles.deleteBackground} testID="delete-background">
+        <Ionicons name="trash-outline" size={22} color="#fff" />
+        <Ionicons name="trash-outline" size={22} color="#fff" />
+      </View>
+      <Animated.View
+        style={[styles.entry, { transform: [{ translateX }] }]}
+        {...panResponder.panHandlers}
       >
-        <Text style={styles.deleteText}>✕</Text>
-      </Pressable>
+        <Text style={styles.entryName}>{item.name}</Text>
+        <Text style={styles.entryAge}>
+          {item.weeks}w {item.days}d
+        </Text>
+        <Pressable
+          onPress={() => onDelete(item.id)}
+          style={styles.deleteButton}
+          hitSlop={8}
+        >
+          <Text style={styles.deleteText}>✕</Text>
+        </Pressable>
+      </Animated.View>
     </View>
   );
 }
@@ -210,20 +262,26 @@ const styles = StyleSheet.create({
     color: "#999",
     fontSize: 16,
   },
+  entryWrapper: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  deleteBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#ef4444",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
   entry: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    marginHorizontal: 16,
-    marginTop: 8,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   entryName: {
     flex: 1,
