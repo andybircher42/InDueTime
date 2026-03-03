@@ -310,14 +310,14 @@ describe("App", () => {
 
   describe("OTA update during splash", () => {
     beforeEach(() => {
-      (globalThis as any).__DEV__ = false;
+      (globalThis as unknown as Record<string, boolean>).__DEV__ = false;
       Updates.checkForUpdateAsync.mockReset();
       Updates.fetchUpdateAsync.mockReset();
       Updates.reloadAsync.mockReset();
     });
 
     afterEach(() => {
-      (globalThis as any).__DEV__ = true;
+      (globalThis as unknown as Record<string, boolean>).__DEV__ = true;
     });
 
     it("reloads if update is fetched while still on splash screen", async () => {
@@ -336,7 +336,10 @@ describe("App", () => {
       let resolveFetch!: () => void;
       Updates.checkForUpdateAsync.mockResolvedValue({ isAvailable: true });
       Updates.fetchUpdateAsync.mockImplementation(
-        () => new Promise<void>((resolve) => { resolveFetch = resolve; }),
+        () =>
+          new Promise<void>((resolve) => {
+            resolveFetch = resolve;
+          }),
       );
 
       render(<App />);
