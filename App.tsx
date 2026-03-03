@@ -25,7 +25,7 @@ import {
 } from "./src/storage";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const splashLogo = require("./assets/icon.png");
+const splashLogo = require("./assets/splash-icon.png");
 
 const SPLASH_DURATION_MS = 2000;
 
@@ -206,8 +206,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
   },
   splashLogo: {
-    width: 180,
-    height: 180,
+    width: 280,
+    height: 160,
   },
   container: {
     flex: 1,
