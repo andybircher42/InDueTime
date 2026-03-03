@@ -53,6 +53,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
   const weeksError = weeks && !weeksValid ? "Weeks must be 0\u201342" : null;
   const daysError = days && !daysValid ? "Days must be 0\u20136" : null;
 
+  const dateBounds = getDateBounds();
   const dateError = getDateError(dateText);
   const computed =
     dueDate && !dateError ? computeGestationalAge(dueDate) : null;
@@ -293,8 +294,8 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
               mode="date"
               display="default"
               onChange={handleDateChange}
-              minimumDate={getDateBounds().min}
-              maximumDate={getDateBounds().max}
+              minimumDate={dateBounds.min}
+              maximumDate={dateBounds.max}
             />
           )}
         </View>
