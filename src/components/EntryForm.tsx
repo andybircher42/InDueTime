@@ -123,6 +123,9 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
     setDays("");
     setDueDate(null);
     setDateText("");
+    setWeeksTouched(false);
+    setDaysTouched(false);
+    setDateTouched(false);
     Keyboard.dismiss();
   };
 
