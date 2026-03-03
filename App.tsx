@@ -101,7 +101,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
       const [accepted] = await Promise.all([
         checkAgreement().catch((e) => {
           console.error("Failed to check agreement", e);
-          return true;
+          return false;
         }),
         load().catch((e) => console.error("Failed to load entries", e)),
         loadThemePreference().catch((e) =>
