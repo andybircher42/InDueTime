@@ -87,6 +87,13 @@ export default function App() {
     );
   };
 
+  const handleDeleteAll = () => {
+    setEntries([]);
+    saveEntries([]).catch((e) =>
+      console.error("Failed to clear entries", e),
+    );
+  };
+
   const handleAcceptAgreement = () => {
     acceptAgreement()
       .then(() => setShowAgreement(false))
@@ -123,7 +130,7 @@ export default function App() {
       </View>
 
       <EntryForm onAdd={handleAdd} />
-      <EntryList entries={entries} onDelete={handleDelete} />
+      <EntryList entries={entries} onDelete={handleDelete} onDeleteAll={handleDeleteAll} />
       <HipaaAgreementModal
         visible={showAgreement && agreementLoaded}
         onAccept={handleAcceptAgreement}

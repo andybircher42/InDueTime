@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { Entry } from "../storage";
 
 type SortBy = "dueDate" | "name";
@@ -18,6 +18,7 @@ interface EntryRowProps {
 interface EntryListProps {
   entries: Entry[];
   onDelete: (id: string) => void;
+  onDeleteAll: () => void;
 }
 
 function EntryRow({ item, onDelete }: EntryRowProps) {
@@ -39,7 +40,7 @@ function EntryRow({ item, onDelete }: EntryRowProps) {
 }
 
 /** Scrollable list of gestation entries with swipe-to-delete support. */
-export default function EntryList({ entries, onDelete }: EntryListProps) {
+export default function EntryList({ entries, onDelete, onDeleteAll }: EntryListProps) {
   const [sortBy, setSortBy] = useState<SortBy>("dueDate");
   const [sortDir, setSortDir] = useState<SortDir>(DEFAULT_DIR.dueDate);
 
@@ -78,40 +79,59 @@ export default function EntryList({ entries, onDelete }: EntryListProps) {
   return (
     <View style={styles.listContainer}>
       {entries.length > 0 && (
-        <View style={styles.sortRow}>
-          <Pressable
-            style={[
-              styles.sortButton,
-              sortBy === "dueDate" && styles.sortButtonActive,
-            ]}
-            onPress={() => handleSortPress("dueDate")}
-            accessibilityRole="button"
-          >
-            <Text
+        <View style={styles.toolbarRow}>
+          <View style={styles.sortRow}>
+            <Pressable
               style={[
-                styles.sortText,
-                sortBy === "dueDate" && styles.sortTextActive,
+                styles.sortButton,
+                sortBy === "dueDate" && styles.sortButtonActive,
               ]}
+              onPress={() => handleSortPress("dueDate")}
+              accessibilityRole="button"
             >
-              Due Date {sortBy === "dueDate" && (sortDir === "asc" ? "↑" : "↓")}
-            </Text>
-          </Pressable>
-          <Pressable
-            style={[
-              styles.sortButton,
-              sortBy === "name" && styles.sortButtonActive,
-            ]}
-            onPress={() => handleSortPress("name")}
-            accessibilityRole="button"
-          >
-            <Text
+              <Text
+                style={[
+                  styles.sortText,
+                  sortBy === "dueDate" && styles.sortTextActive,
+                ]}
+              >
+                Due Date {sortBy === "dueDate" && (sortDir === "asc" ? "↑" : "↓")}
+              </Text>
+            </Pressable>
+            <Pressable
               style={[
-                styles.sortText,
-                sortBy === "name" && styles.sortTextActive,
+                styles.sortButton,
+                sortBy === "name" && styles.sortButtonActive,
               ]}
+              onPress={() => handleSortPress("name")}
+              accessibilityRole="button"
             >
-              Name {sortBy === "name" && (sortDir === "asc" ? "↑" : "↓")}
-            </Text>
+              <Text
+                style={[
+                  styles.sortText,
+                  sortBy === "name" && styles.sortTextActive,
+                ]}
+              >
+                Name {sortBy === "name" && (sortDir === "asc" ? "↑" : "↓")}
+              </Text>
+            </Pressable>
+          </View>
+          <Pressable
+            style={styles.deleteAllButton}
+            onPress={() =>
+              Alert.alert(
+                "Delete All",
+                "Are you sure you want to delete all entries?",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  { text: "Delete", style: "destructive", onPress: onDeleteAll },
+                ],
+              )
+            }
+            accessibilityRole="button"
+            accessibilityLabel="Delete all"
+          >
+            <Text style={styles.deleteAllText}>Delete All</Text>
           </Pressable>
         </View>
       )}
@@ -135,14 +155,31 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
   },
-  sortRow: {
+  toolbarRow: {
     flexDirection: "row",
+    alignItems: "center",
     marginHorizontal: 16,
     marginTop: 12,
+    gap: 10,
+  },
+  sortRow: {
+    flex: 1,
+    flexDirection: "row",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#4a90d9",
     overflow: "hidden",
+  },
+  deleteAllButton: {
+    backgroundColor: "#ef4444",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  deleteAllText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
   },
   sortButton: {
     flex: 1,

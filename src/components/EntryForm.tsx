@@ -13,6 +13,7 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { computeDueDate, computeGestationalAge } from "../util/gestationalAge";
 import {
+  formatDateInput,
   getDateBounds,
   getDateError,
   parseDateText,
@@ -263,8 +264,9 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
                   onChangeText={handleDateTextChange}
                   onBlur={() => {
                     setDateTouched(true);
-                    if (dueDate && !dateError) {
-                      setDateText(formatDate(dueDate));
+                    const formatted = formatDateInput(dateText);
+                    if (formatted) {
+                      setDateText(formatted);
                     }
                   }}
                 />
