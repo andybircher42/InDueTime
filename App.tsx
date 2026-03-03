@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -17,12 +17,13 @@ import DevToolbar from "@/components/DevToolbar";
 import EntryForm from "@/components/EntryForm";
 import EntryList from "@/components/EntryList";
 import HipaaAgreementModal from "@/components/HipaaAgreementModal";
+import ThemePickerModal from "@/components/ThemePickerModal";
 import UndoToast from "@/components/UndoToast";
 import useEntries from "@/hooks/useEntries";
 import useThemePreference from "@/hooks/useThemePreference";
 import { acceptAgreement, checkAgreement, resetAgreement } from "@/storage";
 import { ColorTokens } from "@/theme/colors";
-import { ThemeMode, ThemeProvider, useTheme } from "@/theme/ThemeContext";
+import { ThemeProvider, useTheme } from "@/theme/ThemeContext";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const splashLogo = require("./assets/splash-icon.png");
@@ -31,14 +32,6 @@ const headerLogo = require("./assets/icon.png");
 
 const SPLASH_DURATION_MS = 2000;
 const APP_LABEL = (Constants.expoConfig?.extra?.appLabel as string) ?? "";
-
-const THEME_CYCLE: ThemeMode[] = ["system", "light", "dark", "mono"];
-const THEME_ICONS: Record<ThemeMode, keyof typeof Ionicons.glyphMap> = {
-  system: "contrast-outline",
-  light: "sunny-outline",
-  dark: "moon-outline",
-  mono: "ellipse-outline",
-};
 
 /** Root component that wraps AppContent with ThemeProvider. */
 export default function App() {
@@ -61,6 +54,16 @@ function AppContent({ loadThemePreference }: AppContentProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [showAgreement, setShowAgreement] = useState(false);
   const [agreementLoaded, setAgreementLoaded] = useState(false);
+  const [showThemePicker, setShowThemePicker] = useState(false);
+  const [pickerAnchor, setPickerAnchor] = useState({ top: 0, right: 0 });
+  const settingsRef = useRef<View>(null);
+
+  const openThemePicker = useCallback(() => {
+    settingsRef.current?.measureInWindow((x, y, width, height) => {
+      setPickerAnchor({ top: y + height + 4, right: 12 });
+      setShowThemePicker(true);
+    });
+  }, []);
   const {
     entries,
     deletedEntry,
@@ -123,12 +126,6 @@ function AppContent({ loadThemePreference }: AppContentProps) {
       .catch((e) => console.error("Failed to reset agreement", e));
   };
 
-  const cycleTheme = () => {
-    const currentIndex = THEME_CYCLE.indexOf(themeMode);
-    const nextIndex = (currentIndex + 1) % THEME_CYCLE.length;
-    setThemeMode(THEME_CYCLE[nextIndex]);
-  };
-
   if (isLoading) {
     return (
       <View style={styles.splashContainer}>
@@ -157,13 +154,14 @@ function AppContent({ loadThemePreference }: AppContentProps) {
         <Text style={styles.title}>in due time</Text>
         {APP_LABEL !== "" && <Text style={styles.appLabel}>{APP_LABEL}</Text>}
         <Pressable
-          onPress={cycleTheme}
-          accessibilityLabel="Toggle theme"
+          ref={settingsRef}
+          onPress={openThemePicker}
+          accessibilityLabel="Theme settings"
           accessibilityRole="button"
           hitSlop={8}
         >
           <Ionicons
-            name={THEME_ICONS[themeMode]}
+            name="settings-outline"
             size={24}
             color={colors.textPrimary}
           />
@@ -181,6 +179,13 @@ function AppContent({ loadThemePreference }: AppContentProps) {
       <HipaaAgreementModal
         visible={showAgreement && agreementLoaded}
         onAccept={handleAcceptAgreement}
+      />
+      <ThemePickerModal
+        visible={showThemePicker}
+        currentMode={themeMode}
+        onSelect={setThemeMode}
+        onClose={() => setShowThemePicker(false)}
+        anchor={pickerAnchor}
       />
 
       {deletedEntry && (
