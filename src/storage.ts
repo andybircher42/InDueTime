@@ -4,8 +4,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export interface Entry {
   id: string;
   name: string;
-  weeks: number;
-  days: number;
   dueDate: string;
 }
 

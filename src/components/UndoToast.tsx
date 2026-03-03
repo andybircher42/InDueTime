@@ -8,6 +8,7 @@ import {
 } from "react-native";
 
 import { Entry } from "@/storage";
+import { gestationalAgeFromDueDate } from "@/util/gestationalAge";
 
 interface UndoToastProps {
   entry: Entry;
@@ -25,6 +26,7 @@ export default function UndoToast({
   onUndo,
   onDismiss,
 }: UndoToastProps) {
+  const { weeks, days } = gestationalAgeFromDueDate(entry.dueDate);
   const translateY = useRef(new Animated.Value(0)).current;
 
   const panResponder = useRef(
@@ -65,7 +67,7 @@ export default function UndoToast({
       {...panResponder.panHandlers}
     >
       <Text style={styles.message}>
-        Deleted {entry.name} ({entry.weeks}w {entry.days}d)
+        Deleted {entry.name} ({weeks}w {days}d)
       </Text>
       <Pressable
         onPress={onUndo}

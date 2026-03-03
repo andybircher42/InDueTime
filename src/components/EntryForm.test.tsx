@@ -33,8 +33,6 @@ describe("EntryForm — Gestational Age mode", () => {
     const expectedDateStr = `${expectedDueDate.getFullYear()}-${String(expectedDueDate.getMonth() + 1).padStart(2, "0")}-${String(expectedDueDate.getDate()).padStart(2, "0")}`;
     expect(onAdd).toHaveBeenCalledWith({
       name: "Baby A",
-      weeks: 12,
-      days: 3,
       dueDate: expectedDateStr,
     });
   });
@@ -307,7 +305,7 @@ describe("EntryForm — Due Date mode", () => {
     jest.restoreAllMocks();
   });
 
-  it("submits computed weeks/days when Add is pressed in Due Date mode", () => {
+  it("submits dueDate when Add is pressed in Due Date mode", () => {
     jest
       .spyOn(gestationalAge, "computeGestationalAge")
       .mockReturnValue({ weeks: 35, days: 2 });
@@ -322,8 +320,6 @@ describe("EntryForm — Due Date mode", () => {
 
     expect(onAdd).toHaveBeenCalledWith({
       name: "Baby B",
-      weeks: 35,
-      days: 2,
       dueDate: "2026-06-15",
     });
 

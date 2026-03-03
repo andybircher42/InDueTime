@@ -12,6 +12,15 @@ function makeEntry(
   return { dueDate: "2026-06-15", ...fields };
 }
 
+// Fixed "today" for all tests so gestationalAgeFromDueDate produces predictable values.
+beforeEach(() => {
+  jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+});
+
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 describe("EntryList", () => {
   it('shows "No entries yet" when empty', () => {
     render(
@@ -21,8 +30,9 @@ describe("EntryList", () => {
   });
 
   it("renders entry name and formatted age", () => {
+    // dueDate 2026-09-11 → 12w3d when today is 2026-03-02
     const entries = [
-      makeEntry({ id: "1", name: "Baby A", weeks: 12, days: 3 }),
+      makeEntry({ id: "1", name: "Baby A", dueDate: "2026-09-11" }),
     ];
     render(
       <EntryList
@@ -37,7 +47,10 @@ describe("EntryList", () => {
   });
 
   it("renders singular values", () => {
-    const entries = [makeEntry({ id: "1", name: "Baby", weeks: 1, days: 1 })];
+    // dueDate 2026-11-29 → 1w1d
+    const entries = [
+      makeEntry({ id: "1", name: "Baby", dueDate: "2026-11-29" }),
+    ];
     render(
       <EntryList
         entries={entries}
@@ -50,7 +63,10 @@ describe("EntryList", () => {
   });
 
   it("renders zero values", () => {
-    const entries = [makeEntry({ id: "1", name: "Baby", weeks: 0, days: 0 })];
+    // dueDate 2026-12-07 → 0w0d
+    const entries = [
+      makeEntry({ id: "1", name: "Baby", dueDate: "2026-12-07" }),
+    ];
     render(
       <EntryList
         entries={entries}
@@ -64,7 +80,9 @@ describe("EntryList", () => {
 
   it("calls onDelete with correct id", () => {
     const onDelete = jest.fn();
-    const entries = [makeEntry({ id: "abc", name: "Baby", weeks: 5, days: 2 })];
+    const entries = [
+      makeEntry({ id: "abc", name: "Baby", dueDate: "2026-10-31" }),
+    ];
     render(
       <EntryList
         entries={entries}
@@ -79,9 +97,9 @@ describe("EntryList", () => {
 
   it("renders multiple entries", () => {
     const entries = [
-      makeEntry({ id: "1", name: "Baby A", weeks: 10, days: 0 }),
-      makeEntry({ id: "2", name: "Baby B", weeks: 20, days: 5 }),
-      makeEntry({ id: "3", name: "Baby C", weeks: 35, days: 2 }),
+      makeEntry({ id: "1", name: "Baby A", dueDate: "2026-09-28" }),
+      makeEntry({ id: "2", name: "Baby B", dueDate: "2026-07-15" }),
+      makeEntry({ id: "3", name: "Baby C", dueDate: "2026-04-04" }),
     ];
     render(
       <EntryList
@@ -97,10 +115,11 @@ describe("EntryList", () => {
   });
 
   it("sorts by due date descending (oldest gestational age first) by default", () => {
+    // Young=10w0d (late dueDate), Old=35w2d (early dueDate), Middle=20w5d
     const entries = [
-      makeEntry({ id: "1", name: "Young", weeks: 10, days: 0 }),
-      makeEntry({ id: "2", name: "Old", weeks: 35, days: 2 }),
-      makeEntry({ id: "3", name: "Middle", weeks: 20, days: 5 }),
+      makeEntry({ id: "1", name: "Young", dueDate: "2026-09-28" }),
+      makeEntry({ id: "2", name: "Old", dueDate: "2026-04-04" }),
+      makeEntry({ id: "3", name: "Middle", dueDate: "2026-07-15" }),
     ];
     render(
       <EntryList
@@ -118,9 +137,9 @@ describe("EntryList", () => {
 
   it("toggles due date to ascending when tapped again", () => {
     const entries = [
-      makeEntry({ id: "1", name: "Young", weeks: 10, days: 0 }),
-      makeEntry({ id: "2", name: "Old", weeks: 35, days: 2 }),
-      makeEntry({ id: "3", name: "Middle", weeks: 20, days: 5 }),
+      makeEntry({ id: "1", name: "Young", dueDate: "2026-09-28" }),
+      makeEntry({ id: "2", name: "Old", dueDate: "2026-04-04" }),
+      makeEntry({ id: "3", name: "Middle", dueDate: "2026-07-15" }),
     ];
     render(
       <EntryList
@@ -140,9 +159,9 @@ describe("EntryList", () => {
 
   it("sorts by name ascending when Name sort is selected", () => {
     const entries = [
-      makeEntry({ id: "1", name: "Charlie", weeks: 10, days: 0 }),
-      makeEntry({ id: "2", name: "Alice", weeks: 35, days: 2 }),
-      makeEntry({ id: "3", name: "Bob", weeks: 20, days: 5 }),
+      makeEntry({ id: "1", name: "Charlie", dueDate: "2026-09-28" }),
+      makeEntry({ id: "2", name: "Alice", dueDate: "2026-04-04" }),
+      makeEntry({ id: "3", name: "Bob", dueDate: "2026-07-15" }),
     ];
     render(
       <EntryList
@@ -162,9 +181,9 @@ describe("EntryList", () => {
 
   it("toggles name to descending when tapped again", () => {
     const entries = [
-      makeEntry({ id: "1", name: "Charlie", weeks: 10, days: 0 }),
-      makeEntry({ id: "2", name: "Alice", weeks: 35, days: 2 }),
-      makeEntry({ id: "3", name: "Bob", weeks: 20, days: 5 }),
+      makeEntry({ id: "1", name: "Charlie", dueDate: "2026-09-28" }),
+      makeEntry({ id: "2", name: "Alice", dueDate: "2026-04-04" }),
+      makeEntry({ id: "3", name: "Bob", dueDate: "2026-07-15" }),
     ];
     render(
       <EntryList
@@ -185,9 +204,9 @@ describe("EntryList", () => {
 
   it("resets to default direction when switching sort field", () => {
     const entries = [
-      makeEntry({ id: "1", name: "Charlie", weeks: 10, days: 0 }),
-      makeEntry({ id: "2", name: "Alice", weeks: 35, days: 2 }),
-      makeEntry({ id: "3", name: "Bob", weeks: 20, days: 5 }),
+      makeEntry({ id: "1", name: "Charlie", dueDate: "2026-09-28" }),
+      makeEntry({ id: "2", name: "Alice", dueDate: "2026-04-04" }),
+      makeEntry({ id: "3", name: "Bob", dueDate: "2026-07-15" }),
     ];
     render(
       <EntryList
@@ -217,7 +236,9 @@ describe("EntryList", () => {
   });
 
   it("shows direction arrow on active sort button", () => {
-    const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
+    const entries = [
+      makeEntry({ id: "1", name: "Baby", dueDate: "2026-09-28" }),
+    ];
     render(
       <EntryList
         entries={entries}
@@ -244,9 +265,9 @@ describe("EntryList", () => {
 
   it("breaks due date ties by name ascending", () => {
     const entries = [
-      makeEntry({ id: "1", name: "Charlie", weeks: 20, days: 0 }),
-      makeEntry({ id: "2", name: "Alice", weeks: 20, days: 0 }),
-      makeEntry({ id: "3", name: "Bob", weeks: 20, days: 0 }),
+      makeEntry({ id: "1", name: "Charlie", dueDate: "2026-07-20" }),
+      makeEntry({ id: "2", name: "Alice", dueDate: "2026-07-20" }),
+      makeEntry({ id: "3", name: "Bob", dueDate: "2026-07-20" }),
     ];
     render(
       <EntryList
@@ -264,9 +285,9 @@ describe("EntryList", () => {
 
   it("keeps name-ascending tiebreaker when toggling due date direction", () => {
     const entries = [
-      makeEntry({ id: "1", name: "Charlie", weeks: 20, days: 0 }),
-      makeEntry({ id: "2", name: "Alice", weeks: 20, days: 0 }),
-      makeEntry({ id: "3", name: "Bob", weeks: 20, days: 0 }),
+      makeEntry({ id: "1", name: "Charlie", dueDate: "2026-07-20" }),
+      makeEntry({ id: "2", name: "Alice", dueDate: "2026-07-20" }),
+      makeEntry({ id: "3", name: "Bob", dueDate: "2026-07-20" }),
     ];
     render(
       <EntryList
@@ -286,10 +307,11 @@ describe("EntryList", () => {
   });
 
   it("breaks name ties by due date descending", () => {
+    // Same name, different dueDates → tiebreaker sorts earliest dueDate first (highest GA)
     const entries = [
-      makeEntry({ id: "1", name: "Sam", weeks: 10, days: 0 }),
-      makeEntry({ id: "2", name: "Sam", weeks: 30, days: 0 }),
-      makeEntry({ id: "3", name: "Sam", weeks: 20, days: 0 }),
+      makeEntry({ id: "1", name: "Sam", dueDate: "2026-09-28" }), // 10w0d
+      makeEntry({ id: "2", name: "Sam", dueDate: "2026-05-11" }), // 30w0d
+      makeEntry({ id: "3", name: "Sam", dueDate: "2026-07-20" }), // 20w0d
     ];
     render(
       <EntryList
@@ -309,9 +331,9 @@ describe("EntryList", () => {
 
   it("keeps due-date-descending tiebreaker when toggling name direction", () => {
     const entries = [
-      makeEntry({ id: "1", name: "Sam", weeks: 10, days: 0 }),
-      makeEntry({ id: "2", name: "Sam", weeks: 30, days: 0 }),
-      makeEntry({ id: "3", name: "Sam", weeks: 20, days: 0 }),
+      makeEntry({ id: "1", name: "Sam", dueDate: "2026-09-28" }), // 10w0d
+      makeEntry({ id: "2", name: "Sam", dueDate: "2026-05-11" }), // 30w0d
+      makeEntry({ id: "3", name: "Sam", dueDate: "2026-07-20" }), // 20w0d
     ];
     render(
       <EntryList
@@ -330,6 +352,27 @@ describe("EntryList", () => {
     expect(ages[2]).toHaveTextContent("10w 0d");
   });
 
+  it("sorts correctly when entries span different years", () => {
+    const entries = [
+      makeEntry({ id: "1", name: "NewYear", dueDate: "2027-01-15" }),
+      makeEntry({ id: "2", name: "EndOfYear", dueDate: "2026-12-01" }),
+      makeEntry({ id: "3", name: "MidYear", dueDate: "2026-07-20" }),
+    ];
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
+
+    // Default: due date descending → earliest dueDate (highest GA) first
+    const names = screen.getAllByText(/NewYear|EndOfYear|MidYear/);
+    expect(names[0]).toHaveTextContent("MidYear");
+    expect(names[1]).toHaveTextContent("EndOfYear");
+    expect(names[2]).toHaveTextContent("NewYear");
+  });
+
   it("does not show sort controls when list is empty", () => {
     render(
       <EntryList entries={[]} onDelete={jest.fn()} onDeleteAll={jest.fn()} />,
@@ -341,7 +384,7 @@ describe("EntryList", () => {
   });
 
   it("shows Delete All button when entries exist", () => {
-    const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
+    const entries = [makeEntry({ id: "1", name: "Baby" })];
     render(
       <EntryList
         entries={entries}
@@ -355,7 +398,7 @@ describe("EntryList", () => {
 
   it("shows confirmation dialog when Delete All is pressed", () => {
     const alertSpy = jest.spyOn(Alert, "alert");
-    const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
+    const entries = [makeEntry({ id: "1", name: "Baby" })];
     render(
       <EntryList
         entries={entries}
@@ -377,7 +420,7 @@ describe("EntryList", () => {
   it("calls onDeleteAll when user confirms deletion", () => {
     const alertSpy = jest.spyOn(Alert, "alert");
     const onDeleteAll = jest.fn();
-    const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
+    const entries = [makeEntry({ id: "1", name: "Baby" })];
     render(
       <EntryList
         entries={entries}
@@ -403,7 +446,7 @@ describe("EntryList", () => {
   it("does not call onDeleteAll when user cancels", () => {
     const alertSpy = jest.spyOn(Alert, "alert");
     const onDeleteAll = jest.fn();
-    const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
+    const entries = [makeEntry({ id: "1", name: "Baby" })];
     render(
       <EntryList
         entries={entries}
@@ -428,13 +471,7 @@ describe("EntryList", () => {
 
   it("renders due date in the row", () => {
     const entries = [
-      makeEntry({
-        id: "1",
-        name: "Baby",
-        weeks: 12,
-        days: 3,
-        dueDate: "2026-06-15",
-      }),
+      makeEntry({ id: "1", name: "Baby", dueDate: "2026-06-15" }),
     ];
     render(
       <EntryList
@@ -449,13 +486,7 @@ describe("EntryList", () => {
 
   it("renders due date with year suffix when different year", () => {
     const entries = [
-      makeEntry({
-        id: "1",
-        name: "Baby",
-        weeks: 12,
-        days: 3,
-        dueDate: "2027-01-03",
-      }),
+      makeEntry({ id: "1", name: "Baby", dueDate: "2027-01-03" }),
     ];
     render(
       <EntryList
@@ -469,7 +500,7 @@ describe("EntryList", () => {
   });
 
   it("renders delete background behind entry rows", () => {
-    const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
+    const entries = [makeEntry({ id: "1", name: "Baby" })];
     render(
       <EntryList
         entries={entries}
@@ -483,8 +514,8 @@ describe("EntryList", () => {
 
   it("renders a delete background for each entry", () => {
     const entries = [
-      makeEntry({ id: "1", name: "Baby A", weeks: 10, days: 0 }),
-      makeEntry({ id: "2", name: "Baby B", weeks: 20, days: 5 }),
+      makeEntry({ id: "1", name: "Baby A" }),
+      makeEntry({ id: "2", name: "Baby B" }),
     ];
     render(
       <EntryList

@@ -20,16 +20,6 @@ describe("generateSeedEntries", () => {
     expect(new Set(names).size).toBe(10);
   });
 
-  it("each entry has valid weeks and days", () => {
-    const entries = generateSeedEntries();
-    for (const entry of entries) {
-      expect(entry.weeks).toBeGreaterThanOrEqual(0);
-      expect(entry.weeks).toBeLessThanOrEqual(44);
-      expect(entry.days).toBeGreaterThanOrEqual(0);
-      expect(entry.days).toBeLessThanOrEqual(6);
-    }
-  });
-
   it("each entry has a valid ISO date string", () => {
     const entries = generateSeedEntries();
     for (const entry of entries) {

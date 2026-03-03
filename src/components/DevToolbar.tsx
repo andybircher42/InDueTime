@@ -2,7 +2,6 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Entry } from "@/storage";
 import { toISODateString } from "@/util/dateUtils";
-import { computeGestationalAge } from "@/util/gestationalAge";
 
 interface DevToolbarProps {
   onSeedData: (entries: Entry[]) => void;
@@ -59,12 +58,9 @@ export function generateSeedEntries(): Entry[] {
       today.getMonth(),
       today.getDate() + i * 12 + jitter,
     );
-    const { weeks, days } = computeGestationalAge(dueDate, today);
     return {
       id: (Date.now() + i).toString(),
       name,
-      weeks,
-      days,
       dueDate: toISODateString(dueDate),
     };
   });

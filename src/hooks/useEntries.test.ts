@@ -11,9 +11,7 @@ describe("useEntries", () => {
   it("load hydrates entries from storage", async () => {
     await AsyncStorage.setItem(
       "@gestation_entries",
-      JSON.stringify([
-        { id: "1", name: "A", weeks: 10, days: 0, dueDate: "2026-09-01" },
-      ]),
+      JSON.stringify([{ id: "1", name: "A", dueDate: "2026-09-01" }]),
     );
 
     const { result } = renderHook(() => useEntries());
@@ -32,16 +30,13 @@ describe("useEntries", () => {
     act(() => {
       result.current.add({
         name: "Baby",
-        weeks: 20,
-        days: 3,
         dueDate: "2026-08-01",
       });
     });
 
     expect(result.current.entries).toHaveLength(1);
     expect(result.current.entries[0].name).toBe("Baby");
-    expect(result.current.entries[0].weeks).toBe(20);
-    expect(result.current.entries[0].days).toBe(3);
+    expect(result.current.entries[0].dueDate).toBe("2026-08-01");
 
     await waitFor(async () => {
       const stored = await AsyncStorage.getItem("@gestation_entries");
@@ -55,8 +50,6 @@ describe("useEntries", () => {
     act(() => {
       result.current.add({
         name: "Baby",
-        weeks: 10,
-        days: 0,
         dueDate: "2026-09-01",
       });
     });
@@ -78,8 +71,6 @@ describe("useEntries", () => {
     act(() => {
       result.current.add({
         name: "Baby",
-        weeks: 10,
-        days: 0,
         dueDate: "2026-09-01",
       });
     });
@@ -107,8 +98,6 @@ describe("useEntries", () => {
     act(() => {
       result.current.add({
         name: "Baby",
-        weeks: 10,
-        days: 0,
         dueDate: "2026-09-01",
       });
     });
@@ -134,14 +123,10 @@ describe("useEntries", () => {
     act(() => {
       result.current.add({
         name: "A",
-        weeks: 10,
-        days: 0,
         dueDate: "2026-09-01",
       });
       result.current.add({
         name: "B",
-        weeks: 20,
-        days: 0,
         dueDate: "2026-06-01",
       });
     });
@@ -164,15 +149,13 @@ describe("useEntries", () => {
     act(() => {
       result.current.add({
         name: "Existing",
-        weeks: 10,
-        days: 0,
         dueDate: "2026-09-01",
       });
     });
 
     act(() => {
       result.current.seed([
-        { id: "s1", name: "Seeded", weeks: 5, days: 2, dueDate: "2026-11-01" },
+        { id: "s1", name: "Seeded", dueDate: "2026-11-01" },
       ]);
     });
 

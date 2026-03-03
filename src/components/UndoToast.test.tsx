@@ -4,17 +4,16 @@ import { Entry } from "@/storage";
 
 import UndoToast from "./UndoToast";
 
+// dueDate 2026-09-11 → 12w3d when today is 2026-03-02
 const mockEntry: Entry = {
   id: "1",
   name: "Baby A",
-  weeks: 12,
-  days: 3,
-  dueDate: "2026-06-15",
+  dueDate: "2026-09-11",
 };
 
 describe("UndoToast", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    jest.useFakeTimers({ now: new Date(2026, 2, 2) });
   });
 
   afterEach(() => {

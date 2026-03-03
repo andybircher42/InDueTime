@@ -19,22 +19,10 @@ export default function useEntries() {
     setEntries(stored);
   }, []);
 
-  const add = ({
-    name,
-    weeks,
-    days,
-    dueDate,
-  }: {
-    name: string;
-    weeks: number;
-    days: number;
-    dueDate: string;
-  }) => {
+  const add = ({ name, dueDate }: { name: string; dueDate: string }) => {
     const entry: Entry = {
       id: Date.now().toString(),
       name,
-      weeks,
-      days,
       dueDate,
     };
     const newEntries = [entry, ...entries];

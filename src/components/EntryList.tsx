@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { Entry } from "@/storage";
 import { formatDueDate } from "@/util/dateUtils";
+import { gestationalAgeFromDueDate } from "@/util/gestationalAge";
 
 type SortBy = "dueDate" | "name";
 type SortDir = "asc" | "desc";
@@ -40,6 +41,7 @@ interface EntryListProps {
 
 /** Individual entry row with swipe-to-delete support. */
 function EntryRow({ item, onDelete, nameWidth, onNameLayout }: EntryRowProps) {
+  const { weeks, days } = gestationalAgeFromDueDate(item.dueDate);
   const translateX = useRef(new Animated.Value(0)).current;
   const onDeleteRef = useRef(onDelete);
   onDeleteRef.current = onDelete;
@@ -89,7 +91,7 @@ function EntryRow({ item, onDelete, nameWidth, onNameLayout }: EntryRowProps) {
           {item.name}
         </Text>
         <Text style={styles.entryAge}>
-          {item.weeks}w {item.days}d
+          {weeks}w {days}d
         </Text>
         <Text style={styles.entryDueDate}>{formatDueDate(item.dueDate)}</Text>
         <Pressable
@@ -153,9 +155,9 @@ export default function EntryList({
     const dir = sortDir === "asc" ? 1 : -1;
     if (sortBy === "dueDate") {
       copy.sort((a, b) => {
-        const ageDiff = a.weeks * 7 + a.days - (b.weeks * 7 + b.days);
-        if (ageDiff !== 0) {
-          return dir * ageDiff;
+        const dateDiff = -a.dueDate.localeCompare(b.dueDate);
+        if (dateDiff !== 0) {
+          return dir * dateDiff;
         }
         return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
       });
@@ -167,7 +169,7 @@ export default function EntryList({
         if (nameDiff !== 0) {
           return dir * nameDiff;
         }
-        return b.weeks * 7 + b.days - (a.weeks * 7 + a.days);
+        return a.dueDate.localeCompare(b.dueDate);
       });
     }
     return copy;

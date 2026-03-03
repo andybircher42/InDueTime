@@ -19,18 +19,28 @@ describe("loadEntries / saveEntries", () => {
   });
 
   it("returns parsed entries when they exist", async () => {
-    const data = [
-      { id: "1", name: "Baby", weeks: 10, days: 3, dueDate: "2026-06-15" },
-    ];
+    const data = [{ id: "1", name: "Baby", dueDate: "2026-06-15" }];
     await AsyncStorage.setItem("@gestation_entries", JSON.stringify(data));
     const entries = await loadEntries();
     expect(entries).toEqual(data);
   });
 
+  it("loads legacy entries that contain extra weeks/days fields", async () => {
+    const legacy = [
+      { id: "1", name: "Baby", weeks: 10, days: 3, dueDate: "2026-06-15" },
+    ];
+    await AsyncStorage.setItem("@gestation_entries", JSON.stringify(legacy));
+    const entries = await loadEntries();
+    expect(entries).toHaveLength(1);
+    expect(entries[0].id).toBe("1");
+    expect(entries[0].name).toBe("Baby");
+    expect(entries[0].dueDate).toBe("2026-06-15");
+  });
+
   it("round-trips with saveEntries", async () => {
     const data = [
-      { id: "1", name: "A", weeks: 5, days: 2, dueDate: "2026-09-01" },
-      { id: "2", name: "B", weeks: 20, days: 0, dueDate: "2026-06-15" },
+      { id: "1", name: "A", dueDate: "2026-09-01" },
+      { id: "2", name: "B", dueDate: "2026-06-15" },
     ];
     await saveEntries(data);
     const loaded = await loadEntries();

@@ -1,4 +1,18 @@
 /**
+ * Computes gestational age from an ISO date string (e.g. "2026-06-15").
+ *
+ * Convenience wrapper around {@link computeGestationalAge} that parses the
+ * ISO string so callers don't need to construct a Date themselves.
+ */
+export function gestationalAgeFromDueDate(
+  isoDate: string,
+  today: Date = new Date(),
+): { weeks: number; days: number } {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return computeGestationalAge(new Date(year, month - 1, day), today);
+}
+
+/**
  * Computes a due date from a gestational age in weeks and days.
  *
  * Inverse of computeGestationalAge: dueDate = today + (280 - totalDays) days.

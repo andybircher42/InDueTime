@@ -1,4 +1,8 @@
-import { computeDueDate, computeGestationalAge } from "./gestationalAge";
+import {
+  computeDueDate,
+  computeGestationalAge,
+  gestationalAgeFromDueDate,
+} from "./gestationalAge";
 
 describe("computeGestationalAge", () => {
   it("returns 40w0d when due date equals today", () => {
@@ -64,6 +68,29 @@ describe("computeGestationalAge", () => {
     // Just verify it doesn't throw — exact value depends on current date
     const farFuture = new Date(2030, 0, 1);
     const result = computeGestationalAge(farFuture);
+    expect(result.weeks).toBeGreaterThanOrEqual(0);
+    expect(result.days).toBeGreaterThanOrEqual(0);
+    expect(result.days).toBeLessThanOrEqual(6);
+  });
+});
+
+describe("gestationalAgeFromDueDate", () => {
+  it("parses an ISO date string and delegates to computeGestationalAge", () => {
+    const today = new Date(2026, 0, 1);
+    // 56 days ahead → 280 - 56 = 224 = 32w0d
+    const result = gestationalAgeFromDueDate("2026-02-26", today);
+    expect(result).toEqual({ weeks: 32, days: 0 });
+  });
+
+  it("handles single-digit month and day correctly", () => {
+    const today = new Date(2026, 2, 2);
+    // Due date is today → 40w0d
+    const result = gestationalAgeFromDueDate("2026-03-02", today);
+    expect(result).toEqual({ weeks: 40, days: 0 });
+  });
+
+  it("defaults today to the current date when not provided", () => {
+    const result = gestationalAgeFromDueDate("2030-01-01");
     expect(result.weeks).toBeGreaterThanOrEqual(0);
     expect(result.days).toBeGreaterThanOrEqual(0);
     expect(result.days).toBeLessThanOrEqual(6);

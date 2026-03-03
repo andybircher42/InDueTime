@@ -24,12 +24,7 @@ import { computeDueDate, computeGestationalAge } from "@/util/gestationalAge";
 type InputMode = "weeksDays" | "dueDate";
 
 interface EntryFormProps {
-  onAdd: (entry: {
-    name: string;
-    weeks: number;
-    days: number;
-    dueDate: string;
-  }) => void;
+  onAdd: (entry: { name: string; dueDate: string }) => void;
 }
 
 /** Form for adding a new gestation entry with name, weeks, and days fields. */
@@ -97,15 +92,11 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
       const computed_dueDate = computeDueDate(w, d);
       onAdd({
         name: name.trim(),
-        weeks: w,
-        days: d,
         dueDate: toISODateString(computed_dueDate),
       });
     } else {
       onAdd({
         name: name.trim(),
-        weeks: computed!.weeks,
-        days: computed!.days,
         dueDate: toISODateString(dueDate!),
       });
     }
