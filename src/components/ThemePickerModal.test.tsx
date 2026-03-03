@@ -1,3 +1,4 @@
+import { Linking } from "react-native";
 import { fireEvent, screen } from "@testing-library/react-native";
 
 import renderWithTheme from "@/test/renderWithTheme";
@@ -59,6 +60,34 @@ describe("ThemePickerModal", () => {
     fireEvent.press(screen.getByLabelText("Close theme picker"));
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("opens bug report form and closes modal on press", () => {
+    const spy = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    const onClose = jest.fn();
+    renderWithTheme(<ThemePickerModal {...defaultProps} onClose={onClose} />);
+
+    fireEvent.press(screen.getByLabelText("Report a Bug"));
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining("docs.google.com/forms"),
+    );
+    expect(onClose).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+  });
+
+  it("opens feature request form and closes modal on press", () => {
+    const spy = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+    const onClose = jest.fn();
+    renderWithTheme(<ThemePickerModal {...defaultProps} onClose={onClose} />);
+
+    fireEvent.press(screen.getByLabelText("Request a Feature"));
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining("docs.google.com/forms"),
+    );
+    expect(onClose).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
   });
 
   it("does not render content when visible=false", () => {
