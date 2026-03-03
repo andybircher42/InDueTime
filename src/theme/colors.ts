@@ -78,24 +78,24 @@ const monoColors: ColorTokens = {
 
 /** Light-mode rainbow row colors (pastel shades). */
 const lightRowColors = [
-  "#EF9A9A",
-  "#FFCC80",
   "#FFF176",
   "#A5D6A7",
   "#90CAF9",
   "#B39DDB",
   "#CE93D8",
+  "#EF9A9A",
+  "#FFCC80",
 ] as const;
 
 /** Dark-mode rainbow row colors (deep Material shades). */
 const darkRowColors = [
-  "#C62828",
-  "#E65100",
-  "#F9A825",
-  "#2E7D32",
-  "#1565C0",
-  "#4527A0",
-  "#6A1B9A",
+  "#D4A03A",
+  "#3D7A42",
+  "#3570A8",
+  "#55399A",
+  "#6E3590",
+  "#A63838",
+  "#C06025",
 ] as const;
 
 /** Monochrome row colors (shades of gray). */

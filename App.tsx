@@ -13,7 +13,6 @@ import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { StatusBar } from "expo-status-bar";
 import * as Updates from "expo-updates";
-import { identifyDevice, vexo } from "vexo-analytics";
 
 import {
   AppInfoModal,
@@ -47,7 +46,9 @@ const SPLASH_DURATION_MS = 2000;
 const APP_LABEL = (Constants.expoConfig?.extra?.appLabel as string) ?? "";
 
 if (!__DEV__) {
-  vexo("5febe5d7-f01f-4716-ba33-d3c0b33794c8");
+  void import("vexo-analytics").then(({ vexo }) =>
+    vexo("5febe5d7-f01f-4716-ba33-d3c0b33794c8"),
+  );
 }
 
 /** Root component that wraps AppContent with ThemeProvider. */
@@ -145,7 +146,9 @@ function AppContent({ loadThemePreference }: AppContentProps) {
 
       if (!__DEV__) {
         if (deviceId) {
-          identifyDevice(deviceId);
+          void import("vexo-analytics").then(({ identifyDevice }) =>
+            identifyDevice(deviceId),
+          );
         }
         Updates.checkForUpdateAsync()
           .then(async (update) => {

@@ -48,11 +48,11 @@ eas update --channel production --message "description of changes"
 
 Available channels (defined in `eas.json`):
 
-| Channel        | Build Profile   | Use Case                          |
-| -------------- | --------------- | --------------------------------- |
-| `development`  | `development`   | Dev client testing                |
-| `preview`      | `preview`       | Internal testers / TestFlight     |
-| `production`   | `production`    | Live app store users              |
+| Channel       | Build Profile | Use Case                      |
+|---------------|---------------|-------------------------------|
+| `development` | `development` | Dev client testing            |
+| `preview`     | `preview`     | Internal testers / TestFlight |
+| `production`  | `production`  | Live app store users          |
 
 ### Updating Latest Build Info
 
