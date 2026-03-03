@@ -20,6 +20,10 @@ jest.mock("expo-clipboard", () => ({
   setStringAsync: jest.fn().mockResolvedValue(true),
 }));
 
+jest.mock("expo-crypto", () => ({
+  randomUUID: () => globalThis.crypto.randomUUID(),
+}));
+
 jest.mock("vexo-analytics", () => ({
   vexo: jest.fn(),
   identifyDevice: jest.fn().mockResolvedValue(undefined),

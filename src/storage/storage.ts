@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Crypto from "expo-crypto";
 
 /** A single gestation tracking entry. */
 export interface Entry {
@@ -38,7 +39,7 @@ export const getOrCreateDeviceId = async (): Promise<string> => {
   if (existing) {
     return existing;
   }
-  const id = crypto.randomUUID();
+  const id = Crypto.randomUUID();
   await AsyncStorage.setItem(DEVICE_ID_KEY, id);
   return id;
 };
