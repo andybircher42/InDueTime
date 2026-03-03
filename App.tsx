@@ -73,6 +73,11 @@ function AppContent({ loadThemePreference }: AppContentProps) {
   const [showAppInfo, setShowAppInfo] = useState(false);
   const [pickerAnchor, setPickerAnchor] = useState({ top: 0, right: 0 });
   const settingsRef = useRef<View>(null);
+  const isLoadingRef = useRef(true);
+
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
 
   const isDark = resolvedTheme === "dark";
   const splashLogo = isDark ? splashLogoDark : splashLogoLight;
@@ -140,6 +145,9 @@ function AppContent({ loadThemePreference }: AppContentProps) {
           .then(async (update) => {
             if (update.isAvailable) {
               await Updates.fetchUpdateAsync();
+              if (isLoadingRef.current) {
+                await Updates.reloadAsync();
+              }
             }
           })
           .catch((e) => console.error("Failed to check for updates", e));

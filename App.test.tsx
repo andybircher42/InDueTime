@@ -10,6 +10,12 @@ import {
 import * as storage from "@/storage";
 
 import App from "./App";
+
+const Updates = jest.requireMock<{
+  checkForUpdateAsync: jest.Mock;
+  fetchUpdateAsync: jest.Mock;
+  reloadAsync: jest.Mock;
+}>("expo-updates");
 import headerLogoLight from "./assets/icon.png";
 import headerLogoDark from "./assets/icon-dark.png";
 import splashBgDark from "./assets/splash-bg-dark.png";
@@ -299,6 +305,73 @@ describe("App", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("app-bg").props.source).toBe(splashBgLight);
+    });
+  });
+
+  describe("OTA update during splash", () => {
+    beforeEach(() => {
+      (globalThis as any).__DEV__ = false;
+      Updates.checkForUpdateAsync.mockReset();
+      Updates.fetchUpdateAsync.mockReset();
+      Updates.reloadAsync.mockReset();
+    });
+
+    afterEach(() => {
+      (globalThis as any).__DEV__ = true;
+    });
+
+    it("reloads if update is fetched while still on splash screen", async () => {
+      Updates.checkForUpdateAsync.mockResolvedValue({ isAvailable: true });
+      Updates.fetchUpdateAsync.mockResolvedValue({});
+      Updates.reloadAsync.mockResolvedValue(undefined);
+
+      render(<App />);
+
+      await waitFor(() => {
+        expect(Updates.reloadAsync).toHaveBeenCalled();
+      });
+    });
+
+    it("does not reload if update finishes after splash screen ends", async () => {
+      let resolveFetch!: () => void;
+      Updates.checkForUpdateAsync.mockResolvedValue({ isAvailable: true });
+      Updates.fetchUpdateAsync.mockImplementation(
+        () => new Promise<void>((resolve) => { resolveFetch = resolve; }),
+      );
+
+      render(<App />);
+
+      await waitFor(() => {
+        expect(Updates.fetchUpdateAsync).toHaveBeenCalled();
+      });
+
+      // Advance past splash screen before resolving the fetch
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      await act(async () => {
+        resolveFetch();
+      });
+
+      expect(Updates.reloadAsync).not.toHaveBeenCalled();
+    });
+
+    it("does not fetch or reload when no update is available", async () => {
+      Updates.checkForUpdateAsync.mockResolvedValue({ isAvailable: false });
+
+      render(<App />);
+
+      await waitFor(() => {
+        expect(Updates.checkForUpdateAsync).toHaveBeenCalled();
+      });
+
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(Updates.fetchUpdateAsync).not.toHaveBeenCalled();
+      expect(Updates.reloadAsync).not.toHaveBeenCalled();
     });
   });
 });
