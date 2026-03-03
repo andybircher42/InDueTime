@@ -2,6 +2,13 @@ import { useCallback, useState } from "react";
 
 import { Entry, loadEntriesSafe, saveEntries } from "@/storage";
 
+let idCounter = 0;
+
+/** Generates a unique ID using timestamp + counter to avoid collisions on rapid calls. */
+function generateId(): string {
+  return `${Date.now()}-${idCounter++}`;
+}
+
 /**
  * Manages entry CRUD operations, persistence, and undo state.
  * Call `load()` during app init to hydrate entries from storage.
@@ -31,7 +38,7 @@ export default function useEntries() {
   const add = useCallback(
     ({ name, dueDate }: { name: string; dueDate: string }) => {
       const entry: Entry = {
-        id: Date.now().toString(),
+        id: generateId(),
         name,
         dueDate,
       };

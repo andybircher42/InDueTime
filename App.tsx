@@ -242,7 +242,7 @@ function createStyles(colors: ColorTokens) {
     header: {
       flexDirection: "row",
       alignItems: "center",
-      paddingTop: 60,
+      paddingTop: (Constants.statusBarHeight ?? 0) + 16,
       paddingBottom: 16,
       paddingHorizontal: 20,
       backgroundColor: colors.contentBackground,
