@@ -15,11 +15,11 @@ export default function useEntries() {
   const [discardedCount, setDiscardedCount] = useState(0);
 
   /** Persists entries to AsyncStorage with error logging. */
-  const persistEntries = (updated: Entry[]) => {
+  const persistEntries = useCallback((updated: Entry[]) => {
     saveEntries(updated).catch((e) =>
       console.error("Failed to save entries", e),
     );
-  };
+  }, []);
 
   /** Hydrates entries from AsyncStorage. Call once during app initialization. */
   const load = useCallback(async () => {
@@ -28,37 +28,52 @@ export default function useEntries() {
     setDiscardedCount(result.discardedCount);
   }, []);
 
-  const add = ({ name, dueDate }: { name: string; dueDate: string }) => {
-    const entry: Entry = {
-      id: Date.now().toString(),
-      name,
-      dueDate,
-    };
-    const newEntries = [entry, ...entries];
-    setEntries(newEntries);
-    persistEntries(newEntries);
-  };
+  const add = useCallback(
+    ({ name, dueDate }: { name: string; dueDate: string }) => {
+      const entry: Entry = {
+        id: Date.now().toString(),
+        name,
+        dueDate,
+      };
+      setEntries((prev) => {
+        const updated = [entry, ...prev];
+        persistEntries(updated);
+        return updated;
+      });
+    },
+    [persistEntries],
+  );
 
-  const remove = (id: string) => {
-    const entry = entries.find((e) => e.id === id);
-    const newEntries = entries.filter((e) => e.id !== id);
-    setEntries(newEntries);
-    persistEntries(newEntries);
-    if (entry) {
-      setDeletedEntry({ entry, previousEntries: entries });
-    }
-  };
+  const remove = useCallback(
+    (id: string) => {
+      setEntries((prev) => {
+        const entry = prev.find((e) => e.id === id);
+        const updated = prev.filter((e) => e.id !== id);
+        persistEntries(updated);
+        if (entry) {
+          setDeletedEntry({ entry, previousEntries: prev });
+        }
+        return updated;
+      });
+    },
+    [persistEntries],
+  );
 
-  const removeAll = () => {
+  const removeAll = useCallback(() => {
     setEntries([]);
     persistEntries([]);
-  };
+  }, [persistEntries]);
 
-  const seed = (seeded: Entry[]) => {
-    const newEntries = [...seeded, ...entries];
-    setEntries(newEntries);
-    persistEntries(newEntries);
-  };
+  const seed = useCallback(
+    (seeded: Entry[]) => {
+      setEntries((prev) => {
+        const updated = [...seeded, ...prev];
+        persistEntries(updated);
+        return updated;
+      });
+    },
+    [persistEntries],
+  );
 
   const undo = useCallback(() => {
     if (deletedEntry) {
@@ -66,7 +81,7 @@ export default function useEntries() {
       persistEntries(deletedEntry.previousEntries);
       setDeletedEntry(null);
     }
-  }, [deletedEntry]);
+  }, [deletedEntry, persistEntries]);
 
   const dismissUndo = useCallback(() => {
     setDeletedEntry(null);
