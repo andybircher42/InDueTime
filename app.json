@@ -30,17 +30,21 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-asset", "@react-native-community/datetimepicker"],
-    "extra": {
-      "eas": {
-        "projectId": "5fbbef43-f21b-4acd-baf9-1038201de299"
-      }
-    },
+    "plugins": [
+      "expo-asset",
+      "@react-native-community/datetimepicker"
+    ],
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/5fbbef43-f21b-4acd-baf9-1038201de299"
-    }
+      "url": "https://u.expo.dev/4d065921-dd8c-4b05-88c3-3a8b2bfa13f7"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4d065921-dd8c-4b05-88c3-3a8b2bfa13f7"
+      }
+    },
+    "owner": "andybircher"
   }
 }
