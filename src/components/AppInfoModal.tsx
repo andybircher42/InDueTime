@@ -1,6 +1,14 @@
 import { useMemo } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import Constants from "expo-constants";
+import * as Updates from "expo-updates";
 
 import { ColorTokens, useTheme } from "@/theme";
 
@@ -30,7 +38,15 @@ export default function AppInfoModal({ visible, onClose }: AppInfoModalProps) {
           <Text style={styles.modalTitle}>About</Text>
           <Text style={styles.appName}>{appName}</Text>
           <Text style={styles.versionText}>Version {appVersion}</Text>
-          <Text style={styles.buildText}>Build {buildId.slice(0, 8)}</Text>
+          <Text style={styles.detailText}>Build {buildId.slice(0, 8)}</Text>
+          {Updates.updateId != null && (
+            <Text style={styles.detailText}>
+              Update {Updates.updateId.slice(0, 8)}
+            </Text>
+          )}
+          <Text style={[styles.detailText, styles.lastDetail]}>
+            {Platform.OS === "ios" ? "iOS" : "Android"} {Platform.Version}
+          </Text>
           <Pressable
             style={styles.closeButton}
             onPress={onClose}
@@ -79,9 +95,12 @@ function createStyles(colors: ColorTokens) {
       color: colors.textModal,
       marginBottom: 4,
     },
-    buildText: {
+    detailText: {
       fontSize: 13,
       color: colors.textTertiary,
+      marginBottom: 4,
+    },
+    lastDetail: {
       marginBottom: 20,
     },
     closeButton: {

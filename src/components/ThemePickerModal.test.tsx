@@ -72,6 +72,7 @@ describe("ThemePickerModal", () => {
     const url = spy.mock.calls[0][0] as string;
     expect(url).toContain("docs.google.com/forms");
     expect(url).toContain("entry.1845428880=");
+    expect(url).toContain("entry.765646897=");
     expect(onClose).toHaveBeenCalledTimes(1);
     spy.mockRestore();
   });

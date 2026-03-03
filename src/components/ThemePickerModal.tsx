@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
+import * as Updates from "expo-updates";
 
 import { ColorTokens, ThemeMode, useTheme } from "@/theme";
 
@@ -25,12 +26,25 @@ interface ThemePickerModalProps {
 const BUG_REPORT_BASE_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSd3VdvE17NHIR7qQD8Ams10nBgAgf1n0JQ1mvWUUFKf7C3Z-w/viewform";
 
-/** Builds the bug report URL with the app version and build ID pre-filled. */
+/** Builds the bug report URL with app version and OS version pre-filled. */
 function buildBugReportUrl(): string {
   const version = Constants.expoConfig?.version ?? "unknown";
   const buildId = (Constants.expoConfig?.extra?.easBuildId as string) || "";
-  const appVersion = `${version} (${buildId.slice(0, 8)})`;
-  return `${BUG_REPORT_BASE_URL}?entry.1845428880=${encodeURIComponent(appVersion)}`;
+  const updateId = Updates.updateId;
+
+  let appVersion = `${version} (${buildId.slice(0, 8)})`;
+  if (updateId != null) {
+    appVersion += ` update:${updateId.slice(0, 8)}`;
+  }
+
+  const osName = Platform.OS === "ios" ? "iOS" : "Android";
+  const osVersion = `${osName} ${Platform.Version}`;
+
+  const params = new URLSearchParams({
+    "entry.1845428880": appVersion,
+    "entry.765646897": osVersion,
+  });
+  return `${BUG_REPORT_BASE_URL}?${params.toString()}`;
 }
 const FEATURE_REQUEST_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSeLS03h_8s3t0-IYXM04UjVv2fAhH37i2n56fPHB83OuHaQhw/viewform";

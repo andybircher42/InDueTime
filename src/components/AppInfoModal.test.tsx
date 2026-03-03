@@ -12,6 +12,7 @@ describe("AppInfoModal", () => {
     expect(screen.getByText("in due time")).toBeTruthy();
     expect(screen.getByText(/Version/)).toBeTruthy();
     expect(screen.getByText(/Build/)).toBeTruthy();
+    expect(screen.getByText(/Android|iOS/)).toBeTruthy();
   });
 
   it("calls onClose when Close button is pressed", () => {
