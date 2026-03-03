@@ -12,6 +12,8 @@ import * as storage from "@/storage";
 import App from "./App";
 import headerLogoLight from "./assets/icon.png";
 import headerLogoDark from "./assets/icon-dark.png";
+import splashBgDark from "./assets/splash-bg-dark.png";
+import splashBgLight from "./assets/splash-bg-light.png";
 import splashLogoLight from "./assets/splash-icon.png";
 import splashLogoDark from "./assets/splash-icon-dark.png";
 
@@ -246,6 +248,33 @@ describe("App", () => {
       expect(screen.getByTestId("splash-logo").props.source).toBe(
         splashLogoLight,
       );
+    });
+  });
+
+  it("uses dark splash background in dark mode", async () => {
+    await AsyncStorage.setItem("@theme_mode", "dark");
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("splash-bg").props.source).toBe(splashBgDark);
+    });
+  });
+
+  it("uses light splash background in light mode", async () => {
+    await AsyncStorage.setItem("@theme_mode", "light");
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("splash-bg").props.source).toBe(splashBgLight);
+    });
+  });
+
+  it("uses light splash background in mono mode", async () => {
+    await AsyncStorage.setItem("@theme_mode", "mono");
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("splash-bg").props.source).toBe(splashBgLight);
     });
   });
 });

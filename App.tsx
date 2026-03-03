@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -28,6 +29,8 @@ import { ColorTokens, ThemeProvider, useTheme } from "@/theme";
 
 import headerLogoLight from "./assets/icon.png";
 import headerLogoDark from "./assets/icon-dark.png";
+import splashBgDark from "./assets/splash-bg-dark.png";
+import splashBgLight from "./assets/splash-bg-light.png";
 import splashLogoLight from "./assets/splash-icon.png";
 import splashLogoDark from "./assets/splash-icon-dark.png";
 
@@ -61,6 +64,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
 
   const isDark = resolvedTheme === "dark";
   const splashLogo = isDark ? splashLogoDark : splashLogoLight;
+  const splashBg = isDark ? splashBgDark : splashBgLight;
   const headerLogo = isDark ? headerLogoDark : headerLogoLight;
 
   const openThemePicker = useCallback(() => {
@@ -144,7 +148,12 @@ function AppContent({ loadThemePreference }: AppContentProps) {
 
   if (isLoading) {
     return (
-      <View style={styles.splashContainer}>
+      <ImageBackground
+        source={splashBg}
+        resizeMode="cover"
+        style={styles.splashContainer}
+        testID="splash-bg"
+      >
         <Image
           source={splashLogo}
           style={styles.splashLogo}
@@ -152,7 +161,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
           testID="splash-logo"
         />
         <StatusBar style="auto" />
-      </View>
+      </ImageBackground>
     );
   }
 
@@ -236,7 +245,6 @@ function createStyles(colors: ColorTokens) {
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: colors.splashBackground,
     },
     splashLogo: {
       width: 280,
