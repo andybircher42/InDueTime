@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { computeGestationalAge } from "../util/gestationalAge";
-import { toISODateString } from "../util/dateUtils";
-import { Entry } from "../storage";
+
+import { Entry } from "@/storage";
+import { toISODateString } from "@/util/dateUtils";
+import { computeGestationalAge } from "@/util/gestationalAge";
 
 interface DevToolbarProps {
   onSeedData: (entries: Entry[]) => void;
@@ -9,12 +10,36 @@ interface DevToolbarProps {
 }
 
 const FIRST_NAMES = [
-  "Olivia", "Emma", "Ava", "Sophia", "Isabella",
-  "Mia", "Charlotte", "Amelia", "Harper", "Evelyn",
-  "Luna", "Camila", "Aria", "Scarlett", "Penelope",
-  "Layla", "Chloe", "Victoria", "Madison", "Eleanor",
-  "Grace", "Nora", "Riley", "Zoey", "Hannah",
-  "Hazel", "Lily", "Ellie", "Violet", "Aurora",
+  "Olivia",
+  "Emma",
+  "Ava",
+  "Sophia",
+  "Isabella",
+  "Mia",
+  "Charlotte",
+  "Amelia",
+  "Harper",
+  "Evelyn",
+  "Luna",
+  "Camila",
+  "Aria",
+  "Scarlett",
+  "Penelope",
+  "Layla",
+  "Chloe",
+  "Victoria",
+  "Madison",
+  "Eleanor",
+  "Grace",
+  "Nora",
+  "Riley",
+  "Zoey",
+  "Hannah",
+  "Hazel",
+  "Lily",
+  "Ellie",
+  "Violet",
+  "Aurora",
 ];
 
 function pickRandom<T>(arr: T[], count: number): T[] {

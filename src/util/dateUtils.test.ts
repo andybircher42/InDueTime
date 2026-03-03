@@ -1,7 +1,7 @@
 import {
   expandTwoDigitYear,
-  getDateError,
   getDateBounds,
+  getDateError,
   parseDateText,
 } from "./dateUtils";
 

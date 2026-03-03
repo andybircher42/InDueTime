@@ -6,7 +6,8 @@ import {
   StyleSheet,
   Text,
 } from "react-native";
-import { Entry } from "../storage";
+
+import { Entry } from "@/storage";
 
 interface UndoToastProps {
   entry: Entry;
@@ -19,14 +20,17 @@ const TOAST_DURATION_MS = 5000;
 const SWIPE_THRESHOLD = 30;
 
 /** Toast shown after deleting an entry, allowing the user to undo the deletion. */
-export default function UndoToast({ entry, onUndo, onDismiss }: UndoToastProps) {
+export default function UndoToast({
+  entry,
+  onUndo,
+  onDismiss,
+}: UndoToastProps) {
   const translateY = useRef(new Animated.Value(0)).current;
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gestureState) =>
-        gestureState.dy > 5,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 5,
       onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
           translateY.setValue(gestureState.dy);
@@ -63,7 +67,11 @@ export default function UndoToast({ entry, onUndo, onDismiss }: UndoToastProps) 
       <Text style={styles.message}>
         Deleted {entry.name} ({entry.weeks}w {entry.days}d)
       </Text>
-      <Pressable onPress={onUndo} style={styles.undoButton} accessibilityRole="button">
+      <Pressable
+        onPress={onUndo}
+        style={styles.undoButton}
+        accessibilityRole="button"
+      >
         <Text style={styles.undoText}>Undo</Text>
       </Pressable>
     </Animated.View>

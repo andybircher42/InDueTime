@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
+
 import HipaaAgreementModal from "./HipaaAgreementModal";
 
 describe("HipaaAgreementModal", () => {

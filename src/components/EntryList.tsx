@@ -10,7 +10,8 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Entry } from "../storage";
+
+import { Entry } from "@/storage";
 
 type SortBy = "dueDate" | "name";
 type SortDir = "asc" | "desc";
@@ -92,7 +93,11 @@ function EntryRow({ item, onDelete }: EntryRowProps) {
 }
 
 /** Scrollable list of gestation entries with swipe-to-delete support. */
-export default function EntryList({ entries, onDelete, onDeleteAll }: EntryListProps) {
+export default function EntryList({
+  entries,
+  onDelete,
+  onDeleteAll,
+}: EntryListProps) {
   const [sortBy, setSortBy] = useState<SortBy>("dueDate");
   const [sortDir, setSortDir] = useState<SortDir>(DEFAULT_DIR.dueDate);
 
@@ -118,11 +123,13 @@ export default function EntryList({ entries, onDelete, onDeleteAll }: EntryListP
       });
     } else {
       copy.sort((a, b) => {
-        const nameDiff = a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+        const nameDiff = a.name.localeCompare(b.name, undefined, {
+          sensitivity: "base",
+        });
         if (nameDiff !== 0) {
           return dir * nameDiff;
         }
-        return (b.weeks * 7 + b.days) - (a.weeks * 7 + a.days);
+        return b.weeks * 7 + b.days - (a.weeks * 7 + a.days);
       });
     }
     return copy;
@@ -147,7 +154,8 @@ export default function EntryList({ entries, onDelete, onDeleteAll }: EntryListP
                   sortBy === "dueDate" && styles.sortTextActive,
                 ]}
               >
-                Due Date {sortBy === "dueDate" && (sortDir === "asc" ? "↑" : "↓")}
+                Due Date{" "}
+                {sortBy === "dueDate" && (sortDir === "asc" ? "↑" : "↓")}
               </Text>
             </Pressable>
             <Pressable
@@ -176,7 +184,11 @@ export default function EntryList({ entries, onDelete, onDeleteAll }: EntryListP
                 "Are you sure you want to delete all entries?",
                 [
                   { text: "Cancel", style: "cancel" },
-                  { text: "Delete", style: "destructive", onPress: onDeleteAll },
+                  {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: onDeleteAll,
+                  },
                 ],
               )
             }

@@ -1,6 +1,8 @@
-import { render, screen, fireEvent, act } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
+
+import { Entry } from "@/storage";
+
 import UndoToast from "./UndoToast";
-import { Entry } from "../storage";
 
 const mockEntry: Entry = {
   id: "1",

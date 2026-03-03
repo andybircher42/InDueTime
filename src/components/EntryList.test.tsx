@@ -1,7 +1,9 @@
-import { render, screen, fireEvent } from "@testing-library/react-native";
 import { Alert } from "react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
+
+import { Entry } from "@/storage";
+
 import EntryList from "./EntryList";
-import { Entry } from "../storage";
 
 /** Creates a test entry with a default dueDate. */
 function makeEntry(fields: Omit<Entry, "dueDate">): Entry {
@@ -10,13 +12,23 @@ function makeEntry(fields: Omit<Entry, "dueDate">): Entry {
 
 describe("EntryList", () => {
   it('shows "No entries yet" when empty', () => {
-    render(<EntryList entries={[]} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList entries={[]} onDelete={jest.fn()} onDeleteAll={jest.fn()} />,
+    );
     expect(screen.getByText("No entries yet")).toBeTruthy();
   });
 
   it("renders entry name and formatted age", () => {
-    const entries = [makeEntry({ id: "1", name: "Baby A", weeks: 12, days: 3 })];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    const entries = [
+      makeEntry({ id: "1", name: "Baby A", weeks: 12, days: 3 }),
+    ];
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     expect(screen.getByText("Baby A")).toBeTruthy();
     expect(screen.getByText("12w 3d")).toBeTruthy();
@@ -24,14 +36,26 @@ describe("EntryList", () => {
 
   it("renders singular values", () => {
     const entries = [makeEntry({ id: "1", name: "Baby", weeks: 1, days: 1 })];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     expect(screen.getByText("1w 1d")).toBeTruthy();
   });
 
   it("renders zero values", () => {
     const entries = [makeEntry({ id: "1", name: "Baby", weeks: 0, days: 0 })];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     expect(screen.getByText("0w 0d")).toBeTruthy();
   });
@@ -39,7 +63,13 @@ describe("EntryList", () => {
   it("calls onDelete with correct id", () => {
     const onDelete = jest.fn();
     const entries = [makeEntry({ id: "abc", name: "Baby", weeks: 5, days: 2 })];
-    render(<EntryList entries={entries} onDelete={onDelete} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={onDelete}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     fireEvent.press(screen.getByText("✕"));
     expect(onDelete).toHaveBeenCalledWith("abc");
@@ -51,7 +81,13 @@ describe("EntryList", () => {
       makeEntry({ id: "2", name: "Baby B", weeks: 20, days: 5 }),
       makeEntry({ id: "3", name: "Baby C", weeks: 35, days: 2 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     expect(screen.getByText("Baby A")).toBeTruthy();
     expect(screen.getByText("Baby B")).toBeTruthy();
@@ -64,7 +100,13 @@ describe("EntryList", () => {
       makeEntry({ id: "2", name: "Old", weeks: 35, days: 2 }),
       makeEntry({ id: "3", name: "Middle", weeks: 20, days: 5 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     const names = screen.getAllByText(/Young|Old|Middle/);
     expect(names[0]).toHaveTextContent("Old");
@@ -78,7 +120,13 @@ describe("EntryList", () => {
       makeEntry({ id: "2", name: "Old", weeks: 35, days: 2 }),
       makeEntry({ id: "3", name: "Middle", weeks: 20, days: 5 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     fireEvent.press(screen.getByText(/Due Date/));
 
@@ -94,7 +142,13 @@ describe("EntryList", () => {
       makeEntry({ id: "2", name: "Alice", weeks: 35, days: 2 }),
       makeEntry({ id: "3", name: "Bob", weeks: 20, days: 5 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     fireEvent.press(screen.getByText("Name"));
 
@@ -110,7 +164,13 @@ describe("EntryList", () => {
       makeEntry({ id: "2", name: "Alice", weeks: 35, days: 2 }),
       makeEntry({ id: "3", name: "Bob", weeks: 20, days: 5 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     fireEvent.press(screen.getByText("Name"));
     fireEvent.press(screen.getByText(/Name/));
@@ -127,7 +187,13 @@ describe("EntryList", () => {
       makeEntry({ id: "2", name: "Alice", weeks: 35, days: 2 }),
       makeEntry({ id: "3", name: "Bob", weeks: 20, days: 5 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     // Toggle due date to ascending
     fireEvent.press(screen.getByText(/Due Date/));
@@ -150,7 +216,13 @@ describe("EntryList", () => {
 
   it("shows direction arrow on active sort button", () => {
     const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     // Default: due date descending
     expect(screen.getByText(/Due Date ↓/)).toBeTruthy();
@@ -174,7 +246,13 @@ describe("EntryList", () => {
       makeEntry({ id: "2", name: "Alice", weeks: 20, days: 0 }),
       makeEntry({ id: "3", name: "Bob", weeks: 20, days: 0 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     const names = screen.getAllByText(/Alice|Bob|Charlie/);
     expect(names[0]).toHaveTextContent("Alice");
@@ -188,7 +266,13 @@ describe("EntryList", () => {
       makeEntry({ id: "2", name: "Alice", weeks: 20, days: 0 }),
       makeEntry({ id: "3", name: "Bob", weeks: 20, days: 0 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     // Toggle due date to ascending
     fireEvent.press(screen.getByText(/Due Date/));
@@ -205,7 +289,13 @@ describe("EntryList", () => {
       makeEntry({ id: "2", name: "Sam", weeks: 30, days: 0 }),
       makeEntry({ id: "3", name: "Sam", weeks: 20, days: 0 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     fireEvent.press(screen.getByText("Name"));
 
@@ -221,7 +311,13 @@ describe("EntryList", () => {
       makeEntry({ id: "2", name: "Sam", weeks: 30, days: 0 }),
       makeEntry({ id: "3", name: "Sam", weeks: 20, days: 0 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     fireEvent.press(screen.getByText("Name"));
     fireEvent.press(screen.getByText(/Name/));
@@ -233,7 +329,9 @@ describe("EntryList", () => {
   });
 
   it("does not show sort controls when list is empty", () => {
-    render(<EntryList entries={[]} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList entries={[]} onDelete={jest.fn()} onDeleteAll={jest.fn()} />,
+    );
 
     expect(screen.queryByText(/Due Date/)).toBeNull();
     expect(screen.queryByText(/Name/)).toBeNull();
@@ -242,7 +340,13 @@ describe("EntryList", () => {
 
   it("shows Delete All button when entries exist", () => {
     const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     expect(screen.getByText("Delete All")).toBeTruthy();
   });
@@ -250,7 +354,13 @@ describe("EntryList", () => {
   it("shows confirmation dialog when Delete All is pressed", () => {
     const alertSpy = jest.spyOn(Alert, "alert");
     const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     fireEvent.press(screen.getByText("Delete All"));
 
@@ -266,12 +376,21 @@ describe("EntryList", () => {
     const alertSpy = jest.spyOn(Alert, "alert");
     const onDeleteAll = jest.fn();
     const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={onDeleteAll} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={onDeleteAll}
+      />,
+    );
 
     fireEvent.press(screen.getByText("Delete All"));
 
     // Simulate pressing the "Delete" button in the alert
-    const buttons = alertSpy.mock.calls[0][2] as Array<{ text: string; onPress?: () => void }>;
+    const buttons = alertSpy.mock.calls[0][2] as Array<{
+      text: string;
+      onPress?: () => void;
+    }>;
     const deleteButton = buttons.find((b) => b.text === "Delete");
     deleteButton?.onPress?.();
 
@@ -283,12 +402,21 @@ describe("EntryList", () => {
     const alertSpy = jest.spyOn(Alert, "alert");
     const onDeleteAll = jest.fn();
     const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={onDeleteAll} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={onDeleteAll}
+      />,
+    );
 
     fireEvent.press(screen.getByText("Delete All"));
 
     // Simulate pressing the "Cancel" button in the alert
-    const buttons = alertSpy.mock.calls[0][2] as Array<{ text: string; onPress?: () => void }>;
+    const buttons = alertSpy.mock.calls[0][2] as Array<{
+      text: string;
+      onPress?: () => void;
+    }>;
     const cancelButton = buttons.find((b) => b.text === "Cancel");
     cancelButton?.onPress?.();
 
@@ -298,7 +426,13 @@ describe("EntryList", () => {
 
   it("renders delete background behind entry rows", () => {
     const entries = [makeEntry({ id: "1", name: "Baby", weeks: 10, days: 0 })];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     expect(screen.getByTestId("delete-background")).toBeTruthy();
   });
@@ -308,7 +442,13 @@ describe("EntryList", () => {
       makeEntry({ id: "1", name: "Baby A", weeks: 10, days: 0 }),
       makeEntry({ id: "2", name: "Baby B", weeks: 20, days: 5 }),
     ];
-    render(<EntryList entries={entries} onDelete={jest.fn()} onDeleteAll={jest.fn()} />);
+    render(
+      <EntryList
+        entries={entries}
+        onDelete={jest.fn()}
+        onDeleteAll={jest.fn()}
+      />,
+    );
 
     expect(screen.getAllByTestId("delete-background")).toHaveLength(2);
   });

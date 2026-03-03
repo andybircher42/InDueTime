@@ -1,10 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import {
-  loadEntries,
-  saveEntries,
-  checkAgreement,
   acceptAgreement,
+  checkAgreement,
+  loadEntries,
   resetAgreement,
+  saveEntries,
 } from "./storage";
 
 beforeEach(() => {

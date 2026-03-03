@@ -1,11 +1,12 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
+  act,
+  fireEvent,
   render,
   screen,
-  fireEvent,
   waitFor,
-  act,
 } from "@testing-library/react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import App from "./App";
 
 jest.mock("expo-status-bar", () => ({
@@ -44,19 +45,20 @@ async function renderApp() {
 }
 
 describe("App", () => {
-  it("shows loading screen with logo on launch", () => {
+  // First render pays module-compilation cost; needs extended timeout.
+  it("shows splash then renders title after loading", async () => {
     render(<App />);
     expect(screen.getByTestId("splash-logo")).toBeTruthy();
     expect(screen.queryByText("in due time")).toBeNull();
-  });
 
-  it("renders the title after loading", async () => {
-    await renderApp();
+    await act(async () => {
+      jest.advanceTimersByTime(2000);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("in due time")).toBeTruthy();
     });
-  });
+  }, 20_000);
 
   it("shows HIPAA agreement on first launch", async () => {
     await renderApp();

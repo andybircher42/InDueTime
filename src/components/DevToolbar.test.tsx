@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
+
 import DevToolbar, { generateSeedEntries } from "./DevToolbar";
 
 describe("generateSeedEntries", () => {
@@ -66,9 +67,7 @@ describe("generateSeedEntries", () => {
 
 describe("DevToolbar", () => {
   it("renders Seed Data and Reset HIPAA buttons", () => {
-    render(
-      <DevToolbar onSeedData={jest.fn()} onResetAgreement={jest.fn()} />,
-    );
+    render(<DevToolbar onSeedData={jest.fn()} onResetAgreement={jest.fn()} />);
 
     expect(screen.getByText("Seed Data")).toBeTruthy();
     expect(screen.getByText("Reset HIPAA")).toBeTruthy();
@@ -76,9 +75,7 @@ describe("DevToolbar", () => {
 
   it("calls onSeedData with entries when Seed Data is pressed", () => {
     const onSeedData = jest.fn();
-    render(
-      <DevToolbar onSeedData={onSeedData} onResetAgreement={jest.fn()} />,
-    );
+    render(<DevToolbar onSeedData={onSeedData} onResetAgreement={jest.fn()} />);
 
     fireEvent.press(screen.getByText("Seed Data"));
 

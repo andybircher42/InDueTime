@@ -1,6 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
-import { StatusBar } from "expo-status-bar";
-import * as Updates from "expo-updates";
+import { useEffect, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -9,20 +7,16 @@ import {
   Text,
   View,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import * as Updates from "expo-updates";
 
-import DevToolbar from "./src/components/DevToolbar";
-import EntryForm from "./src/components/EntryForm";
-import EntryList from "./src/components/EntryList";
-import UndoToast from "./src/components/UndoToast";
-import HipaaAgreementModal from "./src/components/HipaaAgreementModal";
-import {
-  Entry,
-  loadEntries,
-  saveEntries,
-  checkAgreement,
-  acceptAgreement,
-  resetAgreement,
-} from "./src/storage";
+import DevToolbar from "@/components/DevToolbar";
+import EntryForm from "@/components/EntryForm";
+import EntryList from "@/components/EntryList";
+import HipaaAgreementModal from "@/components/HipaaAgreementModal";
+import UndoToast from "@/components/UndoToast";
+import useEntries from "@/hooks/useEntries";
+import { acceptAgreement, checkAgreement, resetAgreement } from "@/storage";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const splashLogo = require("./assets/splash-icon.png");
@@ -31,16 +25,22 @@ const headerLogo = require("./assets/icon.png");
 
 const SPLASH_DURATION_MS = 2000;
 
-/** Root component that manages entries state, persistence, and the HIPAA agreement flow. */
+/** Root component that manages the HIPAA agreement flow and delegates entry state to useEntries. */
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [entries, setEntries] = useState<Entry[]>([]);
   const [showAgreement, setShowAgreement] = useState(false);
   const [agreementLoaded, setAgreementLoaded] = useState(false);
-  const [deletedEntry, setDeletedEntry] = useState<{
-    entry: Entry;
-    previousEntries: Entry[];
-  } | null>(null);
+  const {
+    entries,
+    deletedEntry,
+    load,
+    add,
+    remove,
+    removeAll,
+    seed,
+    undo,
+    dismissUndo,
+  } = useEntries();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), SPLASH_DURATION_MS);
@@ -54,9 +54,7 @@ export default function App() {
           console.error("Failed to check agreement", e);
           return true;
         }),
-        loadEntries()
-          .then(setEntries)
-          .catch((e) => console.error("Failed to load entries", e)),
+        load().catch((e) => console.error("Failed to load entries", e)),
       ]);
       if (!accepted) {
         setShowAgreement(true);
@@ -75,63 +73,7 @@ export default function App() {
       }
     }
     init();
-  }, []);
-
-  const handleAdd = ({
-    name,
-    weeks,
-    days,
-    dueDate,
-  }: {
-    name: string;
-    weeks: number;
-    days: number;
-    dueDate: string;
-  }) => {
-    const entry = {
-      id: Date.now().toString(),
-      name,
-      weeks,
-      days,
-      dueDate,
-    };
-    const newEntries = [entry, ...entries];
-    setEntries(newEntries);
-    saveEntries(newEntries).catch((e) =>
-      console.error("Failed to save entries", e),
-    );
-  };
-
-  const handleDelete = (id: string) => {
-    const entry = entries.find((e) => e.id === id);
-    const newEntries = entries.filter((e) => e.id !== id);
-    setEntries(newEntries);
-    saveEntries(newEntries).catch((e) =>
-      console.error("Failed to save entries", e),
-    );
-    if (entry) {
-      setDeletedEntry({ entry, previousEntries: entries });
-    }
-  };
-
-  const handleUndo = useCallback(() => {
-    if (deletedEntry) {
-      setEntries(deletedEntry.previousEntries);
-      saveEntries(deletedEntry.previousEntries).catch((e) =>
-        console.error("Failed to restore entries", e),
-      );
-      setDeletedEntry(null);
-    }
-  }, [deletedEntry]);
-
-  const handleDismissUndo = useCallback(() => {
-    setDeletedEntry(null);
-  }, []);
-
-  const handleDeleteAll = () => {
-    setEntries([]);
-    saveEntries([]).catch((e) => console.error("Failed to clear entries", e));
-  };
+  }, [load]);
 
   const handleAcceptAgreement = () => {
     acceptAgreement()
@@ -143,14 +85,6 @@ export default function App() {
     resetAgreement()
       .then(() => setShowAgreement(true))
       .catch((e) => console.error("Failed to reset agreement", e));
-  };
-
-  const handleSeedData = (seeded: Entry[]) => {
-    const newEntries = [...seeded, ...entries];
-    setEntries(newEntries);
-    saveEntries(newEntries).catch((e) =>
-      console.error("Failed to save seeded entries", e),
-    );
   };
 
   if (isLoading) {
@@ -181,18 +115,14 @@ export default function App() {
         <Text style={styles.title}>in due time</Text>
         {__DEV__ && (
           <DevToolbar
-            onSeedData={handleSeedData}
+            onSeedData={seed}
             onResetAgreement={handleResetAgreement}
           />
         )}
       </View>
 
-      <EntryForm onAdd={handleAdd} />
-      <EntryList
-        entries={entries}
-        onDelete={handleDelete}
-        onDeleteAll={handleDeleteAll}
-      />
+      <EntryForm onAdd={add} />
+      <EntryList entries={entries} onDelete={remove} onDeleteAll={removeAll} />
       <HipaaAgreementModal
         visible={showAgreement && agreementLoaded}
         onAccept={handleAcceptAgreement}
@@ -201,8 +131,8 @@ export default function App() {
       {deletedEntry && (
         <UndoToast
           entry={deletedEntry.entry}
-          onUndo={handleUndo}
-          onDismiss={handleDismissUndo}
+          onUndo={undo}
+          onDismiss={dismissUndo}
         />
       )}
 

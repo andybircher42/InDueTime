@@ -1,7 +1,9 @@
-import { render, screen, fireEvent } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
+
+import * as gestationalAge from "@/util/gestationalAge";
+import { computeDueDate } from "@/util/gestationalAge";
+
 import EntryForm from "./EntryForm";
-import * as gestationalAge from "../util/gestationalAge";
-import { computeDueDate } from "../util/gestationalAge";
 
 /** Helper: switch to Gestational Age mode (Due Date is the default). */
 function switchToWeeksDays() {

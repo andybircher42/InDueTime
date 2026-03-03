@@ -11,14 +11,15 @@ import {
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { computeDueDate, computeGestationalAge } from "../util/gestationalAge";
+
 import {
   formatDateInput,
   getDateBounds,
   getDateError,
   parseDateText,
   toISODateString,
-} from "../util/dateUtils";
+} from "@/util/dateUtils";
+import { computeDueDate, computeGestationalAge } from "@/util/gestationalAge";
 
 type InputMode = "weeksDays" | "dueDate";
 
