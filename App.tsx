@@ -48,29 +48,33 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    checkAgreement()
-      .then((accepted) => {
-        if (!accepted) {
-          setShowAgreement(true);
-        }
-      })
-      .catch((e) => console.error("Failed to check agreement", e))
-      .finally(() => setAgreementLoaded(true));
+    async function init() {
+      const [accepted] = await Promise.all([
+        checkAgreement().catch((e) => {
+          console.error("Failed to check agreement", e);
+          return true;
+        }),
+        loadEntries()
+          .then(setEntries)
+          .catch((e) => console.error("Failed to load entries", e)),
+      ]);
+      if (!accepted) {
+        setShowAgreement(true);
+      }
+      setAgreementLoaded(true);
 
-    loadEntries()
-      .then(setEntries)
-      .catch((e) => console.error("Failed to load entries", e));
-
-    if (!__DEV__) {
-      Updates.checkForUpdateAsync()
-        .then(async (update) => {
-          if (update.isAvailable) {
-            await Updates.fetchUpdateAsync();
-            await Updates.reloadAsync();
-          }
-        })
-        .catch((e) => console.error("Failed to check for updates", e));
+      if (!__DEV__) {
+        Updates.checkForUpdateAsync()
+          .then(async (update) => {
+            if (update.isAvailable) {
+              await Updates.fetchUpdateAsync();
+              await Updates.reloadAsync();
+            }
+          })
+          .catch((e) => console.error("Failed to check for updates", e));
+      }
     }
+    init();
   }, []);
 
   const handleAdd = ({

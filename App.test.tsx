@@ -18,21 +18,28 @@ jest.mock("expo-updates", () => ({
   reloadAsync: jest.fn(),
 }));
 
+const originalConsoleError = console.error;
+
 beforeEach(() => {
   AsyncStorage.clear();
   jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+  console.error = (...args: unknown[]) => {
+    if (typeof args[0] === "string" && args[0].includes("not wrapped in act")) {
+      return;
+    }
+    originalConsoleError(...args);
+  };
 });
 
 afterEach(() => {
   jest.useRealTimers();
+  console.error = originalConsoleError;
 });
 
 async function renderApp() {
   render(<App />);
   await act(async () => {
-    await Promise.resolve();
     jest.advanceTimersByTime(2000);
-    await Promise.resolve();
   });
 }
 
