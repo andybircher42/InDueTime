@@ -2,9 +2,8 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Entry } from "@/storage";
-import { ColorTokens } from "@/theme/colors";
-import { useTheme } from "@/theme/ThemeContext";
-import { toISODateString } from "@/util/dateUtils";
+import { ColorTokens, useTheme } from "@/theme";
+import { toISODateString } from "@/util";
 
 interface DevToolbarProps {
   onSeedData: (entries: Entry[]) => void;

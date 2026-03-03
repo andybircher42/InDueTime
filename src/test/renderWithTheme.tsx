@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react-native";
 
-import { ThemeMode, ThemeProvider } from "@/theme/ThemeContext";
+import { ThemeMode, ThemeProvider } from "@/theme";
 
 /**
  * Renders a component wrapped in ThemeProvider for testing.

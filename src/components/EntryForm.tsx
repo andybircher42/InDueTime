@@ -12,16 +12,16 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 
-import { ColorTokens } from "@/theme/colors";
-import { useTheme } from "@/theme/ThemeContext";
+import { ColorTokens, useTheme } from "@/theme";
 import {
+  computeDueDate,
+  computeGestationalAge,
   formatDateInput,
   getDateBounds,
   getDateError,
   parseDateText,
   toISODateString,
-} from "@/util/dateUtils";
-import { computeDueDate, computeGestationalAge } from "@/util/gestationalAge";
+} from "@/util";
 
 type InputMode = "weeksDays" | "dueDate";
 

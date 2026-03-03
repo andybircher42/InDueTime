@@ -3,7 +3,7 @@ import { fireEvent, screen } from "@testing-library/react-native";
 
 import { Entry } from "@/storage";
 import renderWithTheme from "@/test/renderWithTheme";
-import { lightRowColors } from "@/theme/colors";
+import { lightRowColors } from "@/theme";
 
 import EntryList from "./EntryList";
 

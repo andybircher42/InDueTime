@@ -3,9 +3,8 @@ import { Animated, Pressable, StyleSheet, Text } from "react-native";
 
 import { useSwipeDismiss } from "@/hooks";
 import { Entry } from "@/storage";
-import { ColorTokens } from "@/theme/colors";
-import { useTheme } from "@/theme/ThemeContext";
-import { gestationalAgeFromDueDate } from "@/util/gestationalAge";
+import { ColorTokens, useTheme } from "@/theme";
+import { gestationalAgeFromDueDate } from "@/util";
 
 interface UndoToastProps {
   entry: Entry;

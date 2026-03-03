@@ -13,16 +13,17 @@ import Constants from "expo-constants";
 import { StatusBar } from "expo-status-bar";
 import * as Updates from "expo-updates";
 
-import DevToolbar from "@/components/DevToolbar";
-import EntryForm from "@/components/EntryForm";
-import EntryList from "@/components/EntryList";
-import HipaaAgreementModal from "@/components/HipaaAgreementModal";
-import ThemePickerModal from "@/components/ThemePickerModal";
-import UndoToast from "@/components/UndoToast";
+import {
+  DevToolbar,
+  EntryForm,
+  EntryList,
+  HipaaAgreementModal,
+  ThemePickerModal,
+  UndoToast,
+} from "@/components";
 import { useEntries, useThemePreference } from "@/hooks";
 import { acceptAgreement, checkAgreement, resetAgreement } from "@/storage";
-import { ColorTokens } from "@/theme/colors";
-import { ThemeProvider, useTheme } from "@/theme/ThemeContext";
+import { ColorTokens, ThemeProvider, useTheme } from "@/theme";
 
 import headerLogo from "./assets/icon.png";
 import splashLogo from "./assets/splash-icon.png";

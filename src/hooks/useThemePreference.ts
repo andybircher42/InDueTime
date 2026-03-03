@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { ThemeMode } from "@/theme/ThemeContext";
+import { ThemeMode } from "@/theme";
 
 const STORAGE_KEY = "@theme_mode";
 const VALID_MODES: ThemeMode[] = ["system", "light", "dark", "mono"];

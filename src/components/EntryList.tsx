@@ -13,10 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { useSwipeDismiss } from "@/hooks";
 import { Entry } from "@/storage";
-import { ColorTokens } from "@/theme/colors";
-import { useTheme } from "@/theme/ThemeContext";
-import { formatDueDate } from "@/util/dateUtils";
-import { gestationalAgeFromDueDate } from "@/util/gestationalAge";
+import { ColorTokens, useTheme } from "@/theme";
+import { formatDueDate, gestationalAgeFromDueDate } from "@/util";
 
 type SortBy = "dueDate" | "name";
 type SortDir = "asc" | "desc";

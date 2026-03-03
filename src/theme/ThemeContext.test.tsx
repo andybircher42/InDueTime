@@ -2,8 +2,7 @@ import { Text } from "react-native";
 import * as RN from "react-native";
 import { render, screen } from "@testing-library/react-native";
 
-import { darkColors, lightColors, monoColors } from "@/theme/colors";
-
+import { darkColors, lightColors, monoColors } from "./colors";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 
 function TestConsumer() {

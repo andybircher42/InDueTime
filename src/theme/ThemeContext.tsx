@@ -9,7 +9,7 @@ import {
   lightRowColors,
   monoColors,
   monoRowColors,
-} from "@/theme/colors";
+} from "./colors";
 
 /** User-selected theme mode. */
 export type ThemeMode = "system" | "light" | "dark" | "mono";

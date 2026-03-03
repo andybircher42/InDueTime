@@ -8,8 +8,7 @@ import {
   View,
 } from "react-native";
 
-import { ColorTokens } from "@/theme/colors";
-import { useTheme } from "@/theme/ThemeContext";
+import { ColorTokens, useTheme } from "@/theme";
 
 interface HipaaAgreementModalProps {
   visible: boolean;

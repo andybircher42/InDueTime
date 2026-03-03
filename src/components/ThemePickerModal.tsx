@@ -9,8 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { ColorTokens } from "@/theme/colors";
-import { ThemeMode, useTheme } from "@/theme/ThemeContext";
+import { ColorTokens, ThemeMode, useTheme } from "@/theme";
 
 interface ThemePickerModalProps {
   visible: boolean;
