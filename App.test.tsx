@@ -10,6 +10,10 @@ import {
 import * as storage from "@/storage";
 
 import App from "./App";
+import headerLogoLight from "./assets/icon.png";
+import headerLogoDark from "./assets/icon-dark.png";
+import splashLogoLight from "./assets/splash-icon.png";
+import splashLogoDark from "./assets/splash-icon-dark.png";
 
 const originalConsoleError = console.error;
 
@@ -31,6 +35,14 @@ afterEach(() => {
 });
 
 async function renderApp() {
+  render(<App />);
+  await act(async () => {
+    jest.advanceTimersByTime(2000);
+  });
+}
+
+async function renderAppWithTheme(mode: string) {
+  await AsyncStorage.setItem("@theme_mode", mode);
   render(<App />);
   await act(async () => {
     jest.advanceTimersByTime(2000);
@@ -179,6 +191,61 @@ describe("App", () => {
       const parsed = JSON.parse(stored!);
       expect(parsed).toHaveLength(1);
       expect(parsed[0].name).toBe("Saved");
+    });
+  });
+
+  it("uses dark logos in dark mode", async () => {
+    await renderAppWithTheme("dark");
+
+    await waitFor(() => {
+      expect(screen.getByText("in due time")).toBeTruthy();
+    });
+
+    const header = screen.getByLabelText("App logo");
+    expect(header.props.source).toBe(headerLogoDark);
+  });
+
+  it("uses light logos in light mode", async () => {
+    await renderAppWithTheme("light");
+
+    await waitFor(() => {
+      expect(screen.getByText("in due time")).toBeTruthy();
+    });
+
+    const header = screen.getByLabelText("App logo");
+    expect(header.props.source).toBe(headerLogoLight);
+  });
+
+  it("uses light logos in mono mode", async () => {
+    await renderAppWithTheme("mono");
+
+    await waitFor(() => {
+      expect(screen.getByText("in due time")).toBeTruthy();
+    });
+
+    const header = screen.getByLabelText("App logo");
+    expect(header.props.source).toBe(headerLogoLight);
+  });
+
+  it("uses dark splash logo in dark mode", async () => {
+    await AsyncStorage.setItem("@theme_mode", "dark");
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("splash-logo").props.source).toBe(
+        splashLogoDark,
+      );
+    });
+  });
+
+  it("uses light splash logo in light mode", async () => {
+    await AsyncStorage.setItem("@theme_mode", "light");
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("splash-logo").props.source).toBe(
+        splashLogoLight,
+      );
     });
   });
 });

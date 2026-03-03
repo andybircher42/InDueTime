@@ -26,8 +26,10 @@ import { useEntries, useThemePreference } from "@/hooks";
 import { acceptAgreement, checkAgreement, resetAgreement } from "@/storage";
 import { ColorTokens, ThemeProvider, useTheme } from "@/theme";
 
-import headerLogo from "./assets/icon.png";
-import splashLogo from "./assets/splash-icon.png";
+import headerLogoLight from "./assets/icon.png";
+import headerLogoDark from "./assets/icon-dark.png";
+import splashLogoLight from "./assets/splash-icon.png";
+import splashLogoDark from "./assets/splash-icon-dark.png";
 
 const SPLASH_DURATION_MS = 2000;
 const APP_LABEL = (Constants.expoConfig?.extra?.appLabel as string) ?? "";
@@ -56,6 +58,10 @@ function AppContent({ loadThemePreference }: AppContentProps) {
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [pickerAnchor, setPickerAnchor] = useState({ top: 0, right: 0 });
   const settingsRef = useRef<View>(null);
+
+  const isDark = resolvedTheme === "dark";
+  const splashLogo = isDark ? splashLogoDark : splashLogoLight;
+  const headerLogo = isDark ? headerLogoDark : headerLogoLight;
 
   const openThemePicker = useCallback(() => {
     settingsRef.current?.measureInWindow((_x, y, _width, height) => {
@@ -98,7 +104,9 @@ function AppContent({ loadThemePreference }: AppContentProps) {
           console.error("Failed to load theme preference", e),
         ),
       ]);
-      if (!mounted) {return;}
+      if (!mounted) {
+        return;
+      }
       if (!accepted) {
         setShowAgreement(true);
       }
@@ -158,6 +166,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
           source={headerLogo}
           style={styles.headerLogo}
           resizeMode="contain"
+          accessibilityLabel="App logo"
         />
         <Text style={styles.title}>in due time</Text>
         {APP_LABEL !== "" && <Text style={styles.appLabel}>{APP_LABEL}</Text>}
