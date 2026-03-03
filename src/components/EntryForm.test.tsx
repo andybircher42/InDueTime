@@ -112,11 +112,24 @@ describe("EntryForm — Gestational Age mode", () => {
     expect(onAdd).not.toHaveBeenCalled();
   });
 
+  it("shows no placeholder text for name input", () => {
+    renderInWeeksDaysMode();
+
+    const nameInput = screen.getByLabelText("Name");
+    expect(nameInput.props.placeholder).toBeUndefined();
+  });
+
   it("shows range hints as placeholder text", () => {
     renderInWeeksDaysMode();
 
     expect(screen.getByPlaceholderText("0-42")).toBeTruthy();
     expect(screen.getByPlaceholderText("0-6")).toBeTruthy();
+  });
+
+  it("shows date format as placeholder text in due date mode", () => {
+    renderForm();
+
+    expect(screen.getByPlaceholderText("MM-DD-YYYY")).toBeTruthy();
   });
 
   it("rejects non-numeric input in weeks and days fields", () => {

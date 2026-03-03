@@ -142,7 +142,6 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
       <Text style={styles.label}>Name</Text>
       <TextInput
         style={styles.nameInput}
-        placeholder={"First Name"}
         placeholderTextColor={colors.textTertiary}
         accessibilityLabel="Name"
         value={name}
