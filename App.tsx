@@ -16,6 +16,7 @@ import * as Updates from "expo-updates";
 import { identifyDevice, vexo } from "vexo-analytics";
 
 import {
+  AppInfoModal,
   DevToolbar,
   EntryForm,
   EntryList,
@@ -69,6 +70,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
   const [showAgreement, setShowAgreement] = useState(false);
   const [agreementLoaded, setAgreementLoaded] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showAppInfo, setShowAppInfo] = useState(false);
   const [pickerAnchor, setPickerAnchor] = useState({ top: 0, right: 0 });
   const settingsRef = useRef<View>(null);
 
@@ -240,7 +242,12 @@ function AppContent({ loadThemePreference }: AppContentProps) {
           currentMode={themeMode}
           onSelect={setThemeMode}
           onClose={() => setShowThemePicker(false)}
+          onAppInfo={() => setShowAppInfo(true)}
           anchor={pickerAnchor}
+        />
+        <AppInfoModal
+          visible={showAppInfo}
+          onClose={() => setShowAppInfo(false)}
         />
 
         {deletedEntry && (

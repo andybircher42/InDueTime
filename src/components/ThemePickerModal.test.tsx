@@ -62,16 +62,16 @@ describe("ThemePickerModal", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("opens bug report form and closes modal on press", () => {
+  it("opens bug report form with pre-filled version and closes modal on press", () => {
     const spy = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
     const onClose = jest.fn();
     renderWithTheme(<ThemePickerModal {...defaultProps} onClose={onClose} />);
 
     fireEvent.press(screen.getByLabelText("Report a Bug"));
 
-    expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining("docs.google.com/forms"),
-    );
+    const url = spy.mock.calls[0][0] as string;
+    expect(url).toContain("docs.google.com/forms");
+    expect(url).toContain("entry.1845428880=");
     expect(onClose).toHaveBeenCalledTimes(1);
     spy.mockRestore();
   });
@@ -94,5 +94,22 @@ describe("ThemePickerModal", () => {
     renderWithTheme(<ThemePickerModal {...defaultProps} visible={false} />);
 
     expect(screen.queryByText("Choose Theme")).toBeNull();
+  });
+
+  it("calls onAppInfo and onClose when App Info row is pressed", () => {
+    const onAppInfo = jest.fn();
+    const onClose = jest.fn();
+    renderWithTheme(
+      <ThemePickerModal
+        {...defaultProps}
+        onAppInfo={onAppInfo}
+        onClose={onClose}
+      />,
+    );
+
+    fireEvent.press(screen.getByLabelText("App Info"));
+
+    expect(onAppInfo).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

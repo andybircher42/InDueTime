@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 
 import { ColorTokens, ThemeMode, useTheme } from "@/theme";
 
@@ -17,11 +18,20 @@ interface ThemePickerModalProps {
   currentMode: ThemeMode;
   onSelect: (mode: ThemeMode) => void;
   onClose: () => void;
+  onAppInfo?: () => void;
   anchor?: { top: number; right: number };
 }
 
-const BUG_REPORT_URL =
+const BUG_REPORT_BASE_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSd3VdvE17NHIR7qQD8Ams10nBgAgf1n0JQ1mvWUUFKf7C3Z-w/viewform";
+
+/** Builds the bug report URL with the app version and build ID pre-filled. */
+function buildBugReportUrl(): string {
+  const version = Constants.expoConfig?.version ?? "unknown";
+  const buildId = (Constants.expoConfig?.extra?.easBuildId as string) || "";
+  const appVersion = `${version} (${buildId.slice(0, 8)})`;
+  return `${BUG_REPORT_BASE_URL}?entry.1845428880=${encodeURIComponent(appVersion)}`;
+}
 const FEATURE_REQUEST_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSeLS03h_8s3t0-IYXM04UjVv2fAhH37i2n56fPHB83OuHaQhw/viewform";
 
@@ -42,6 +52,7 @@ export default function ThemePickerModal({
   currentMode,
   onSelect,
   onClose,
+  onAppInfo,
   anchor,
 }: ThemePickerModalProps) {
   const { colors } = useTheme();
@@ -91,7 +102,7 @@ export default function ThemePickerModal({
           <Pressable
             style={styles.row}
             onPress={() => {
-              Linking.openURL(BUG_REPORT_URL);
+              Linking.openURL(buildBugReportUrl());
               onClose();
             }}
             accessibilityRole="button"
@@ -121,6 +132,24 @@ export default function ThemePickerModal({
               style={styles.rowIcon}
             />
             <Text style={styles.rowLabel}>Request a Feature</Text>
+          </Pressable>
+          <View style={styles.separator} />
+          <Pressable
+            style={styles.row}
+            onPress={() => {
+              onAppInfo?.();
+              onClose();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="App Info"
+          >
+            <Ionicons
+              name="information-circle-outline"
+              size={20}
+              color={colors.textPrimary}
+              style={styles.rowIcon}
+            />
+            <Text style={styles.rowLabel}>App Info</Text>
           </Pressable>
         </View>
       </View>
