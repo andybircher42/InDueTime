@@ -20,10 +20,8 @@ import useEntries from "@/hooks/useEntries";
 import { acceptAgreement, checkAgreement, resetAgreement } from "@/storage";
 import colors from "@/theme/colors";
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const splashLogo = require("./assets/splash-icon.png");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const headerLogo = require("./assets/icon.png");
+import splashLogo from "./assets/splash-icon.png";
+import headerLogo from "./assets/icon.png";
 
 const SPLASH_DURATION_MS = 2000;
 const APP_LABEL = (Constants.expoConfig?.extra?.appLabel as string) ?? "";
@@ -75,7 +73,7 @@ export default function App() {
           .catch((e) => console.error("Failed to check for updates", e));
       }
     }
-    init();
+    void init();
   }, [load]);
 
   const handleAcceptAgreement = () => {

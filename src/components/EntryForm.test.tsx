@@ -5,24 +5,39 @@ import { computeDueDate } from "@/util/gestationalAge";
 
 import EntryForm from "./EntryForm";
 
-/** Helper: switch to Gestational Age mode (Due Date is the default). */
-function switchToWeeksDays() {
+beforeEach(() => {
+  jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+});
+
+afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
+});
+
+/** Renders EntryForm and returns the onAdd mock. */
+function renderForm(onAdd = jest.fn()) {
+  render(<EntryForm onAdd={onAdd} />);
+  return onAdd;
+}
+
+/** Renders EntryForm in Gestational Age mode and returns the onAdd mock. */
+function renderInWeeksDaysMode(onAdd = jest.fn()) {
+  renderForm(onAdd);
   fireEvent.press(screen.getByText("Gestational Age"));
+  return onAdd;
+}
+
+/** Mocks computeGestationalAge to return the given weeks and days. */
+function mockGestationalAge(weeks: number, days: number) {
+  jest
+    .spyOn(gestationalAge, "computeGestationalAge")
+    .mockReturnValue({ weeks, days });
 }
 
 describe("EntryForm — Gestational Age mode", () => {
-  beforeEach(() => {
-    jest.useFakeTimers({ now: new Date(2026, 2, 2) });
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
 
   it("calls onAdd with trimmed name, parsed weeks/days, and computed dueDate", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
-    switchToWeeksDays();
+    const onAdd = renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "  Baby A  ");
     fireEvent.changeText(screen.getByLabelText("Weeks"), "12");
@@ -38,9 +53,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("does not accept empty weeks and days", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
-    switchToWeeksDays();
+    const onAdd = renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.press(screen.getByText("Add"));
@@ -49,9 +62,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("clears inputs after submission", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
-    switchToWeeksDays();
+    renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Weeks"), "10");
@@ -64,9 +75,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("does not call onAdd when name is empty", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
-    switchToWeeksDays();
+    const onAdd = renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Weeks"), "10");
     fireEvent.changeText(screen.getByLabelText("Days"), "3");
@@ -76,9 +85,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("does not call onAdd when weeks > 44", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
-    switchToWeeksDays();
+    const onAdd = renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Weeks"), "45");
@@ -89,9 +96,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("does not call onAdd when days > 6", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
-    switchToWeeksDays();
+    const onAdd = renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Weeks"), "10");
@@ -102,16 +107,14 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("shows range hints as placeholder text", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
-    switchToWeeksDays();
+    renderInWeeksDaysMode();
 
     expect(screen.getByPlaceholderText("0-42")).toBeTruthy();
     expect(screen.getByPlaceholderText("0-6")).toBeTruthy();
   });
 
   it("rejects non-numeric input in weeks and days fields", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
-    switchToWeeksDays();
+    renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Weeks"), "abc");
     expect(screen.getByLabelText("Weeks").props.value).toBe("");
@@ -127,9 +130,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("disables Add button when weeks is out of range", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
-    switchToWeeksDays();
+    const onAdd = renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Days"), "3");
@@ -143,9 +144,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("disables Add button when days is out of range", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
-    switchToWeeksDays();
+    const onAdd = renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Weeks"), "10");
@@ -159,9 +158,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("Add button is disabled when name is empty and enabled when name is entered", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
-    switchToWeeksDays();
+    const onAdd = renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Weeks"), "10");
     fireEvent.changeText(screen.getByLabelText("Days"), "3");
@@ -177,8 +174,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("shows error when weeks is out of range after blur", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
-    switchToWeeksDays();
+    renderInWeeksDaysMode();
 
     const weeksInput = screen.getByLabelText("Weeks");
     fireEvent.changeText(weeksInput, "45");
@@ -190,8 +186,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("shows error when days is out of range after blur", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
-    switchToWeeksDays();
+    renderInWeeksDaysMode();
 
     const daysInput = screen.getByLabelText("Days");
     fireEvent.changeText(daysInput, "7");
@@ -203,8 +198,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("clears error when user starts typing again", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
-    switchToWeeksDays();
+    renderInWeeksDaysMode();
 
     const weeksInput = screen.getByLabelText("Weeks");
     fireEvent.changeText(weeksInput, "45");
@@ -216,8 +210,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("shows no error for valid weeks and days after blur", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
-    switchToWeeksDays();
+    renderInWeeksDaysMode();
 
     const weeksInput = screen.getByLabelText("Weeks");
     const daysInput = screen.getByLabelText("Days");
@@ -230,8 +223,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("shows no error when weeks and days are empty", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
-    switchToWeeksDays();
+    renderInWeeksDaysMode();
 
     expect(screen.queryByLabelText("Weeks error")).toBeNull();
     expect(screen.queryByLabelText("Days error")).toBeNull();
@@ -240,7 +232,7 @@ describe("EntryForm — Gestational Age mode", () => {
 
 describe("EntryForm — mode toggle", () => {
   it("starts in Due Date mode by default", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
 
     expect(screen.getByLabelText("Due date")).toBeTruthy();
     expect(screen.getByLabelText("Select due date")).toBeTruthy();
@@ -249,7 +241,7 @@ describe("EntryForm — mode toggle", () => {
   });
 
   it("switches to Gestational Age mode when toggle is pressed", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
 
     fireEvent.press(screen.getByText("Gestational Age"));
 
@@ -260,7 +252,7 @@ describe("EntryForm — mode toggle", () => {
   });
 
   it("switches back to Due Date mode", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
 
     fireEvent.press(screen.getByText("Gestational Age"));
     fireEvent.press(screen.getByText("Due Date"));
@@ -273,16 +265,8 @@ describe("EntryForm — mode toggle", () => {
 });
 
 describe("EntryForm — Due Date mode", () => {
-  beforeEach(() => {
-    jest.useFakeTimers({ now: new Date(2026, 2, 2) });
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
   it("shows date picker when button is pressed", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
 
     fireEvent.press(screen.getByLabelText("Select due date"));
 
@@ -290,28 +274,17 @@ describe("EntryForm — Due Date mode", () => {
   });
 
   it("shows computed gestational age preview after selecting a date", () => {
-    jest
-      .spyOn(gestationalAge, "computeGestationalAge")
-      .mockReturnValue({ weeks: 32, days: 4 });
-
-    render(<EntryForm onAdd={jest.fn()} />);
+    mockGestationalAge(32, 4);
+    renderForm();
     fireEvent.press(screen.getByLabelText("Select due date"));
-
-    // Trigger mock date selection
     fireEvent.press(screen.getByTestId("date-picker-trigger"));
 
     expect(screen.getByText("Gestational Age -> 32w 4d")).toBeTruthy();
-
-    jest.restoreAllMocks();
   });
 
   it("submits dueDate when Add is pressed in Due Date mode", () => {
-    jest
-      .spyOn(gestationalAge, "computeGestationalAge")
-      .mockReturnValue({ weeks: 35, days: 2 });
-
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
+    mockGestationalAge(35, 2);
+    const onAdd = renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby B");
     fireEvent.press(screen.getByLabelText("Select due date"));
@@ -322,13 +295,10 @@ describe("EntryForm — Due Date mode", () => {
       name: "Baby B",
       dueDate: "2026-06-15",
     });
-
-    jest.restoreAllMocks();
   });
 
   it("disables Add button when no due date is selected", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
+    const onAdd = renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.press(screen.getByText("Add"));
@@ -337,7 +307,7 @@ describe("EntryForm — Due Date mode", () => {
   });
 
   it("displays the selected date in the text input", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     fireEvent.press(screen.getByLabelText("Select due date"));
     fireEvent.press(screen.getByTestId("date-picker-trigger"));
 
@@ -346,12 +316,8 @@ describe("EntryForm — Due Date mode", () => {
   });
 
   it("clears due date after submission", () => {
-    jest
-      .spyOn(gestationalAge, "computeGestationalAge")
-      .mockReturnValue({ weeks: 30, days: 0 });
-
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
+    mockGestationalAge(30, 0);
+    renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.press(screen.getByLabelText("Select due date"));
@@ -360,37 +326,21 @@ describe("EntryForm — Due Date mode", () => {
 
     expect(screen.getByLabelText("Due date").props.value).toBe("");
     expect(screen.queryByLabelText("Gestational age preview")).toBeNull();
-
-    jest.restoreAllMocks();
   });
 });
 
 describe("EntryForm — typed date input", () => {
-  beforeEach(() => {
-    jest.useFakeTimers({ now: new Date(2026, 2, 2) });
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
   it("typing a valid date sets dueDate and shows gestational age preview", () => {
-    jest
-      .spyOn(gestationalAge, "computeGestationalAge")
-      .mockReturnValue({ weeks: 28, days: 3 });
-
-    render(<EntryForm onAdd={jest.fn()} />);
+    mockGestationalAge(28, 3);
+    renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
 
     expect(screen.getByText("Gestational Age -> 28w 3d")).toBeTruthy();
-
-    jest.restoreAllMocks();
   });
 
   it("typing an invalid month does not enable Add button", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
+    const onAdd = renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "13-1-2026");
@@ -400,8 +350,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("typing non-date text does not enable Add button", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
+    const onAdd = renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "abc");
@@ -411,8 +360,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("typing an invalid day (Feb 30) does not enable Add button", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
+    const onAdd = renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "2-30-2026");
@@ -422,7 +370,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("picking from calendar populates the text input", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
 
     fireEvent.press(screen.getByLabelText("Select due date"));
     fireEvent.press(screen.getByTestId("date-picker-trigger"));
@@ -431,41 +379,29 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("accepts a 2-digit year as 20xx", () => {
-    jest
-      .spyOn(gestationalAge, "computeGestationalAge")
-      .mockReturnValue({ weeks: 28, days: 3 });
-
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
+    mockGestationalAge(28, 3);
+    const onAdd = renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-26");
     fireEvent.press(screen.getByText("Add"));
 
     expect(onAdd).toHaveBeenCalledTimes(1);
-
-    jest.restoreAllMocks();
   });
 
   it("accepts single-digit month and day", () => {
-    jest
-      .spyOn(gestationalAge, "computeGestationalAge")
-      .mockReturnValue({ weeks: 30, days: 0 });
-
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
+    mockGestationalAge(30, 0);
+    const onAdd = renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "3-5-2026");
     fireEvent.press(screen.getByText("Add"));
 
     expect(onAdd).toHaveBeenCalledTimes(1);
-
-    jest.restoreAllMocks();
   });
 
   it('replaces non-numeric characters with "-"', () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "6-15-2026");
@@ -479,7 +415,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("limits input to DD-DD-DDDD pattern", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "03-28-20261");
@@ -487,7 +423,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("allows no more than 2 hyphens", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "03-28-38-28");
@@ -495,7 +431,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("collapses consecutive hyphens into one", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "6---15---2026");
@@ -506,7 +442,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it('auto-inserts "-" after two-digit month', () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     // Simulate typing "06" — should become "06-"
@@ -515,7 +451,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it('auto-inserts "-" after two-digit day', () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     // Simulate typing month then day
@@ -525,11 +461,8 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("normalizes date to MM-DD-YYYY on blur", () => {
-    jest
-      .spyOn(gestationalAge, "computeGestationalAge")
-      .mockReturnValue({ weeks: 28, days: 3 });
-
-    render(<EntryForm onAdd={jest.fn()} />);
+    mockGestationalAge(28, 3);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "6-5-26");
@@ -537,35 +470,27 @@ describe("EntryForm — typed date input", () => {
 
     fireEvent(input, "blur");
     expect(input.props.value).toBe("06-05-2026");
-
-    jest.restoreAllMocks();
   });
 
   it("clears text input after submission", () => {
-    jest
-      .spyOn(gestationalAge, "computeGestationalAge")
-      .mockReturnValue({ weeks: 28, days: 3 });
-
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
+    mockGestationalAge(28, 3);
+    const onAdd = renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
     fireEvent.press(screen.getByText("Add"));
 
     expect(screen.getByLabelText("Due date").props.value).toBe("");
-
-    jest.restoreAllMocks();
   });
 
   it("shows no error when input is empty", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
 
     expect(screen.queryByLabelText("Date error")).toBeNull();
   });
 
   it("shows no error for a valid date", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
 
@@ -573,7 +498,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("shows format error for incomplete date text after blur", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "6-15");
@@ -585,7 +510,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("shows error for invalid month after blur", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "13-1-2026");
@@ -595,7 +520,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("shows error for invalid day after blur", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "1-32-2026");
@@ -605,7 +530,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("shows error for impossible date like Feb 30 after blur", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "2-30-2026");
@@ -615,7 +540,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("clears date error when user starts typing again", () => {
-    render(<EntryForm onAdd={jest.fn()} />);
+    renderForm();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "13-1-2026");
@@ -628,21 +553,9 @@ describe("EntryForm — typed date input", () => {
 });
 
 describe("EntryForm — dueDate in onAdd callback", () => {
-  beforeEach(() => {
-    jest.useFakeTimers({ now: new Date(2026, 2, 2) });
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
   it("passes the entered due date as ISO string in due date mode", () => {
-    jest
-      .spyOn(gestationalAge, "computeGestationalAge")
-      .mockReturnValue({ weeks: 28, days: 3 });
-
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
+    mockGestationalAge(28, 3);
+    const onAdd = renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
@@ -651,14 +564,10 @@ describe("EntryForm — dueDate in onAdd callback", () => {
     expect(onAdd).toHaveBeenCalledWith(
       expect.objectContaining({ dueDate: "2026-06-15" }),
     );
-
-    jest.restoreAllMocks();
   });
 
   it("passes a computed due date as ISO string in weeks/days mode", () => {
-    const onAdd = jest.fn();
-    render(<EntryForm onAdd={onAdd} />);
-    switchToWeeksDays();
+    const onAdd = renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Weeks"), "20");
