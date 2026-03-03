@@ -48,7 +48,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
 
   const w = weeks ? parseInt(weeks, 10) : 0;
   const d = days ? parseInt(days, 10) : 0;
-  const weeksValid = !weeks || (!isNaN(w) && w >= 0 && w <= 44);
+  const weeksValid = !weeks || (!isNaN(w) && w >= 0 && w <= 42);
   const daysValid = !days || (!isNaN(d) && d >= 0 && d <= 6);
   const weeksError = weeks && !weeksValid ? "Weeks must be 0\u201342" : null;
   const daysError = days && !daysValid ? "Days must be 0\u20136" : null;
