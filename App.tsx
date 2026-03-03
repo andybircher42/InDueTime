@@ -82,6 +82,8 @@ function AppContent({ loadThemePreference }: AppContentProps) {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
+
     async function init() {
       const [accepted] = await Promise.all([
         checkAgreement().catch((e) => {
@@ -93,6 +95,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
           console.error("Failed to load theme preference", e),
         ),
       ]);
+      if (!mounted) {return;}
       if (!accepted) {
         setShowAgreement(true);
       }
@@ -110,6 +113,10 @@ function AppContent({ loadThemePreference }: AppContentProps) {
       }
     }
     void init();
+
+    return () => {
+      mounted = false;
+    };
   }, [load, loadThemePreference]);
 
   const handleAcceptAgreement = () => {

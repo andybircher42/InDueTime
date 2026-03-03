@@ -7,6 +7,8 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 
+import * as storage from "@/storage";
+
 import App from "./App";
 
 const originalConsoleError = console.error;
@@ -24,6 +26,7 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.useRealTimers();
+  jest.restoreAllMocks();
   console.error = originalConsoleError;
 });
 
@@ -134,6 +137,35 @@ describe("App", () => {
     await waitFor(() => {
       expect(screen.queryByLabelText("Undo toast")).toBeNull();
     });
+  });
+
+  it("does not update state after unmount", async () => {
+    let resolveAgreement: (v: boolean) => void;
+    jest.spyOn(storage, "checkAgreement").mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveAgreement = resolve;
+        }),
+    );
+
+    const errorSpy = jest.spyOn(console, "error");
+
+    const { unmount } = render(<App />);
+    await act(async () => {
+      jest.advanceTimersByTime(2000);
+    });
+
+    unmount();
+
+    // Resolve after unmount — should not trigger state updates
+    await act(async () => {
+      resolveAgreement!(false);
+    });
+
+    const stateUpdateErrors = errorSpy.mock.calls.filter(
+      (args) => typeof args[0] === "string" && args[0].includes("unmounted"),
+    );
+    expect(stateUpdateErrors).toHaveLength(0);
   });
 
   it("persists entries to AsyncStorage", async () => {
