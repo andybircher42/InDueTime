@@ -71,7 +71,7 @@ export default function AppInfoModal({
               color={colors.textTertiary}
             />
           </Pressable>
-          {Updates.updateId != null && (
+          {Updates.updateId != null && !Updates.isEmbeddedLaunch && (
             <Pressable
               style={styles.copyRow}
               onPress={() => Clipboard.setStringAsync(Updates.updateId!)}
