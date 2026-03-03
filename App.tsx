@@ -143,7 +143,7 @@ export default function App() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Gestation Tracker</Text>
+        <Text style={styles.title}>In Due Time</Text>
         {__DEV__ && (
           <DevToolbar
             onSeedData={handleSeedData}

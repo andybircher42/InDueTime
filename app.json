@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Gestation Tracker",
-    "slug": "gestation-tracker",
+    "name": "In Due Time",
+    "slug": "in-due-time",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.andybircher.gestationtracker",
+      "bundleIdentifier": "com.andybircher.induetime",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -25,15 +25,12 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.andybircher.gestationtracker"
+      "package": "com.andybircher.induetime"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-asset",
-      "@react-native-community/datetimepicker"
-    ],
+    "plugins": ["expo-asset", "@react-native-community/datetimepicker"],
     "extra": {
       "eas": {
         "projectId": "5fbbef43-f21b-4acd-baf9-1038201de299"
