@@ -230,6 +230,9 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
             style={[styles.addButton, !canAdd && styles.addButtonDisabled]}
             onPress={handleAdd}
             disabled={!canAdd}
+            accessibilityRole="button"
+            accessibilityLabel="Add entry"
+            accessibilityState={{ disabled: !canAdd }}
           >
             <Text style={styles.addButtonText}>Add</Text>
           </Pressable>
