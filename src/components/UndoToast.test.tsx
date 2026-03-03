@@ -12,6 +12,18 @@ const mockEntry: Entry = {
   dueDate: "2026-09-11",
 };
 
+/** Renders UndoToast with defaults for onUndo/onDismiss. Returns the mocks. */
+function renderToast(
+  overrides: { onUndo?: jest.Mock; onDismiss?: jest.Mock } = {},
+) {
+  const onUndo = overrides.onUndo ?? jest.fn();
+  const onDismiss = overrides.onDismiss ?? jest.fn();
+  renderWithTheme(
+    <UndoToast entry={mockEntry} onUndo={onUndo} onDismiss={onDismiss} />,
+  );
+  return { onUndo, onDismiss };
+}
+
 describe("UndoToast", () => {
   beforeEach(() => {
     jest.useFakeTimers({ now: new Date(2026, 2, 2) });
@@ -22,37 +34,23 @@ describe("UndoToast", () => {
   });
 
   it("displays the deleted entry details", () => {
-    renderWithTheme(
-      <UndoToast entry={mockEntry} onUndo={jest.fn()} onDismiss={jest.fn()} />,
-    );
-
+    renderToast();
     expect(screen.getByText("Deleted Baby A (12w 3d)")).toBeTruthy();
   });
 
   it("shows an Undo button", () => {
-    renderWithTheme(
-      <UndoToast entry={mockEntry} onUndo={jest.fn()} onDismiss={jest.fn()} />,
-    );
-
+    renderToast();
     expect(screen.getByText("Undo")).toBeTruthy();
   });
 
   it("calls onUndo when Undo is pressed", () => {
-    const onUndo = jest.fn();
-    renderWithTheme(
-      <UndoToast entry={mockEntry} onUndo={onUndo} onDismiss={jest.fn()} />,
-    );
-
+    const { onUndo } = renderToast();
     fireEvent.press(screen.getByText("Undo"));
-
     expect(onUndo).toHaveBeenCalledTimes(1);
   });
 
   it("calls onDismiss after 5 seconds", () => {
-    const onDismiss = jest.fn();
-    renderWithTheme(
-      <UndoToast entry={mockEntry} onUndo={jest.fn()} onDismiss={onDismiss} />,
-    );
+    const { onDismiss } = renderToast();
 
     expect(onDismiss).not.toHaveBeenCalled();
 
@@ -64,10 +62,7 @@ describe("UndoToast", () => {
   });
 
   it("does not call onDismiss before 5 seconds", () => {
-    const onDismiss = jest.fn();
-    renderWithTheme(
-      <UndoToast entry={mockEntry} onUndo={jest.fn()} onDismiss={onDismiss} />,
-    );
+    const { onDismiss } = renderToast();
 
     act(() => {
       jest.advanceTimersByTime(4999);

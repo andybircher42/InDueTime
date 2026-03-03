@@ -28,6 +28,12 @@ function renderInWeeksDaysMode(onAdd = jest.fn()) {
   return onAdd;
 }
 
+/** Simulates selecting a date from the calendar picker. */
+function pickDate() {
+  fireEvent.press(screen.getByLabelText("Select due date"));
+  fireEvent.press(screen.getByTestId("date-picker-trigger"));
+}
+
 /** Mocks computeGestationalAge to return the given weeks and days. */
 function mockGestationalAge(weeks: number, days: number) {
   jest
@@ -276,8 +282,7 @@ describe("EntryForm — Due Date mode", () => {
   it("shows computed gestational age preview after selecting a date", () => {
     mockGestationalAge(32, 4);
     renderForm();
-    fireEvent.press(screen.getByLabelText("Select due date"));
-    fireEvent.press(screen.getByTestId("date-picker-trigger"));
+    pickDate();
 
     expect(screen.getByText("Gestational Age -> 32w 4d")).toBeTruthy();
   });
@@ -287,8 +292,7 @@ describe("EntryForm — Due Date mode", () => {
     const onAdd = renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby B");
-    fireEvent.press(screen.getByLabelText("Select due date"));
-    fireEvent.press(screen.getByTestId("date-picker-trigger"));
+    pickDate();
     fireEvent.press(screen.getByText("Add"));
 
     expect(onAdd).toHaveBeenCalledWith({
@@ -308,8 +312,7 @@ describe("EntryForm — Due Date mode", () => {
 
   it("displays the selected date in the text input", () => {
     renderForm();
-    fireEvent.press(screen.getByLabelText("Select due date"));
-    fireEvent.press(screen.getByTestId("date-picker-trigger"));
+    pickDate();
 
     // Mock picker returns June 15, 2026
     expect(screen.getByLabelText("Due date").props.value).toBe("06-15-2026");
@@ -320,8 +323,7 @@ describe("EntryForm — Due Date mode", () => {
     renderForm();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
-    fireEvent.press(screen.getByLabelText("Select due date"));
-    fireEvent.press(screen.getByTestId("date-picker-trigger"));
+    pickDate();
     fireEvent.press(screen.getByText("Add"));
 
     expect(screen.getByLabelText("Due date").props.value).toBe("");
@@ -372,8 +374,7 @@ describe("EntryForm — typed date input", () => {
   it("picking from calendar populates the text input", () => {
     renderForm();
 
-    fireEvent.press(screen.getByLabelText("Select due date"));
-    fireEvent.press(screen.getByTestId("date-picker-trigger"));
+    pickDate();
 
     expect(screen.getByLabelText("Due date").props.value).toBe("06-15-2026");
   });

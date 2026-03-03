@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from "react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 import { useColorScheme } from "react-native";
 
 import {
@@ -30,7 +30,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 interface ThemeProviderProps {
   themeMode: ThemeMode;
   setThemeMode: (mode: ThemeMode) => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 /** Provides resolved theme colors to the component tree. */

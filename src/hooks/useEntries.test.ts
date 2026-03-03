@@ -4,8 +4,25 @@ import { act, renderHook, waitFor } from "@testing-library/react-native";
 import useEntries from "./useEntries";
 
 beforeEach(() => {
-  AsyncStorage.clear();
+  void AsyncStorage.clear();
 });
+
+/** Renders the hook and returns the result ref. */
+function setup() {
+  return renderHook(() => useEntries()).result;
+}
+
+/** Adds an entry and returns its id. */
+function addEntry(
+  result: ReturnType<typeof setup>,
+  name = "Baby",
+  dueDate = "2026-09-01",
+) {
+  act(() => {
+    result.current.add({ name, dueDate });
+  });
+  return result.current.entries[0].id;
+}
 
 describe("useEntries", () => {
   it("load hydrates entries from storage", async () => {
@@ -14,7 +31,7 @@ describe("useEntries", () => {
       JSON.stringify([{ id: "1", name: "A", dueDate: "2026-09-01" }]),
     );
 
-    const { result } = renderHook(() => useEntries());
+    const result = setup();
 
     await act(async () => {
       await result.current.load();
@@ -25,14 +42,8 @@ describe("useEntries", () => {
   });
 
   it("add creates an entry and persists it", async () => {
-    const { result } = renderHook(() => useEntries());
-
-    act(() => {
-      result.current.add({
-        name: "Baby",
-        dueDate: "2026-08-01",
-      });
-    });
+    const result = setup();
+    addEntry(result, "Baby", "2026-08-01");
 
     expect(result.current.entries).toHaveLength(1);
     expect(result.current.entries[0].name).toBe("Baby");
@@ -45,16 +56,8 @@ describe("useEntries", () => {
   });
 
   it("remove deletes an entry and sets deletedEntry", () => {
-    const { result } = renderHook(() => useEntries());
-
-    act(() => {
-      result.current.add({
-        name: "Baby",
-        dueDate: "2026-09-01",
-      });
-    });
-
-    const id = result.current.entries[0].id;
+    const result = setup();
+    const id = addEntry(result);
 
     act(() => {
       result.current.remove(id);
@@ -66,16 +69,8 @@ describe("useEntries", () => {
   });
 
   it("undo restores previous entries", () => {
-    const { result } = renderHook(() => useEntries());
-
-    act(() => {
-      result.current.add({
-        name: "Baby",
-        dueDate: "2026-09-01",
-      });
-    });
-
-    const id = result.current.entries[0].id;
+    const result = setup();
+    const id = addEntry(result);
 
     act(() => {
       result.current.remove(id);
@@ -93,16 +88,8 @@ describe("useEntries", () => {
   });
 
   it("dismissUndo clears deletedEntry", () => {
-    const { result } = renderHook(() => useEntries());
-
-    act(() => {
-      result.current.add({
-        name: "Baby",
-        dueDate: "2026-09-01",
-      });
-    });
-
-    const id = result.current.entries[0].id;
+    const result = setup();
+    const id = addEntry(result);
 
     act(() => {
       result.current.remove(id);
@@ -118,17 +105,11 @@ describe("useEntries", () => {
   });
 
   it("removeAll clears all entries", async () => {
-    const { result } = renderHook(() => useEntries());
+    const result = setup();
 
     act(() => {
-      result.current.add({
-        name: "A",
-        dueDate: "2026-09-01",
-      });
-      result.current.add({
-        name: "B",
-        dueDate: "2026-06-01",
-      });
+      result.current.add({ name: "A", dueDate: "2026-09-01" });
+      result.current.add({ name: "B", dueDate: "2026-06-01" });
     });
 
     act(() => {
@@ -144,14 +125,8 @@ describe("useEntries", () => {
   });
 
   it("seed prepends seeded entries", () => {
-    const { result } = renderHook(() => useEntries());
-
-    act(() => {
-      result.current.add({
-        name: "Existing",
-        dueDate: "2026-09-01",
-      });
-    });
+    const result = setup();
+    addEntry(result, "Existing");
 
     act(() => {
       result.current.seed([

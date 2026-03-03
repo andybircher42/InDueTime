@@ -57,7 +57,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
   const settingsRef = useRef<View>(null);
 
   const openThemePicker = useCallback(() => {
-    settingsRef.current?.measureInWindow((x, y, width, height) => {
+    settingsRef.current?.measureInWindow((_x, y, _width, height) => {
       setPickerAnchor({ top: y + height + 4, right: 12 });
       setShowThemePicker(true);
     });

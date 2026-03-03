@@ -1,3 +1,4 @@
+import { ReactElement } from "react";
 import { render } from "@testing-library/react-native";
 
 import { ThemeMode, ThemeProvider } from "@/theme";
@@ -7,7 +8,7 @@ import { ThemeMode, ThemeProvider } from "@/theme";
  * Defaults to light mode.
  */
 export default function renderWithTheme(
-  ui: React.ReactElement,
+  ui: ReactElement,
   themeMode: ThemeMode = "light",
 ) {
   return render(

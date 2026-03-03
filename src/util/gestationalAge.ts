@@ -24,12 +24,11 @@ export function computeDueDate(
 ): Date {
   const totalDays = weeks * 7 + days;
   const daysUntilDue = 280 - totalDays;
-  const result = new Date(
+  return new Date(
     today.getFullYear(),
     today.getMonth(),
     today.getDate() + daysUntilDue,
   );
-  return result;
 }
 
 /**

@@ -4,8 +4,18 @@ import { act, renderHook } from "@testing-library/react-native";
 import useThemePreference from "./useThemePreference";
 
 beforeEach(() => {
-  AsyncStorage.clear();
+  void AsyncStorage.clear();
 });
+
+/** Stores a value, renders the hook, loads preference, and returns result. */
+async function setupWithStored(value: string) {
+  await AsyncStorage.setItem("@theme_mode", value);
+  const { result } = renderHook(() => useThemePreference());
+  await act(async () => {
+    await result.current.loadThemePreference();
+  });
+  return result;
+}
 
 describe("useThemePreference", () => {
   it("defaults to system mode", () => {
@@ -14,26 +24,12 @@ describe("useThemePreference", () => {
   });
 
   it("hydrates stored theme mode", async () => {
-    await AsyncStorage.setItem("@theme_mode", "dark");
-
-    const { result } = renderHook(() => useThemePreference());
-
-    await act(async () => {
-      await result.current.loadThemePreference();
-    });
-
+    const result = await setupWithStored("dark");
     expect(result.current.themeMode).toBe("dark");
   });
 
   it("hydrates mono theme mode", async () => {
-    await AsyncStorage.setItem("@theme_mode", "mono");
-
-    const { result } = renderHook(() => useThemePreference());
-
-    await act(async () => {
-      await result.current.loadThemePreference();
-    });
-
+    const result = await setupWithStored("mono");
     expect(result.current.themeMode).toBe("mono");
   });
 
@@ -51,14 +47,7 @@ describe("useThemePreference", () => {
   });
 
   it("falls back to system on invalid stored value", async () => {
-    await AsyncStorage.setItem("@theme_mode", "invalid");
-
-    const { result } = renderHook(() => useThemePreference());
-
-    await act(async () => {
-      await result.current.loadThemePreference();
-    });
-
+    const result = await setupWithStored("invalid");
     expect(result.current.themeMode).toBe("system");
   });
 });
