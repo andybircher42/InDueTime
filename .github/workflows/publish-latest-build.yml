@@ -16,6 +16,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Install EAS CLI
         run: npm install -g eas-cli
 
@@ -23,13 +26,13 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          eas build:list --json --limit 1 --status finished --platform ios > /tmp/ios.json
+          eas build:list --json --limit 1 --status finished --platform ios --non-interactive > /tmp/ios.json
 
       - name: Query latest Android build
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          eas build:list --json --limit 1 --status finished --platform android > /tmp/android.json
+          eas build:list --json --limit 1 --status finished --platform android --non-interactive > /tmp/android.json
 
       - name: Build latest-build.json
         run: |
