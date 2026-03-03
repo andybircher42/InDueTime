@@ -7,15 +7,20 @@ import {
   darkRowColors,
   lightColors,
   lightRowColors,
+  monoColors,
+  monoRowColors,
 } from "@/theme/colors";
 
 /** User-selected theme mode. */
-export type ThemeMode = "system" | "light" | "dark";
+export type ThemeMode = "system" | "light" | "dark" | "mono";
+
+/** The effective visual theme after resolving system preference. */
+export type ResolvedTheme = "light" | "dark" | "mono";
 
 interface ThemeContextValue {
   colors: ColorTokens;
   rowColors: readonly string[];
-  resolvedTheme: "light" | "dark";
+  resolvedTheme: ResolvedTheme;
   themeMode: ThemeMode;
   setThemeMode: (mode: ThemeMode) => void;
 }
@@ -36,23 +41,25 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const systemScheme = useColorScheme();
 
-  const resolvedTheme: "light" | "dark" =
+  const resolvedTheme: ResolvedTheme =
     themeMode === "system"
       ? systemScheme === "dark"
         ? "dark"
         : "light"
       : themeMode;
 
-  const value = useMemo<ThemeContextValue>(
-    () => ({
-      colors: resolvedTheme === "dark" ? darkColors : lightColors,
-      rowColors: resolvedTheme === "dark" ? darkRowColors : lightRowColors,
-      resolvedTheme,
-      themeMode,
-      setThemeMode,
-    }),
-    [resolvedTheme, themeMode, setThemeMode],
-  );
+  const value = useMemo<ThemeContextValue>(() => {
+    const palettes: Record<
+      ResolvedTheme,
+      { colors: ColorTokens; rowColors: readonly string[] }
+    > = {
+      light: { colors: lightColors, rowColors: lightRowColors },
+      dark: { colors: darkColors, rowColors: darkRowColors },
+      mono: { colors: monoColors, rowColors: monoRowColors },
+    };
+    const { colors, rowColors } = palettes[resolvedTheme];
+    return { colors, rowColors, resolvedTheme, themeMode, setThemeMode };
+  }, [resolvedTheme, themeMode, setThemeMode]);
 
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

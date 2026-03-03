@@ -2,7 +2,7 @@ import { Text } from "react-native";
 import * as RN from "react-native";
 import { render, screen } from "@testing-library/react-native";
 
-import { darkColors, lightColors } from "@/theme/colors";
+import { darkColors, lightColors, monoColors } from "@/theme/colors";
 
 import { ThemeProvider, useTheme } from "./ThemeContext";
 
@@ -39,6 +39,17 @@ describe("ThemeContext", () => {
 
     expect(screen.getByTestId("bg").props.children).toBe(darkColors.background);
     expect(screen.getByTestId("theme").props.children).toBe("dark");
+  });
+
+  it("provides mono colors when themeMode is mono", () => {
+    render(
+      <ThemeProvider themeMode="mono" setThemeMode={jest.fn()}>
+        <TestConsumer />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByTestId("bg").props.children).toBe(monoColors.background);
+    expect(screen.getByTestId("theme").props.children).toBe("mono");
   });
 
   it("resolves system mode using useColorScheme", () => {

@@ -50,6 +50,32 @@ const darkColors: ColorTokens = {
   toastText: "#1a1a1a",
 };
 
+/** Monochrome (black & white) color palette. */
+const monoColors: ColorTokens = {
+  primary: "#555",
+  primaryDisabled: "#aaa",
+  primaryLightBg: "#e8e8e8",
+  destructive: "#555",
+  devButton: "#777",
+  textPrimary: "#111",
+  textSecondary: "#444",
+  textTertiary: "#888",
+  textLabel: "#333",
+  textModal: "#222",
+  textEntryRow: "#111",
+  white: "#fff",
+  background: "#f0f0f0",
+  splashBackground: "#f0f0f0",
+  inputBackground: "#fafafa",
+  border: "#ccc",
+  inputBorder: "#bbb",
+  deleteButtonBg: "#e0e0e0",
+  modalOverlay: "rgba(0, 0, 0, 0.5)",
+  contentBackground: "#fff",
+  toastBackground: "#222",
+  toastText: "#eee",
+};
+
 /** Light-mode rainbow row colors (pastel shades). */
 const lightRowColors = [
   "#EF9A9A",
@@ -72,7 +98,25 @@ const darkRowColors = [
   "#6A1B9A",
 ] as const;
 
+/** Monochrome row colors (shades of grey). */
+const monoRowColors = [
+  "#d4d4d4",
+  "#bfbfbf",
+  "#aaaaaa",
+  "#c7c7c7",
+  "#b2b2b2",
+  "#9e9e9e",
+  "#d9d9d9",
+] as const;
+
 /** Shape of the color token object. */
 export type ColorTokens = typeof lightColors;
 
-export { darkColors, darkRowColors,lightColors, lightRowColors };
+export {
+  darkColors,
+  darkRowColors,
+  lightColors,
+  lightRowColors,
+  monoColors,
+  monoRowColors,
+};

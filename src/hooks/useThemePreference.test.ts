@@ -25,6 +25,18 @@ describe("useThemePreference", () => {
     expect(result.current.themeMode).toBe("dark");
   });
 
+  it("hydrates mono theme mode", async () => {
+    await AsyncStorage.setItem("@theme_mode", "mono");
+
+    const { result } = renderHook(() => useThemePreference());
+
+    await act(async () => {
+      await result.current.loadThemePreference();
+    });
+
+    expect(result.current.themeMode).toBe("mono");
+  });
+
   it("persists theme mode when set", async () => {
     const { result } = renderHook(() => useThemePreference());
 

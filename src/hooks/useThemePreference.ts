@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemeMode } from "@/theme/ThemeContext";
 
 const STORAGE_KEY = "@theme_mode";
-const VALID_MODES: ThemeMode[] = ["system", "light", "dark"];
+const VALID_MODES: ThemeMode[] = ["system", "light", "dark", "mono"];
 
 /**
  * Manages theme preference persistence via AsyncStorage.

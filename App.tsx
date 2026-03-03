@@ -32,11 +32,12 @@ const headerLogo = require("./assets/icon.png");
 const SPLASH_DURATION_MS = 2000;
 const APP_LABEL = (Constants.expoConfig?.extra?.appLabel as string) ?? "";
 
-const THEME_CYCLE: ThemeMode[] = ["system", "light", "dark"];
+const THEME_CYCLE: ThemeMode[] = ["system", "light", "dark", "mono"];
 const THEME_ICONS: Record<ThemeMode, keyof typeof Ionicons.glyphMap> = {
   system: "contrast-outline",
   light: "sunny-outline",
   dark: "moon-outline",
+  mono: "ellipse-outline",
 };
 
 /** Root component that wraps AppContent with ThemeProvider. */
