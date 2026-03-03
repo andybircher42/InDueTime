@@ -183,7 +183,9 @@ function AppContent({ loadThemePreference }: AppContentProps) {
             accessible={false}
             testID="header-logo"
           />
-          <Text style={styles.title}>in due time</Text>
+          <Text style={styles.title} accessibilityRole="header">
+            in due time
+          </Text>
           {APP_LABEL !== "" && <Text style={styles.appLabel}>{APP_LABEL}</Text>}
           <Pressable
             ref={settingsRef}
