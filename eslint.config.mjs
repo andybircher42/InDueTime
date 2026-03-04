@@ -49,6 +49,7 @@ export default tseslint.config(
     ignores: [
       "node_modules/",
       "babel.config.js",
+      "fingerprint.config.js",
       "jest.config.js",
       "jest-transformer.js",
       ".expo/",
