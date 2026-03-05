@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   Image,
   ImageBackground,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   StyleSheet,
@@ -143,6 +145,21 @@ function AppContent({ loadThemePreference }: AppContentProps) {
             }
           })
           .catch((e) => console.error("Failed to check for updates", e));
+
+        Alert.alert(
+          "Update Available",
+          "A newer version of In Due Time is available with important improvements.",
+          [
+            { text: "Later", style: "cancel" },
+            {
+              text: "Download",
+              onPress: () =>
+                Linking.openURL(
+                  "https://expo.dev/accounts/andybircher/projects/in-due-time/builds",
+                ),
+            },
+          ],
+        );
       }
     }
     void init();
