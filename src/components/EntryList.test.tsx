@@ -70,9 +70,12 @@ afterEach(() => {
 });
 
 describe("EntryList", () => {
-  it('shows "No entries yet" when empty', () => {
+  it("shows empty state with guidance when no entries", () => {
     renderList([]);
     expect(screen.getByText("No entries yet")).toBeTruthy();
+    expect(
+      screen.getByText("Add your first entry using the form above"),
+    ).toBeTruthy();
   });
 
   it("renders entry name and formatted age", () => {

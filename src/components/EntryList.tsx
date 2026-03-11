@@ -287,7 +287,15 @@ export default function EntryList({
           entries.length === 0 ? styles.emptyList : undefined
         }
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No entries yet</Text>
+          <View style={styles.emptyContent}>
+            <View style={styles.emptyIconCircle}>
+              <Ionicons name="add" size={32} color={colors.primary} />
+            </View>
+            <Text style={styles.emptyTitle}>No entries yet</Text>
+            <Text style={styles.emptySubtitle}>
+              Add your first entry using the form above
+            </Text>
+          </View>
         }
       />
     </View>
@@ -351,9 +359,29 @@ function createStyles(colors: ColorTokens) {
       justifyContent: "center",
       alignItems: "center",
     },
-    emptyText: {
-      color: colors.textTertiary,
+    emptyContent: {
+      alignItems: "center",
+      gap: 8,
+    },
+    emptyIconCircle: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      borderWidth: 2,
+      borderColor: colors.primary,
+      borderStyle: "dashed",
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 4,
+    },
+    emptyTitle: {
+      color: colors.textPrimary,
       fontSize: 16,
+      fontWeight: "600",
+    },
+    emptySubtitle: {
+      color: colors.textTertiary,
+      fontSize: 14,
     },
     entryWrapper: {
       marginHorizontal: 16,
