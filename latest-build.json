@@ -1,0 +1,12 @@
+{
+  "ios": {
+    "buildId": "2c64bcb2-1718-4ef1-ac33-ad44af258c00",
+    "version": "1.0.0",
+    "buildNumber": "1"
+  },
+  "android": {
+    "buildId": "ae1730ab-637b-4223-a721-310a088345db",
+    "version": "1.0.0",
+    "buildNumber": "4"
+  }
+}
