@@ -102,6 +102,7 @@ const EntryRow = React.memo(function EntryRow({
             (nameWidth ?? 0) > 0 && { minWidth: nameWidth },
           ]}
           numberOfLines={1}
+          ellipsizeMode="tail"
           onLayout={(e: LayoutChangeEvent) =>
             onNameLayout?.(item.id, e.nativeEvent.layout.width)
           }
@@ -144,6 +145,7 @@ export default function EntryList({
 
   const handleNameLayout = useCallback((id: string, width: number) => {
     nameWidths.current.set(id, width);
+    if (nameWidths.current.size === 0) {return;}
     const newMax = Math.max(...nameWidths.current.values());
     setMaxNameWidth((prev) => (newMax !== prev ? newMax : prev));
   }, []);

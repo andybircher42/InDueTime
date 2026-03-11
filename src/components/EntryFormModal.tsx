@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -15,6 +15,12 @@ export default function EntryFormModal({ onAdd }: EntryFormModalProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [isOpen, setIsOpen] = useState(false);
+  const formKey = useRef(0);
+
+  const open = useCallback(() => {
+    formKey.current += 1;
+    setIsOpen(true);
+  }, []);
 
   const handleAdd = useCallback(
     (entry: { name: string; dueDate: string }) => {
@@ -52,14 +58,14 @@ export default function EntryFormModal({ onAdd }: EntryFormModalProps) {
                 <Ionicons name="close" size={24} color={colors.textTertiary} />
               </Pressable>
             </View>
-            <EntryForm onAdd={handleAdd} />
+            <EntryForm key={formKey.current} onAdd={handleAdd} />
           </View>
         </View>
       </Modal>
       {!isOpen && (
         <Pressable
           style={styles.fab}
-          onPress={() => setIsOpen(true)}
+          onPress={open}
           accessibilityRole="button"
           accessibilityLabel="Add new entry"
         >
