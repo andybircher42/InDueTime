@@ -22,6 +22,11 @@
     "production": {
       "android": {
         "releaseStatus": "draft"
+      },
+      "ios": {
+        "ascApiKeyPath": "./auth.p8",
+        "ascApiKeyIssuerId": "${{ env.ASC_API_KEY_ISSUER_ID }}",
+        "ascApiKeyId": "${{ env.ASC_API_KEY_ID }}"
       }
     }
   }
