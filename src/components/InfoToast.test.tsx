@@ -24,6 +24,15 @@ describe("InfoToast", () => {
     expect(screen.getByText("1 entry was corrupted and removed")).toBeTruthy();
   });
 
+  it("is announced by screen readers as an alert", () => {
+    renderWithTheme(
+      <InfoToast message="Something happened" onDismiss={jest.fn()} />,
+    );
+    const toast = screen.getByLabelText("Something happened");
+    expect(toast.props.accessibilityRole).toBe("alert");
+    expect(toast.props.accessibilityLiveRegion).toBe("assertive");
+  });
+
   it("calls onDismiss after 5 seconds", () => {
     const onDismiss = jest.fn();
     renderWithTheme(<InfoToast message="Test message" onDismiss={onDismiss} />);

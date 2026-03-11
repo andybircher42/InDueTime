@@ -38,6 +38,16 @@ describe("UndoToast", () => {
     expect(screen.getByText("Deleted Baby A (12w 3d)")).toBeTruthy();
   });
 
+  it("is announced by screen readers as an alert", () => {
+    renderToast();
+    const toast = screen.getByTestId("undo-toast");
+    expect(toast.props.accessibilityRole).toBe("alert");
+    expect(toast.props.accessibilityLiveRegion).toBe("polite");
+    expect(toast.props.accessibilityLabel).toBe(
+      "Deleted Baby A, 12 weeks 3 days",
+    );
+  });
+
   it("shows an Undo button", () => {
     renderToast();
     expect(screen.getByText("Undo")).toBeTruthy();
