@@ -4,6 +4,8 @@ import jsdoc from "eslint-plugin-jsdoc";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import tseslint from "typescript-eslint";
 
+import platformCoverage from "./eslint-rules/platform-coverage.js";
+
 export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -12,8 +14,10 @@ export default tseslint.config(
     plugins: {
       jsdoc,
       "simple-import-sort": simpleImportSort,
+      "custom-rn": { rules: { "platform-coverage": platformCoverage } },
     },
     rules: {
+      "custom-rn/platform-coverage": "warn",
       curly: "error",
       "jsdoc/require-jsdoc": [
         "error",
