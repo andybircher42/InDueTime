@@ -1,13 +1,13 @@
 /** Light color palette. */
 const lightColors = {
-  primary: "#4a90d9",
-  primaryDisabled: "#a0c4e8",
+  primary: "#2e78c2",
+  primaryDisabled: "#7cadd4",
   primaryLightBg: "#e8f0fe",
-  destructive: "#ef4444",
+  destructive: "#dc2626",
   devButton: "#ff6b6b",
   textPrimary: "#333",
   textSecondary: "#666",
-  textTertiary: "#999",
+  textTertiary: "#767676",
   textLabel: "#555",
   textModal: "#444",
   textEntryRow: "#333",
@@ -20,20 +20,21 @@ const lightColors = {
   deleteButtonBg: "#f0f0f0",
   modalOverlay: "rgba(0, 0, 0, 0.5)",
   contentBackground: "#fff",
+  shadow: "#000",
   toastBackground: "#333",
   toastText: "#fff",
 } as const;
 
 /** Dark color palette. */
 const darkColors: ColorTokens = {
-  primary: "#5a9fe6",
-  primaryDisabled: "#3a6a9e",
+  primary: "#3a84cc",
+  primaryDisabled: "#2d5a88",
   primaryLightBg: "#1a2a3e",
-  destructive: "#ef4444",
+  destructive: "#dc2626",
   devButton: "#ff6b6b",
   textPrimary: "#e0e0e0",
   textSecondary: "#b0b0b0",
-  textTertiary: "#808080",
+  textTertiary: "#8f8f8f",
   textLabel: "#c0c0c0",
   textModal: "#d0d0d0",
   textEntryRow: "#e0e0e0",
@@ -46,6 +47,7 @@ const darkColors: ColorTokens = {
   deleteButtonBg: "#333",
   modalOverlay: "rgba(0, 0, 0, 0.7)",
   contentBackground: "#1e1e1e",
+  shadow: "#000",
   toastBackground: "#e0e0e0",
   toastText: "#1a1a1a",
 };
@@ -59,7 +61,7 @@ const monoColors: ColorTokens = {
   devButton: "#777",
   textPrimary: "#111",
   textSecondary: "#444",
-  textTertiary: "#888",
+  textTertiary: "#767676",
   textLabel: "#333",
   textModal: "#222",
   textEntryRow: "#111",
@@ -72,6 +74,7 @@ const monoColors: ColorTokens = {
   deleteButtonBg: "#e0e0e0",
   modalOverlay: "rgba(0, 0, 0, 0.5)",
   contentBackground: "#fff",
+  shadow: "#000",
   toastBackground: "#222",
   toastText: "#eee",
 };
@@ -89,13 +92,13 @@ const lightRowColors = [
 
 /** Dark-mode rainbow row colors (deep Material shades). */
 const darkRowColors = [
-  "#D4A03A",
-  "#3D7A42",
-  "#3570A8",
-  "#55399A",
-  "#6E3590",
-  "#A63838",
-  "#C06025",
+  "#6B5010",
+  "#1E4D23",
+  "#1B4272",
+  "#352063",
+  "#4A1E62",
+  "#6B1C1C",
+  "#6E3410",
 ] as const;
 
 /** Monochrome row colors (shades of gray). */
