@@ -273,7 +273,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
     >
       <KeyboardAvoidingView
         style={styles.keyboardView}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View
           style={[styles.header, { paddingTop: insets.top + 16 }]}
