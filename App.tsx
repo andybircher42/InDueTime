@@ -294,8 +294,9 @@ function createStyles(colors: ColorTokens) {
       alignItems: "center",
     },
     splashLogo: {
-      width: 280,
-      height: 160,
+      width: "70%",
+      maxWidth: 320,
+      aspectRatio: 280 / 160,
     },
     container: {
       flex: 1,
