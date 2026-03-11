@@ -80,7 +80,9 @@ describe("getDateError", () => {
 
   it("treats 2-digit year as 1900s when more than 10 years in the future", () => {
     // "99" → 1999, which is far in the past
-    expect(getDateError("6-15-99", now)).toBe("Date is too far in the past");
+    expect(getDateError("6-15-99", now)).toBe(
+      "Date must be within the last month",
+    );
   });
 
   it("returns null for valid date with leading zeros", () => {
@@ -133,7 +135,9 @@ describe("getDateError", () => {
   });
 
   it("returns error for date more than 1 month in the past", () => {
-    expect(getDateError("1-1-2026", now)).toBe("Date is too far in the past");
+    expect(getDateError("1-1-2026", now)).toBe(
+      "Date must be within the last month",
+    );
   });
 
   it("returns null for date exactly 1 month in the past", () => {
@@ -143,7 +147,7 @@ describe("getDateError", () => {
   it("returns error for date more than 42 weeks in the future", () => {
     // 42 weeks from March 2 = Dec 21, 2026; Dec 22 should fail
     expect(getDateError("12-22-2026", now)).toBe(
-      "Date is too far in the future",
+      "Date must be within the next 42 weeks",
     );
   });
 

@@ -325,7 +325,7 @@ describe("EntryForm — Due Date mode", () => {
     renderForm();
     pickDate();
 
-    expect(screen.getByText("Gestational Age -> 32w 4d")).toBeTruthy();
+    expect(screen.getByText("Gestational age: 32w 4d")).toBeTruthy();
   });
 
   it("submits dueDate when Add is pressed in Due Date mode", () => {
@@ -379,7 +379,7 @@ describe("EntryForm — typed date input", () => {
 
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
 
-    expect(screen.getByText("Gestational Age -> 28w 3d")).toBeTruthy();
+    expect(screen.getByText("Gestational age: 28w 3d")).toBeTruthy();
   });
 
   it("typing an invalid month does not enable Add button", () => {

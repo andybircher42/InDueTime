@@ -67,10 +67,10 @@ export function getDateError(
   }
   const { min, max } = getDateBounds(now);
   if (date < min) {
-    return "Date is too far in the past";
+    return "Date must be within the last month";
   }
   if (date > max) {
-    return "Date is too far in the future";
+    return "Date must be within the next 42 weeks";
   }
   return null;
 }

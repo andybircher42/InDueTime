@@ -238,12 +238,12 @@ export default function EntryList({
             style={styles.deleteAllButton}
             onPress={() =>
               Alert.alert(
-                "Delete All",
-                "Are you sure you want to delete all entries?",
+                "Delete All Entries",
+                `This will permanently remove all ${entries.length} entries. This cannot be undone.`,
                 [
                   { text: "Cancel", style: "cancel" },
                   {
-                    text: "Delete",
+                    text: "Delete All",
                     style: "destructive",
                     onPress: onDeleteAll,
                   },

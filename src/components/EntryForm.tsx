@@ -305,7 +305,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
               style={styles.preview}
               accessibilityLabel="Gestational age preview"
             >
-              Gestational Age {"->"} {computed.weeks}w {computed.days}d
+              Gestational age: {computed.weeks}w {computed.days}d
             </Text>
           )}
           {showPicker && (

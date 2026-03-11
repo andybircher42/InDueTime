@@ -309,8 +309,8 @@ describe("EntryList", () => {
     fireEvent.press(screen.getByText("Delete All"));
 
     expect(alertSpy).toHaveBeenCalledWith(
-      "Delete All",
-      "Are you sure you want to delete all entries?",
+      "Delete All Entries",
+      expect.stringContaining("permanently remove all"),
       expect.any(Array),
     );
   });
@@ -325,7 +325,7 @@ describe("EntryList", () => {
       text: string;
       onPress?: () => void;
     }>;
-    buttons.find((b) => b.text === "Delete")?.onPress?.();
+    buttons.find((b) => b.text === "Delete All")?.onPress?.();
 
     expect(onDeleteAll).toHaveBeenCalledTimes(1);
   });
