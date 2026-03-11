@@ -147,18 +147,20 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
         value={name}
         onChangeText={setName}
         returnKeyType="next"
+        maxLength={50}
       />
 
       {/* Mode toggle */}
-      <View style={styles.toggleRow}>
+      <View style={styles.toggleRow} accessibilityRole="tablist">
         <Pressable
           style={[
             styles.toggleButton,
             mode === "dueDate" && styles.toggleButtonActive,
           ]}
           onPress={() => setMode("dueDate")}
-          accessibilityRole="button"
+          accessibilityRole="tab"
           accessibilityState={{ selected: mode === "dueDate" }}
+          accessibilityLabel="Due Date input mode"
         >
           <Text
             style={[
@@ -175,8 +177,9 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
             mode === "weeksDays" && styles.toggleButtonActive,
           ]}
           onPress={() => setMode("weeksDays")}
-          accessibilityRole="button"
+          accessibilityRole="tab"
           accessibilityState={{ selected: mode === "weeksDays" }}
+          accessibilityLabel="Gestational Age input mode"
         >
           <Text
             style={[
@@ -285,6 +288,9 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
               style={[styles.addButton, !canAdd && styles.addButtonDisabled]}
               onPress={handleAdd}
               disabled={!canAdd}
+              accessibilityRole="button"
+              accessibilityLabel="Add entry"
+              accessibilityState={{ disabled: !canAdd }}
             >
               <Text style={styles.addButtonText}>Add</Text>
             </Pressable>

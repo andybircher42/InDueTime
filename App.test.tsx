@@ -135,7 +135,7 @@ describe("App", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Baby")).toBeTruthy();
-      expect(screen.queryByLabelText("Undo toast")).toBeNull();
+      expect(screen.queryByTestId("undo-toast")).toBeNull();
     });
   });
 
@@ -147,7 +147,7 @@ describe("App", () => {
     fireEvent.press(screen.getByLabelText("Delete Baby"));
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Undo toast")).toBeTruthy();
+      expect(screen.getByTestId("undo-toast")).toBeTruthy();
     });
 
     act(() => {
@@ -155,7 +155,7 @@ describe("App", () => {
     });
 
     await waitFor(() => {
-      expect(screen.queryByLabelText("Undo toast")).toBeNull();
+      expect(screen.queryByTestId("undo-toast")).toBeNull();
     });
   });
 

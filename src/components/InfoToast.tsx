@@ -32,7 +32,9 @@ export default function InfoToast({ message, onDismiss }: InfoToastProps) {
   return (
     <Animated.View
       style={[styles.container, { transform: [{ translateY }] }]}
-      accessibilityLabel="Info toast"
+      accessibilityRole="alert"
+      accessibilityLiveRegion="assertive"
+      accessibilityLabel={message}
       {...panHandlers}
     >
       <Text style={styles.message}>{message}</Text>

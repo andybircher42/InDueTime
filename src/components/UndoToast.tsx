@@ -40,7 +40,10 @@ export default function UndoToast({
   return (
     <Animated.View
       style={[styles.container, { transform: [{ translateY }] }]}
-      accessibilityLabel="Undo toast"
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+      accessibilityLabel={`Deleted ${entry.name}, ${weeks} weeks ${days} days`}
+      testID="undo-toast"
       {...panHandlers}
     >
       <Text style={styles.message}>

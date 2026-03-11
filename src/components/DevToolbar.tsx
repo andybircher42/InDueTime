@@ -81,10 +81,17 @@ export default function DevToolbar({
       <Pressable
         onPress={() => onSeedData(generateSeedEntries())}
         style={styles.devButton}
+        accessibilityRole="button"
+        accessibilityLabel="Seed sample data"
       >
         <Text style={styles.devButtonText}>Seed Data</Text>
       </Pressable>
-      <Pressable onPress={onResetAgreement} style={styles.devButton}>
+      <Pressable
+        onPress={onResetAgreement}
+        style={styles.devButton}
+        accessibilityRole="button"
+        accessibilityLabel="Reset HIPAA agreement"
+      >
         <Text style={styles.devButtonText}>Reset HIPAA</Text>
       </Pressable>
     </View>

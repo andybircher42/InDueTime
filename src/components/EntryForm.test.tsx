@@ -285,21 +285,29 @@ describe("EntryForm — mode toggle", () => {
   it("mode toggle buttons communicate selected state for accessibility", () => {
     renderForm();
 
-    const dueDateButton = screen.getByRole("button", { name: "Due Date" });
-    const gaButton = screen.getByRole("button", { name: "Gestational Age" });
+    const dueDateTab = screen.getByRole("tab", {
+      name: "Due Date input mode",
+    });
+    const gaTab = screen.getByRole("tab", {
+      name: "Gestational Age input mode",
+    });
 
-    expect(dueDateButton.props.accessibilityState).toEqual({ selected: true });
-    expect(gaButton.props.accessibilityState).toEqual({ selected: false });
+    expect(dueDateTab.props.accessibilityState).toEqual({ selected: true });
+    expect(gaTab.props.accessibilityState).toEqual({ selected: false });
 
-    fireEvent.press(gaButton);
+    fireEvent.press(gaTab);
 
-    const dueDateButton2 = screen.getByRole("button", { name: "Due Date" });
-    const gaButton2 = screen.getByRole("button", { name: "Gestational Age" });
+    const dueDateTab2 = screen.getByRole("tab", {
+      name: "Due Date input mode",
+    });
+    const gaTab2 = screen.getByRole("tab", {
+      name: "Gestational Age input mode",
+    });
 
-    expect(dueDateButton2.props.accessibilityState).toEqual({
+    expect(dueDateTab2.props.accessibilityState).toEqual({
       selected: false,
     });
-    expect(gaButton2.props.accessibilityState).toEqual({ selected: true });
+    expect(gaTab2.props.accessibilityState).toEqual({ selected: true });
   });
 });
 

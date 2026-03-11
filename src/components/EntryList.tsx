@@ -90,6 +90,7 @@ const EntryRow = React.memo(function EntryRow({
             { color: textColor },
             (nameWidth ?? 0) > 0 && { minWidth: nameWidth },
           ]}
+          numberOfLines={1}
           onLayout={(e: LayoutChangeEvent) =>
             onNameLayout?.(item.id, e.nativeEvent.layout.width)
           }
@@ -201,6 +202,7 @@ export default function EntryList({
               onPress={() => handleSortPress("dueDate")}
               accessibilityRole="button"
               accessibilityState={{ selected: sortBy === "dueDate" }}
+              accessibilityLabel={`Sort by due date${sortBy === "dueDate" ? `, ${sortDir === "asc" ? "ascending" : "descending"}` : ""}`}
             >
               <Text
                 style={[
@@ -220,6 +222,7 @@ export default function EntryList({
               onPress={() => handleSortPress("name")}
               accessibilityRole="button"
               accessibilityState={{ selected: sortBy === "name" }}
+              accessibilityLabel={`Sort by name${sortBy === "name" ? `, ${sortDir === "asc" ? "ascending" : "descending"}` : ""}`}
             >
               <Text
                 style={[
