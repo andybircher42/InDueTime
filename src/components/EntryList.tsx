@@ -145,7 +145,9 @@ export default function EntryList({
 
   const handleNameLayout = useCallback((id: string, width: number) => {
     nameWidths.current.set(id, width);
-    if (nameWidths.current.size === 0) {return;}
+    if (nameWidths.current.size === 0) {
+      return;
+    }
     const newMax = Math.max(...nameWidths.current.values());
     setMaxNameWidth((prev) => (newMax !== prev ? newMax : prev));
   }, []);
@@ -305,7 +307,7 @@ export default function EntryList({
             </View>
             <Text style={styles.emptyTitle}>No entries yet</Text>
             <Text style={styles.emptySubtitle}>
-              Add your first entry using the form above
+              Tap the + button to add your first entry
             </Text>
           </View>
         }

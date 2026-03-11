@@ -74,7 +74,7 @@ describe("EntryList", () => {
     renderList([]);
     expect(screen.getByText("No entries yet")).toBeTruthy();
     expect(
-      screen.getByText("Add your first entry using the form above"),
+      screen.getByText("Tap the + button to add your first entry"),
     ).toBeTruthy();
   });
 

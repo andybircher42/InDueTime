@@ -57,7 +57,7 @@ const monoColors: ColorTokens = {
   primary: "#555",
   primaryDisabled: "#aaa",
   primaryLightBg: "#e8e8e8",
-  destructive: "#555",
+  destructive: "#222",
   devButton: "#777",
   textPrimary: "#111",
   textSecondary: "#444",
