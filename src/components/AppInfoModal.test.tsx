@@ -27,7 +27,7 @@ describe("AppInfoModal", () => {
   it("shows ellipsis after truncated build ID", () => {
     renderWithTheme(<AppInfoModal visible={true} onClose={jest.fn()} />);
 
-    expect(screen.getByText(/Build .*…/)).toBeTruthy();
+    expect(screen.getByText(/Build:.*…/)).toBeTruthy();
   });
 
   it("copies full build ID when build text is pressed", () => {

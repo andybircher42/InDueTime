@@ -235,4 +235,66 @@ describe("useEntries", () => {
 
     expect(result.current.discardedCount).toBe(0);
   });
+
+  it("sets saveError when persistence fails after retry", async () => {
+    const result = setup();
+
+    jest
+      .spyOn(AsyncStorage, "setItem")
+      .mockRejectedValue(new Error("disk full"));
+
+    act(() => {
+      result.current.add({ name: "A", dueDate: "2026-09-01" });
+    });
+
+    await waitFor(() => {
+      expect(result.current.saveError).toBe(true);
+    });
+  });
+
+  it("clears saveError on next successful save", async () => {
+    const result = setup();
+
+    const setItemSpy = jest
+      .spyOn(AsyncStorage, "setItem")
+      .mockRejectedValue(new Error("disk full"));
+
+    act(() => {
+      result.current.add({ name: "A", dueDate: "2026-09-01" });
+    });
+
+    await waitFor(() => {
+      expect(result.current.saveError).toBe(true);
+    });
+
+    setItemSpy.mockRestore();
+
+    act(() => {
+      result.current.add({ name: "B", dueDate: "2026-06-01" });
+    });
+
+    expect(result.current.saveError).toBe(false);
+  });
+
+  it("dismissSaveError clears the error", async () => {
+    const result = setup();
+
+    jest
+      .spyOn(AsyncStorage, "setItem")
+      .mockRejectedValue(new Error("disk full"));
+
+    act(() => {
+      result.current.add({ name: "A", dueDate: "2026-09-01" });
+    });
+
+    await waitFor(() => {
+      expect(result.current.saveError).toBe(true);
+    });
+
+    act(() => {
+      result.current.dismissSaveError();
+    });
+
+    expect(result.current.saveError).toBe(false);
+  });
 });

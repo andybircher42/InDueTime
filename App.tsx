@@ -97,6 +97,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
     entries,
     deletedEntry,
     discardedCount,
+    saveError,
     load,
     add,
     remove,
@@ -105,6 +106,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
     undo,
     dismissUndo,
     dismissDiscarded,
+    dismissSaveError,
   } = useEntries();
 
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -276,10 +278,17 @@ function AppContent({ loadThemePreference }: AppContentProps) {
           <InfoToast
             message={
               discardedCount === 1
-                ? "1 entry couldn't be read and was removed"
-                : `${discardedCount} entries couldn't be read and were removed`
+                ? "We removed someone whose data was unreadable"
+                : `We removed ${discardedCount} people whose data was unreadable`
             }
             onDismiss={dismissDiscarded}
+          />
+        )}
+
+        {saveError && !deletedEntry && discardedCount === 0 && (
+          <InfoToast
+            message="Your changes might not be saved. Try again or restart the app."
+            onDismiss={dismissSaveError}
           />
         )}
 

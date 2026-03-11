@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Keyboard,
   Platform,
@@ -68,15 +68,21 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
   const showDaysError = daysTouched && daysError;
   const showDateError = dateTouched && dateError;
 
-  /** Creates an onChangeText handler that accepts only digits for a numeric input. */
-  const makeNumericHandler =
-    (setValue: (v: string) => void, setTouched: (v: boolean) => void) =>
-    (text: string) => {
-      if (/^\d*$/.test(text)) {
-        setTouched(false);
-        setValue(text);
-      }
-    };
+  /** onChangeText handler that accepts only digits for the weeks input. */
+  const handleWeeksChange = useCallback((text: string) => {
+    if (/^\d*$/.test(text)) {
+      setWeeksTouched(false);
+      setWeeks(text);
+    }
+  }, []);
+
+  /** onChangeText handler that accepts only digits for the days input. */
+  const handleDaysChange = useCallback((text: string) => {
+    if (/^\d*$/.test(text)) {
+      setDaysTouched(false);
+      setDays(text);
+    }
+  }, []);
 
   const handleDateTextChange = (text: string) => {
     setDateTouched(false);
@@ -130,13 +136,16 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
     Keyboard.dismiss();
   };
 
-  const handleDateChange = (_event: DateTimePickerEvent, selected?: Date) => {
-    setShowPicker(Platform.OS === "ios");
-    if (selected) {
-      setDueDate(selected);
-      setDateText(toDisplayDateString(selected));
-    }
-  };
+  const handleDateChange = useCallback(
+    (_event: DateTimePickerEvent, selected?: Date) => {
+      setShowPicker(Platform.OS === "ios");
+      if (selected) {
+        setDueDate(selected);
+        setDateText(toDisplayDateString(selected));
+      }
+    },
+    [],
+  );
 
   return (
     <View style={styles.form}>
@@ -204,10 +213,10 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
                   showWeeksError && styles.inputError,
                 ]}
                 accessibilityLabel="Weeks"
-                placeholder={"0-42"}
+                placeholder={"0\u201342"}
                 placeholderTextColor={colors.textTertiary}
                 value={weeks}
-                onChangeText={makeNumericHandler(setWeeks, setWeeksTouched)}
+                onChangeText={handleWeeksChange}
                 onBlur={() => setWeeksTouched(true)}
                 keyboardType="number-pad"
                 maxLength={2}
@@ -224,10 +233,10 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
               <TextInput
                 style={[styles.numberInput, showDaysError && styles.inputError]}
                 accessibilityLabel="Days"
-                placeholder={"0-6"}
+                placeholder={"0\u20136"}
                 placeholderTextColor={colors.textTertiary}
                 value={days}
-                onChangeText={makeNumericHandler(setDays, setDaysTouched)}
+                onChangeText={handleDaysChange}
                 onBlur={() => setDaysTouched(true)}
                 keyboardType="number-pad"
                 maxLength={1}
@@ -244,7 +253,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
               onPress={handleAdd}
               disabled={!canAdd}
               accessibilityRole="button"
-              accessibilityLabel="Add entry"
+              accessibilityLabel="Add this person"
               accessibilityState={{ disabled: !canAdd }}
             >
               <Text style={styles.addButtonText}>Add</Text>
@@ -304,7 +313,7 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
               onPress={handleAdd}
               disabled={!canAdd}
               accessibilityRole="button"
-              accessibilityLabel="Add entry"
+              accessibilityLabel="Add this person"
               accessibilityState={{ disabled: !canAdd }}
             >
               <Text style={styles.addButtonText}>Add</Text>

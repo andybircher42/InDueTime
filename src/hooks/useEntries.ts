@@ -20,12 +20,17 @@ export default function useEntries() {
     previousEntries: Entry[];
   } | null>(null);
   const [discardedCount, setDiscardedCount] = useState(0);
+  const [saveError, setSaveError] = useState(false);
 
-  /** Persists entries to AsyncStorage with error logging. */
+  /** Persists entries to AsyncStorage with one retry on failure. */
   const persistEntries = useCallback((updated: Entry[]) => {
-    saveEntries(updated).catch((e) =>
-      console.error("Failed to save entries", e),
-    );
+    setSaveError(false);
+    saveEntries(updated)
+      .catch(() => saveEntries(updated))
+      .catch((e) => {
+        console.error("Failed to save entries after retry", e);
+        setSaveError(true);
+      });
   }, []);
 
   /** Hydrates entries from AsyncStorage. Call once during app initialization. */
@@ -100,10 +105,16 @@ export default function useEntries() {
     setDiscardedCount(0);
   }, []);
 
+  /** Clears the save-error notification. */
+  const dismissSaveError = useCallback(() => {
+    setSaveError(false);
+  }, []);
+
   return {
     entries,
     deletedEntry,
     discardedCount,
+    saveError,
     load,
     add,
     remove,
@@ -112,5 +123,6 @@ export default function useEntries() {
     undo,
     dismissUndo,
     dismissDiscarded,
+    dismissSaveError,
   };
 }

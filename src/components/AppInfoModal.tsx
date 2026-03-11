@@ -46,9 +46,7 @@ export default function AppInfoModal({ visible, onClose }: AppInfoModalProps) {
             accessibilityLabel="Copy build ID"
             accessibilityRole="button"
           >
-            <Text style={styles.detailText}>
-              Build version: {buildId.slice(0, 8)}…
-            </Text>
+            <Text style={styles.detailText}>Build: {buildId.slice(0, 8)}…</Text>
             <Ionicons
               name="copy-outline"
               size={12}
@@ -63,7 +61,7 @@ export default function AppInfoModal({ visible, onClose }: AppInfoModalProps) {
               accessibilityRole="button"
             >
               <Text style={styles.detailText}>
-                Update version: {Updates.updateId.slice(0, 8)}…
+                Update: {Updates.updateId.slice(0, 8)}…
               </Text>
               <Ionicons
                 name="copy-outline"

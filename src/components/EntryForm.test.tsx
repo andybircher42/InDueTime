@@ -122,8 +122,8 @@ describe("EntryForm — Gestational Age mode", () => {
   it("shows range hints as placeholder text", () => {
     renderInWeeksDaysMode();
 
-    expect(screen.getByPlaceholderText("0-42")).toBeTruthy();
-    expect(screen.getByPlaceholderText("0-6")).toBeTruthy();
+    expect(screen.getByPlaceholderText("0\u201342")).toBeTruthy();
+    expect(screen.getByPlaceholderText("0\u20136")).toBeTruthy();
   });
 
   it("shows date format as placeholder text in due date mode", () => {
