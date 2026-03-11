@@ -323,7 +323,12 @@ export default function EntryList({
           entries.length === 0 ? styles.emptyList : undefined
         }
         ListEmptyComponent={
-          <View style={styles.emptyContent}>
+          <Pressable
+            style={styles.emptyContent}
+            onPress={onAddPress}
+            accessibilityRole="button"
+            accessibilityLabel="Get started, add someone"
+          >
             <Ionicons
               name="calendar-outline"
               size={48}
@@ -333,7 +338,7 @@ export default function EntryList({
             <Text style={styles.emptySubtitle}>
               Tap Add someone to get started
             </Text>
-          </View>
+          </Pressable>
         }
       />
     </View>
