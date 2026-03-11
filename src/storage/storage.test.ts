@@ -3,11 +3,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   acceptAgreement,
   checkAgreement,
+  checkOnboardingComplete,
   getOrCreateDeviceId,
   isValidEntry,
   loadEntries,
   resetAgreement,
+  resetOnboarding,
   saveEntries,
+  setOnboardingComplete,
 } from "./storage";
 
 beforeEach(() => {
@@ -203,5 +206,22 @@ describe("agreement helpers", () => {
     await acceptAgreement();
     await resetAgreement();
     expect(await checkAgreement()).toBe(false);
+  });
+});
+
+describe("onboarding helpers", () => {
+  it("checkOnboardingComplete returns false by default", async () => {
+    expect(await checkOnboardingComplete()).toBe(false);
+  });
+
+  it("checkOnboardingComplete returns true after setOnboardingComplete", async () => {
+    await setOnboardingComplete();
+    expect(await checkOnboardingComplete()).toBe(true);
+  });
+
+  it("resetOnboarding clears a previously completed onboarding", async () => {
+    await setOnboardingComplete();
+    await resetOnboarding();
+    expect(await checkOnboardingComplete()).toBe(false);
   });
 });

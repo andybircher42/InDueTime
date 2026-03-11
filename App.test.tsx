@@ -64,6 +64,21 @@ async function acceptHipaa() {
   fireEvent.press(screen.getByText("I Agree"));
 }
 
+async function completeOnboarding() {
+  await waitFor(() => {
+    expect(
+      screen.getByText("You'll support dozens of families this year."),
+    ).toBeTruthy();
+  });
+  act(() => {
+    jest.advanceTimersByTime(7000);
+  });
+  await waitFor(() => {
+    expect(screen.getByText("Get Started")).toBeTruthy();
+  });
+  fireEvent.press(screen.getByText("Get Started"));
+}
+
 async function addEntry(name: string, weeks: string, days: string) {
   fireEvent.press(screen.getByLabelText("Add someone new"));
   fireEvent.press(screen.getByText("Gestational Age"));
@@ -100,9 +115,34 @@ describe("App", () => {
     });
   });
 
+  it("shows onboarding after HIPAA acceptance", async () => {
+    await renderApp();
+    await acceptHipaa();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("You'll support dozens of families this year."),
+      ).toBeTruthy();
+    });
+  });
+
+  it("skips onboarding when already completed", async () => {
+    await AsyncStorage.setItem("@onboarding_complete", "true");
+    await renderApp();
+    await acceptHipaa();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Add someone new")).toBeTruthy();
+    });
+    expect(
+      screen.queryByText("You'll support dozens of families this year."),
+    ).toBeNull();
+  });
+
   it("adds an entry via the form in weeks/days mode", async () => {
     await renderApp();
     await acceptHipaa();
+    await completeOnboarding();
     await addEntry("TestBaby", "20", "3");
 
     expect(screen.getByText("20w 3d")).toBeTruthy();
@@ -111,6 +151,7 @@ describe("App", () => {
   it("deletes an entry and shows undo toast", async () => {
     await renderApp();
     await acceptHipaa();
+    await completeOnboarding();
     await addEntry("Baby", "10", "0");
 
     fireEvent.press(screen.getByLabelText("Remove Baby"));
@@ -124,6 +165,7 @@ describe("App", () => {
   it("restores entry when undo is pressed", async () => {
     await renderApp();
     await acceptHipaa();
+    await completeOnboarding();
     await addEntry("Baby", "10", "0");
 
     fireEvent.press(screen.getByLabelText("Remove Baby"));
@@ -143,6 +185,7 @@ describe("App", () => {
   it("undo toast auto-dismisses after 5 seconds", async () => {
     await renderApp();
     await acceptHipaa();
+    await completeOnboarding();
     await addEntry("Baby", "10", "0");
 
     fireEvent.press(screen.getByLabelText("Remove Baby"));
@@ -192,6 +235,7 @@ describe("App", () => {
   it("persists entries to AsyncStorage", async () => {
     await renderApp();
     await acceptHipaa();
+    await completeOnboarding();
     await addEntry("Saved", "15", "2");
 
     await waitFor(async () => {

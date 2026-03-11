@@ -5,5 +5,6 @@ export { default as EntryFormModal } from "./EntryFormModal";
 export { default as EntryList } from "./EntryList";
 export { default as HipaaAgreementModal } from "./HipaaAgreementModal";
 export { default as InfoToast } from "./InfoToast";
+export { default as OnboardingOverlay } from "./OnboardingOverlay";
 export { default as ThemePickerModal } from "./ThemePickerModal";
 export { default as UndoToast } from "./UndoToast";

@@ -22,6 +22,7 @@ import {
   EntryList,
   HipaaAgreementModal,
   InfoToast,
+  OnboardingOverlay,
   ThemePickerModal,
   UndoToast,
 } from "@/components";
@@ -30,8 +31,10 @@ import { useEntries, useThemePreference } from "@/hooks";
 import {
   acceptAgreement,
   checkAgreement,
+  checkOnboardingComplete,
   getOrCreateDeviceId,
   resetAgreement,
+  resetOnboarding,
 } from "@/storage";
 import { ColorTokens, ThemeProvider, useTheme } from "@/theme";
 
@@ -72,6 +75,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [showAgreement, setShowAgreement] = useState(false);
   const [agreementLoaded, setAgreementLoaded] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showAppInfo, setShowAppInfo] = useState(false);
   const [pickerAnchor, setPickerAnchor] = useState({ top: 0, right: 0 });
@@ -121,7 +125,7 @@ function AppContent({ loadThemePreference }: AppContentProps) {
     let mounted = true;
 
     async function init() {
-      const [accepted, , , deviceId] = await Promise.all([
+      const [accepted, , , deviceId, onboardingDone] = await Promise.all([
         checkAgreement().catch((e) => {
           console.error("Failed to check agreement", e);
           return false;
@@ -134,12 +138,18 @@ function AppContent({ loadThemePreference }: AppContentProps) {
           console.error("Failed to get device ID", e);
           return undefined;
         }),
+        checkOnboardingComplete().catch((e) => {
+          console.error("Failed to check onboarding", e);
+          return false;
+        }),
       ]);
       if (!mounted) {
         return;
       }
       if (!accepted) {
         setShowAgreement(true);
+      } else if (!onboardingDone) {
+        setShowOnboarding(true);
       }
       setAgreementLoaded(true);
 
@@ -170,14 +180,22 @@ function AppContent({ loadThemePreference }: AppContentProps) {
 
   const handleAcceptAgreement = () => {
     acceptAgreement()
-      .then(() => setShowAgreement(false))
+      .then(() => {
+        setShowAgreement(false);
+        setShowOnboarding(true);
+      })
       .catch((e) => console.error("Failed to save agreement", e));
   };
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+  };
+
   const handleResetAgreement = () => {
-    resetAgreement()
+    Promise.all([resetAgreement(), resetOnboarding()])
       .then(() => {
         setShowAgreement(true);
+        setShowOnboarding(false);
         if (__DEV__) {
           DevSettings.reload();
         }
@@ -258,6 +276,10 @@ function AppContent({ loadThemePreference }: AppContentProps) {
         <HipaaAgreementModal
           visible={showAgreement && agreementLoaded}
           onAccept={handleAcceptAgreement}
+        />
+        <OnboardingOverlay
+          visible={showOnboarding && !showAgreement}
+          onComplete={handleOnboardingComplete}
         />
         <ThemePickerModal
           visible={showThemePicker}

@@ -11,6 +11,7 @@ export interface Entry {
 const STORAGE_KEY = "@gestation_entries";
 const AGREEMENT_KEY = "@hipaa_agreement_accepted";
 const DEVICE_ID_KEY = "@device_id";
+const ONBOARDING_KEY = "@onboarding_complete";
 
 /** Persists the full entries array to AsyncStorage. */
 export const saveEntries = async (entries: Entry[]): Promise<void> => {
@@ -42,6 +43,22 @@ export const getOrCreateDeviceId = async (): Promise<string> => {
   const id = Crypto.randomUUID();
   await AsyncStorage.setItem(DEVICE_ID_KEY, id);
   return id;
+};
+
+/** Returns whether the user has completed the onboarding flow. */
+export const checkOnboardingComplete = async (): Promise<boolean> => {
+  const value = await AsyncStorage.getItem(ONBOARDING_KEY);
+  return !!value;
+};
+
+/** Records that the user completed onboarding. */
+export const setOnboardingComplete = async (): Promise<void> => {
+  await AsyncStorage.setItem(ONBOARDING_KEY, "true");
+};
+
+/** Clears the stored onboarding completion so it is shown again. */
+export const resetOnboarding = async (): Promise<void> => {
+  await AsyncStorage.removeItem(ONBOARDING_KEY);
 };
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}/;
