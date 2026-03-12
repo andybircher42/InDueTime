@@ -24,3 +24,4 @@ export {
   computeGestationalAge,
   gestationalAgeFromDueDate,
 } from "./gestationalAge";
+export { reportError } from "./reportError";

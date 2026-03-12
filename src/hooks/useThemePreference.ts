@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Brightness, Personality } from "@/theme";
+import { reportError } from "@/util";
 
 const PERSONALITY_KEY = "@theme_personality";
 const BRIGHTNESS_KEY = "@theme_brightness";
@@ -87,7 +88,7 @@ export default function useThemePreference() {
   const setPersonality = useCallback((p: Personality) => {
     setPersonalityState(p);
     AsyncStorage.setItem(PERSONALITY_KEY, p).catch((e) =>
-      console.error("Failed to save theme personality", e),
+      reportError("Failed to save theme personality", e),
     );
   }, []);
 
@@ -95,7 +96,7 @@ export default function useThemePreference() {
   const setBrightness = useCallback((b: Brightness) => {
     setBrightnessState(b);
     AsyncStorage.setItem(BRIGHTNESS_KEY, b).catch((e) =>
-      console.error("Failed to save theme brightness", e),
+      reportError("Failed to save theme brightness", e),
     );
   }, []);
 

@@ -27,6 +27,7 @@ import {
 import { useEntries } from "@/hooks";
 import { resetAgreement, resetOnboarding } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
+import { reportError } from "@/util";
 
 import headerLogoLight from "../assets/icon.png";
 import headerLogoDark from "../assets/icon-dark.png";
@@ -83,7 +84,7 @@ export default function HomeScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
-    load().catch((e) => console.error("Failed to load entries", e));
+    load().catch((e) => reportError("Failed to load entries", e));
   }, [load]);
 
   const handleResetAgreement = () => {
@@ -93,7 +94,7 @@ export default function HomeScreen() {
           DevSettings.reload();
         }
       })
-      .catch((e) => console.error("Failed to reset agreement", e));
+      .catch((e) => reportError("Failed to reset agreement", e));
   };
 
   return (

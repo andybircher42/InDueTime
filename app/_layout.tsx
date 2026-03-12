@@ -15,6 +15,7 @@ import {
   getOrCreateDeviceId,
 } from "@/storage";
 import { ThemeProvider, useTheme } from "@/theme";
+import { reportError } from "@/util";
 
 import splashBgDark from "../assets/splash-bg-dark.png";
 import splashBgLight from "../assets/splash-bg-light.png";
@@ -80,20 +81,20 @@ function RootGate({ loadThemePreference }: RootGateProps) {
     async function init() {
       const [accepted, , , deviceId, onboardingDone] = await Promise.all([
         checkAgreement().catch((e) => {
-          console.error("Failed to check agreement", e);
+          reportError("Failed to check agreement", e);
           return false;
         }),
         loadThemePreference().catch((e) =>
-          console.error("Failed to load theme preference", e),
+          reportError("Failed to load theme preference", e),
         ),
         // Placeholder for entry loading — done in home screen
         Promise.resolve(),
         getOrCreateDeviceId().catch((e) => {
-          console.error("Failed to get device ID", e);
+          reportError("Failed to get device ID", e);
           return undefined;
         }),
         checkOnboardingComplete().catch((e) => {
-          console.error("Failed to check onboarding", e);
+          reportError("Failed to check onboarding", e);
           return false;
         }),
       ]);
@@ -128,7 +129,7 @@ function RootGate({ loadThemePreference }: RootGateProps) {
               }
             }
           })
-          .catch((e) => console.error("Failed to check for updates", e));
+          .catch((e) => reportError("Failed to check for updates", e));
       }
     }
 
@@ -161,7 +162,7 @@ function RootGate({ loadThemePreference }: RootGateProps) {
           setShowOnboarding(true);
         }
       })
-      .catch((e) => console.error("Failed to save agreement", e));
+      .catch((e) => reportError("Failed to save agreement", e));
   }, []);
 
   const handleOnboardingComplete = useCallback(() => {

@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 
 import { Entry, loadEntries, saveEntries } from "@/storage";
+import { reportError } from "@/util";
 import { getBirthstoneForDate } from "@/util/birthstones";
 
 let idCounter = 0;
@@ -29,7 +30,7 @@ export default function useEntries() {
     saveEntries(updated)
       .catch(() => saveEntries(updated))
       .catch((e) => {
-        console.error("Failed to save entries after retry", e);
+        reportError("Failed to save entries after retry", e);
         setSaveError(true);
       });
   }, []);
