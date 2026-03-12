@@ -99,8 +99,9 @@ async function skipToMainUI() {
 
 async function addEntry(name: string, weeks: string, days: string) {
   fireEvent.press(screen.getByLabelText("Add someone new"));
-  fireEvent.press(screen.getByText("Gestational Age"));
+  // Type name first to reveal date fields (progressive disclosure)
   fireEvent.changeText(screen.getByLabelText("Name"), name);
+  fireEvent.press(screen.getByText("Gestational Age"));
   fireEvent.changeText(screen.getByLabelText("Weeks"), weeks);
   fireEvent.changeText(screen.getByLabelText("Days"), days);
   fireEvent.press(screen.getByLabelText("Add this person"));

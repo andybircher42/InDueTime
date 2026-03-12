@@ -418,7 +418,6 @@ describe("EntryList", () => {
     fireEvent.press(screen.getByLabelText("Add someone new"));
 
     expect(screen.getByLabelText("Name")).toBeTruthy();
-    expect(screen.getByLabelText("Add this person")).toBeTruthy();
   });
 
   it("hides inline form when close button is pressed", () => {
@@ -437,9 +436,10 @@ describe("EntryList", () => {
 
     fireEvent.press(screen.getByLabelText("Add someone new"));
 
+    // Type name first to reveal date fields (progressive disclosure)
+    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     // Switch to gestational age mode and fill in
     fireEvent.press(screen.getByText("Gestational Age"));
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Weeks"), "20");
     fireEvent.changeText(screen.getByLabelText("Days"), "3");
     fireEvent.press(screen.getByLabelText("Add this person"));

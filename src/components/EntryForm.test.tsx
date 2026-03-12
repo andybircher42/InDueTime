@@ -21,9 +21,21 @@ function renderForm(onAdd = jest.fn()) {
   return onAdd;
 }
 
+/** Types a name to reveal the date fields (progressive disclosure). */
+function typeName(name = "Baby") {
+  fireEvent.changeText(screen.getByLabelText("Name"), name);
+}
+
+/** Renders EntryForm with a name entered (to reveal date fields) and returns the onAdd mock. */
+function renderFormWithName(onAdd = jest.fn()) {
+  renderForm(onAdd);
+  typeName();
+  return onAdd;
+}
+
 /** Renders EntryForm in Gestational Age mode and returns the onAdd mock. */
 function renderInWeeksDaysMode(onAdd = jest.fn()) {
-  renderForm(onAdd);
+  renderFormWithName(onAdd);
   fireEvent.press(screen.getByText("Gestational Age"));
   return onAdd;
 }
@@ -67,26 +79,25 @@ describe("EntryForm — Gestational Age mode", () => {
     expect(onAdd).not.toHaveBeenCalled();
   });
 
-  it("clears inputs after submission", () => {
+  it("resets form after submission (name cleared, fields hidden)", () => {
     renderInWeeksDaysMode();
 
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Weeks"), "10");
     fireEvent.changeText(screen.getByLabelText("Days"), "5");
     fireEvent.press(screen.getByText("Add"));
 
+    // Name is cleared, so date fields are hidden via progressive disclosure
     expect(screen.getByLabelText("Name").props.value).toBe("");
-    expect(screen.getByLabelText("Weeks").props.value).toBe("");
-    expect(screen.getByLabelText("Days").props.value).toBe("");
+    expect(screen.queryByLabelText("Weeks")).toBeNull();
+    expect(screen.queryByLabelText("Days")).toBeNull();
   });
 
-  it("does not call onAdd when name is empty", () => {
+  it("does not call onAdd when name is only whitespace", () => {
     const onAdd = renderInWeeksDaysMode();
 
-    fireEvent.changeText(screen.getByLabelText("Weeks"), "10");
-    fireEvent.changeText(screen.getByLabelText("Days"), "3");
-    fireEvent.press(screen.getByText("Add"));
-
+    fireEvent.changeText(screen.getByLabelText("Name"), "   ");
+    // Date fields hidden because trimmed name is empty
+    expect(screen.queryByLabelText("Weeks")).toBeNull();
     expect(onAdd).not.toHaveBeenCalled();
   });
 
@@ -112,13 +123,6 @@ describe("EntryForm — Gestational Age mode", () => {
     expect(onAdd).not.toHaveBeenCalled();
   });
 
-  it("shows no placeholder text for name input", () => {
-    renderInWeeksDaysMode();
-
-    const nameInput = screen.getByLabelText("Name");
-    expect(nameInput.props.placeholder).toBeUndefined();
-  });
-
   it("shows range hints as placeholder text", () => {
     renderInWeeksDaysMode();
 
@@ -127,7 +131,7 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 
   it("shows date format as placeholder text in due date mode", () => {
-    renderForm();
+    renderFormWithName();
 
     expect(screen.getByPlaceholderText("MM-DD-YYYY")).toBeTruthy();
   });
@@ -176,18 +180,12 @@ describe("EntryForm — Gestational Age mode", () => {
     expect(onAdd).toHaveBeenCalledTimes(1);
   });
 
-  it("Add button is disabled when name is empty and enabled when name is entered", () => {
+  it("Add button works when name and valid weeks/days are entered", () => {
     const onAdd = renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Weeks"), "10");
     fireEvent.changeText(screen.getByLabelText("Days"), "3");
 
-    // Button should not fire when name is empty (disabled)
-    fireEvent.press(screen.getByText("Add"));
-    expect(onAdd).not.toHaveBeenCalled();
-
-    // After entering a name, the button should work (enabled)
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.press(screen.getByText("Add"));
     expect(onAdd).toHaveBeenCalledTimes(1);
   });
@@ -249,9 +247,44 @@ describe("EntryForm — Gestational Age mode", () => {
   });
 });
 
+describe("EntryForm — progressive disclosure", () => {
+  it("hides date fields until a name is entered", () => {
+    renderForm();
+
+    expect(screen.queryByLabelText("Due date")).toBeNull();
+    expect(screen.queryByRole("tab")).toBeNull();
+
+    typeName("Baby");
+
+    expect(screen.getByLabelText("Due date")).toBeTruthy();
+    expect(
+      screen.getByRole("tab", { name: "Due Date input mode" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("tab", { name: "Gestational Age input mode" }),
+    ).toBeTruthy();
+  });
+
+  it("hides date fields when name is cleared", () => {
+    renderForm();
+
+    typeName("Baby");
+    expect(screen.getByLabelText("Due date")).toBeTruthy();
+
+    fireEvent.changeText(screen.getByLabelText("Name"), "");
+    expect(screen.queryByLabelText("Due date")).toBeNull();
+  });
+
+  it("shows placeholder text on name input", () => {
+    renderForm();
+
+    expect(screen.getByPlaceholderText("Who are you tracking?")).toBeTruthy();
+  });
+});
+
 describe("EntryForm — mode toggle", () => {
   it("starts in Due Date mode by default", () => {
-    renderForm();
+    renderFormWithName();
 
     expect(screen.getByLabelText("Due date")).toBeTruthy();
     expect(screen.getByLabelText("Select due date")).toBeTruthy();
@@ -260,7 +293,7 @@ describe("EntryForm — mode toggle", () => {
   });
 
   it("switches to Gestational Age mode when toggle is pressed", () => {
-    renderForm();
+    renderFormWithName();
 
     fireEvent.press(screen.getByText("Gestational Age"));
 
@@ -271,7 +304,7 @@ describe("EntryForm — mode toggle", () => {
   });
 
   it("switches back to Due Date mode", () => {
-    renderForm();
+    renderFormWithName();
 
     fireEvent.press(screen.getByText("Gestational Age"));
     fireEvent.press(screen.getByText("Due Date"));
@@ -283,7 +316,7 @@ describe("EntryForm — mode toggle", () => {
   });
 
   it("mode toggle buttons communicate selected state for accessibility", () => {
-    renderForm();
+    renderFormWithName();
 
     const dueDateTab = screen.getByRole("tab", {
       name: "Due Date input mode",
@@ -313,7 +346,7 @@ describe("EntryForm — mode toggle", () => {
 
 describe("EntryForm — Due Date mode", () => {
   it("shows date picker when button is pressed", () => {
-    renderForm();
+    renderFormWithName();
 
     fireEvent.press(screen.getByLabelText("Select due date"));
 
@@ -322,7 +355,7 @@ describe("EntryForm — Due Date mode", () => {
 
   it("shows computed gestational age preview after selecting a date", () => {
     mockGestationalAge(32, 4);
-    renderForm();
+    renderFormWithName();
     pickDate();
 
     expect(screen.getByText("Gestational age: 32w 4d")).toBeTruthy();
@@ -330,7 +363,7 @@ describe("EntryForm — Due Date mode", () => {
 
   it("submits dueDate when Add is pressed in Due Date mode", () => {
     mockGestationalAge(35, 2);
-    const onAdd = renderForm();
+    const onAdd = renderFormWithName();
 
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby B");
     pickDate();
@@ -343,39 +376,38 @@ describe("EntryForm — Due Date mode", () => {
   });
 
   it("disables Add button when no due date is selected", () => {
-    const onAdd = renderForm();
+    const onAdd = renderFormWithName();
 
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.press(screen.getByText("Add"));
 
     expect(onAdd).not.toHaveBeenCalled();
   });
 
   it("displays the selected date in the text input", () => {
-    renderForm();
+    renderFormWithName();
     pickDate();
 
     // Mock picker returns June 15, 2026
     expect(screen.getByLabelText("Due date").props.value).toBe("06-15-2026");
   });
 
-  it("clears due date after submission", () => {
+  it("resets form after submission (name cleared, date fields hidden)", () => {
     mockGestationalAge(30, 0);
-    renderForm();
+    renderFormWithName();
 
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     pickDate();
     fireEvent.press(screen.getByText("Add"));
 
-    expect(screen.getByLabelText("Due date").props.value).toBe("");
-    expect(screen.queryByLabelText("Gestational age preview")).toBeNull();
+    // Name is cleared, so date fields are hidden via progressive disclosure
+    expect(screen.getByLabelText("Name").props.value).toBe("");
+    expect(screen.queryByLabelText("Due date")).toBeNull();
   });
 });
 
 describe("EntryForm — typed date input", () => {
   it("typing a valid date sets dueDate and shows gestational age preview", () => {
     mockGestationalAge(28, 3);
-    renderForm();
+    renderFormWithName();
 
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
 
@@ -383,9 +415,8 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("typing an invalid month does not enable Add button", () => {
-    const onAdd = renderForm();
+    const onAdd = renderFormWithName();
 
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "13-1-2026");
     fireEvent.press(screen.getByText("Add"));
 
@@ -393,9 +424,8 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("typing non-date text does not enable Add button", () => {
-    const onAdd = renderForm();
+    const onAdd = renderFormWithName();
 
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "abc");
     fireEvent.press(screen.getByText("Add"));
 
@@ -403,9 +433,8 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("typing an invalid day (Feb 30) does not enable Add button", () => {
-    const onAdd = renderForm();
+    const onAdd = renderFormWithName();
 
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "2-30-2026");
     fireEvent.press(screen.getByText("Add"));
 
@@ -413,7 +442,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("picking from calendar populates the text input", () => {
-    renderForm();
+    renderFormWithName();
 
     pickDate();
 
@@ -422,9 +451,8 @@ describe("EntryForm — typed date input", () => {
 
   it("accepts a 2-digit year as 20xx", () => {
     mockGestationalAge(28, 3);
-    const onAdd = renderForm();
+    const onAdd = renderFormWithName();
 
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-26");
     fireEvent.press(screen.getByText("Add"));
 
@@ -433,9 +461,8 @@ describe("EntryForm — typed date input", () => {
 
   it("accepts single-digit month and day", () => {
     mockGestationalAge(30, 0);
-    const onAdd = renderForm();
+    const onAdd = renderFormWithName();
 
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "3-5-2026");
     fireEvent.press(screen.getByText("Add"));
 
@@ -443,7 +470,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it('replaces non-numeric characters with "-"', () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "6-15-2026");
@@ -457,7 +484,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("limits input to DD-DD-DDDD pattern", () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "03-28-20261");
@@ -465,7 +492,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("allows no more than 2 hyphens", () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "03-28-38-28");
@@ -473,7 +500,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("collapses consecutive hyphens into one", () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "6---15---2026");
@@ -484,7 +511,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it('auto-inserts "-" after two-digit month', () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     // Simulate typing "06" — should become "06-"
@@ -493,7 +520,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it('auto-inserts "-" after two-digit day', () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     // Simulate typing month then day
@@ -504,7 +531,7 @@ describe("EntryForm — typed date input", () => {
 
   it("normalizes date to MM-DD-YYYY on blur", () => {
     mockGestationalAge(28, 3);
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "6-5-26");
@@ -514,25 +541,26 @@ describe("EntryForm — typed date input", () => {
     expect(input.props.value).toBe("06-05-2026");
   });
 
-  it("clears text input after submission", () => {
+  it("resets form after typed date submission", () => {
     mockGestationalAge(28, 3);
-    renderForm();
+    renderFormWithName();
 
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
     fireEvent.press(screen.getByText("Add"));
 
-    expect(screen.getByLabelText("Due date").props.value).toBe("");
+    // Name is cleared, so date fields are hidden via progressive disclosure
+    expect(screen.getByLabelText("Name").props.value).toBe("");
+    expect(screen.queryByLabelText("Due date")).toBeNull();
   });
 
   it("shows no error when input is empty", () => {
-    renderForm();
+    renderFormWithName();
 
     expect(screen.queryByLabelText("Date error")).toBeNull();
   });
 
   it("shows no error for a valid date", () => {
-    renderForm();
+    renderFormWithName();
 
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
 
@@ -540,7 +568,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("shows format error for incomplete date text after blur", () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "6-15");
@@ -552,7 +580,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("shows error for invalid month after blur", () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "13-1-2026");
@@ -562,7 +590,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("shows error for invalid day after blur", () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "1-32-2026");
@@ -572,7 +600,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("shows error for impossible date like Feb 30 after blur", () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "2-30-2026");
@@ -582,7 +610,7 @@ describe("EntryForm — typed date input", () => {
   });
 
   it("clears date error when user starts typing again", () => {
-    renderForm();
+    renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
     fireEvent.changeText(input, "13-1-2026");
@@ -597,9 +625,8 @@ describe("EntryForm — typed date input", () => {
 describe("EntryForm — dueDate in onAdd callback", () => {
   it("passes the entered due date as ISO string in due date mode", () => {
     mockGestationalAge(28, 3);
-    const onAdd = renderForm();
+    const onAdd = renderFormWithName();
 
-    fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
     fireEvent.changeText(screen.getByLabelText("Due date"), "6-15-2026");
     fireEvent.press(screen.getByText("Add"));
 

@@ -1,11 +1,13 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
+  LayoutAnimation,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
+  UIManager,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -31,6 +33,13 @@ interface EntryFormProps {
   onAdd: (entry: { name: string; dueDate: string }) => void;
 }
 
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 /** Form for adding a new gestation entry with name, weeks, and days fields. */
 export default function EntryForm({ onAdd }: EntryFormProps) {
   const { colors } = useTheme();
@@ -46,6 +55,18 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
   const [weeksTouched, setWeeksTouched] = useState(false);
   const [daysTouched, setDaysTouched] = useState(false);
   const [dateTouched, setDateTouched] = useState(false);
+  const wasRevealedRef = useRef(false);
+
+  const hasName = name.trim().length > 0;
+
+  const handleNameChange = useCallback((text: string) => {
+    const willReveal = text.trim().length > 0;
+    if (willReveal && !wasRevealedRef.current) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
+    wasRevealedRef.current = willReveal;
+    setName(text);
+  }, []);
 
   const w = weeks ? parseInt(weeks, 10) : 0;
   const d = days ? parseInt(days, 10) : 0;
@@ -158,205 +179,231 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
 
   return (
     <View style={styles.form}>
-      <Text style={styles.label}>Name</Text>
       <TextInput
         style={styles.nameInput}
+        placeholder="Who are you tracking?"
         placeholderTextColor={colors.textTertiary}
         accessibilityLabel="Name"
         value={name}
-        onChangeText={setName}
+        onChangeText={handleNameChange}
         returnKeyType="next"
         maxLength={50}
+        autoFocus
       />
 
-      {/* Mode toggle */}
-      <View style={styles.toggleRow} accessibilityRole="tablist">
-        <Pressable
-          style={[
-            styles.toggleButton,
-            mode === "dueDate" && styles.toggleButtonActive,
-          ]}
-          onPress={() => setMode("dueDate")}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: mode === "dueDate" }}
-          accessibilityLabel="Due Date input mode"
-        >
-          <Text
-            style={[
-              styles.toggleText,
-              mode === "dueDate" && styles.toggleTextActive,
-            ]}
-          >
-            Due Date
-          </Text>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.toggleButton,
-            mode === "weeksDays" && styles.toggleButtonActive,
-          ]}
-          onPress={() => setMode("weeksDays")}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: mode === "weeksDays" }}
-          accessibilityLabel="Gestational Age input mode"
-        >
-          <Text
-            style={[
-              styles.toggleText,
-              mode === "weeksDays" && styles.toggleTextActive,
-            ]}
-          >
-            Gestational Age
-          </Text>
-        </Pressable>
-      </View>
-
-      {mode === "weeksDays" ? (
+      {hasName && (
         <>
-          <View style={styles.ageRow}>
-            <View style={styles.inputWithHint}>
-              <Text style={styles.label}>Weeks</Text>
-              <TextInput
-                style={[
-                  styles.numberInput,
-                  showWeeksError && styles.inputError,
-                ]}
-                accessibilityLabel="Weeks"
-                placeholder={"0\u201342"}
-                placeholderTextColor={colors.textTertiary}
-                value={weeks}
-                onChangeText={handleWeeksChange}
-                onBlur={() => setWeeksTouched(true)}
-                keyboardType="number-pad"
-                maxLength={2}
-                returnKeyType="next"
-              />
-              {showWeeksError && (
-                <Text style={styles.errorText} accessibilityLabel="Weeks error">
-                  {weeksError}
-                </Text>
-              )}
-            </View>
-            <View style={styles.inputWithHint}>
-              <Text style={styles.label}>Days</Text>
-              <TextInput
-                style={[styles.numberInput, showDaysError && styles.inputError]}
-                accessibilityLabel="Days"
-                placeholder={"0\u20136"}
-                placeholderTextColor={colors.textTertiary}
-                value={days}
-                onChangeText={handleDaysChange}
-                onBlur={() => setDaysTouched(true)}
-                keyboardType="number-pad"
-                maxLength={1}
-                returnKeyType="done"
-              />
-              {showDaysError && (
-                <Text style={styles.errorText} accessibilityLabel="Days error">
-                  {daysError}
-                </Text>
-              )}
-            </View>
+          {/* Mode toggle */}
+          <View style={styles.toggleRow} accessibilityRole="tablist">
             <Pressable
-              style={[styles.addButton, !canAdd && styles.addButtonDisabled]}
-              onPress={handleAdd}
-              disabled={!canAdd}
-              accessibilityRole="button"
-              accessibilityLabel="Add this person"
-              accessibilityState={{ disabled: !canAdd }}
+              style={[
+                styles.toggleButton,
+                mode === "dueDate" && styles.toggleButtonActive,
+              ]}
+              onPress={() => setMode("dueDate")}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: mode === "dueDate" }}
+              accessibilityLabel="Due Date input mode"
             >
-              <Text style={styles.addButtonText}>Add</Text>
+              <Text
+                style={[
+                  styles.toggleText,
+                  mode === "dueDate" && styles.toggleTextActive,
+                ]}
+              >
+                Due Date
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.toggleButton,
+                mode === "weeksDays" && styles.toggleButtonActive,
+              ]}
+              onPress={() => setMode("weeksDays")}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: mode === "weeksDays" }}
+              accessibilityLabel="Gestational Age input mode"
+            >
+              <Text
+                style={[
+                  styles.toggleText,
+                  mode === "weeksDays" && styles.toggleTextActive,
+                ]}
+              >
+                Gestational Age
+              </Text>
             </Pressable>
           </View>
-          {weeks && days && weeksValid && daysValid && (
-            <Text style={styles.preview} accessibilityLabel="Due date preview">
-              Due date: {toDisplayDateString(computeDueDate(w, d))}
-            </Text>
+
+          {mode === "weeksDays" ? (
+            <>
+              <View style={styles.ageRow}>
+                <View style={styles.inputWithHint}>
+                  <Text style={styles.label}>Weeks</Text>
+                  <TextInput
+                    style={[
+                      styles.numberInput,
+                      showWeeksError && styles.inputError,
+                    ]}
+                    accessibilityLabel="Weeks"
+                    placeholder={"0\u201342"}
+                    placeholderTextColor={colors.textTertiary}
+                    value={weeks}
+                    onChangeText={handleWeeksChange}
+                    onBlur={() => setWeeksTouched(true)}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    returnKeyType="next"
+                  />
+                  {showWeeksError && (
+                    <Text
+                      style={styles.errorText}
+                      accessibilityLabel="Weeks error"
+                    >
+                      {weeksError}
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.inputWithHint}>
+                  <Text style={styles.label}>Days</Text>
+                  <TextInput
+                    style={[
+                      styles.numberInput,
+                      showDaysError && styles.inputError,
+                    ]}
+                    accessibilityLabel="Days"
+                    placeholder={"0\u20136"}
+                    placeholderTextColor={colors.textTertiary}
+                    value={days}
+                    onChangeText={handleDaysChange}
+                    onBlur={() => setDaysTouched(true)}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    returnKeyType="done"
+                  />
+                  {showDaysError && (
+                    <Text
+                      style={styles.errorText}
+                      accessibilityLabel="Days error"
+                    >
+                      {daysError}
+                    </Text>
+                  )}
+                </View>
+                <Pressable
+                  style={[
+                    styles.addButton,
+                    !canAdd && styles.addButtonDisabled,
+                  ]}
+                  onPress={handleAdd}
+                  disabled={!canAdd}
+                  accessibilityRole="button"
+                  accessibilityLabel="Add this person"
+                  accessibilityState={{ disabled: !canAdd }}
+                >
+                  <Text style={styles.addButtonText}>Add</Text>
+                </Pressable>
+              </View>
+              {weeks && days && weeksValid && daysValid && (
+                <Text
+                  style={styles.preview}
+                  accessibilityLabel="Due date preview"
+                >
+                  Due date: {toDisplayDateString(computeDueDate(w, d))}
+                </Text>
+              )}
+            </>
+          ) : (
+            <View>
+              <View style={styles.ageRow}>
+                <View style={styles.inputWithHint}>
+                  <Text style={styles.label}>Due Date</Text>
+                  <View style={styles.dateInputRow}>
+                    <Pressable
+                      style={styles.calendarButton}
+                      onPress={() => setShowPicker(true)}
+                      accessibilityLabel="Select due date"
+                    >
+                      <Ionicons
+                        name="calendar-outline"
+                        size={22}
+                        color={colors.primary}
+                      />
+                    </Pressable>
+                    <TextInput
+                      style={[
+                        styles.dateTextInput,
+                        showDateError && styles.inputError,
+                      ]}
+                      accessibilityLabel="Due date"
+                      placeholder="MM-DD-YYYY"
+                      placeholderTextColor={colors.textTertiary}
+                      value={dateText}
+                      keyboardType="number-pad"
+                      onChangeText={handleDateTextChange}
+                      onBlur={() => {
+                        setDateTouched(true);
+                        const formatted = formatDateInput(dateText);
+                        if (formatted) {
+                          setDateText(formatted);
+                        }
+                      }}
+                    />
+                  </View>
+                  {showDateError && (
+                    <Text
+                      style={styles.errorText}
+                      accessibilityLabel="Date error"
+                    >
+                      {dateError}
+                    </Text>
+                  )}
+                </View>
+                <Pressable
+                  style={[
+                    styles.addButton,
+                    !canAdd && styles.addButtonDisabled,
+                  ]}
+                  onPress={handleAdd}
+                  disabled={!canAdd}
+                  accessibilityRole="button"
+                  accessibilityLabel="Add this person"
+                  accessibilityState={{ disabled: !canAdd }}
+                >
+                  <Text style={styles.addButtonText}>Add</Text>
+                </Pressable>
+              </View>
+              {computed && (
+                <Text
+                  style={styles.preview}
+                  accessibilityLabel="Gestational age preview"
+                >
+                  Gestational age: {computed.weeks}w {computed.days}d
+                </Text>
+              )}
+              {showPicker && (
+                <View>
+                  <DateTimePicker
+                    value={dueDate ?? new Date()}
+                    mode="date"
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={handleDateChange}
+                    minimumDate={dateBounds.min}
+                    maximumDate={dateBounds.max}
+                  />
+                  {Platform.OS === "ios" && (
+                    <Pressable
+                      style={styles.pickerDoneButton}
+                      onPress={handlePickerDone}
+                    >
+                      <Text style={styles.pickerDoneText}>Done</Text>
+                    </Pressable>
+                  )}
+                </View>
+              )}
+            </View>
           )}
         </>
-      ) : (
-        <View>
-          <View style={styles.ageRow}>
-            <View style={styles.inputWithHint}>
-              <Text style={styles.label}>Due Date</Text>
-              <View style={styles.dateInputRow}>
-                <Pressable
-                  style={styles.calendarButton}
-                  onPress={() => setShowPicker(true)}
-                  accessibilityLabel="Select due date"
-                >
-                  <Ionicons
-                    name="calendar-outline"
-                    size={22}
-                    color={colors.primary}
-                  />
-                </Pressable>
-                <TextInput
-                  style={[
-                    styles.dateTextInput,
-                    showDateError && styles.inputError,
-                  ]}
-                  accessibilityLabel="Due date"
-                  placeholder="MM-DD-YYYY"
-                  placeholderTextColor={colors.textTertiary}
-                  value={dateText}
-                  keyboardType="number-pad"
-                  onChangeText={handleDateTextChange}
-                  onBlur={() => {
-                    setDateTouched(true);
-                    const formatted = formatDateInput(dateText);
-                    if (formatted) {
-                      setDateText(formatted);
-                    }
-                  }}
-                />
-              </View>
-              {showDateError && (
-                <Text style={styles.errorText} accessibilityLabel="Date error">
-                  {dateError}
-                </Text>
-              )}
-            </View>
-            <Pressable
-              style={[styles.addButton, !canAdd && styles.addButtonDisabled]}
-              onPress={handleAdd}
-              disabled={!canAdd}
-              accessibilityRole="button"
-              accessibilityLabel="Add this person"
-              accessibilityState={{ disabled: !canAdd }}
-            >
-              <Text style={styles.addButtonText}>Add</Text>
-            </Pressable>
-          </View>
-          {computed && (
-            <Text
-              style={styles.preview}
-              accessibilityLabel="Gestational age preview"
-            >
-              Gestational age: {computed.weeks}w {computed.days}d
-            </Text>
-          )}
-          {showPicker && (
-            <View>
-              <DateTimePicker
-                value={dueDate ?? new Date()}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={handleDateChange}
-                minimumDate={dateBounds.min}
-                maximumDate={dateBounds.max}
-              />
-              {Platform.OS === "ios" && (
-                <Pressable
-                  style={styles.pickerDoneButton}
-                  onPress={handlePickerDone}
-                >
-                  <Text style={styles.pickerDoneText}>Done</Text>
-                </Pressable>
-              )}
-            </View>
-          )}
-        </View>
       )}
     </View>
   );
@@ -378,9 +425,11 @@ function createStyles(colors: ColorTokens) {
     nameInput: {
       borderWidth: 1,
       borderColor: colors.inputBorder,
-      borderRadius: 8,
-      padding: 12,
-      fontSize: 16,
+      borderRadius: 10,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      fontSize: 20,
+      fontWeight: "600",
       marginBottom: 10,
       backgroundColor: colors.inputBackground,
       color: colors.textPrimary,
