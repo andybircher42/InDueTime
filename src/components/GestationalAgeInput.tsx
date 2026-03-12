@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, TextInput } from "react-native";
+import {
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 interface GestationalAgeInputProps {
   weeks: string;
@@ -66,7 +73,7 @@ export default function GestationalAgeInput({
   ).current;
 
   useEffect(() => {
-    if (weeks.length >= 2 && phase === "weeks") {
+    if (isWeeksComplete(weeks) && phase === "weeks") {
       setPhase("days");
       Animated.parallel([
         Animated.timing(eeksFade, {
@@ -90,7 +97,7 @@ export default function GestationalAgeInput({
   }, [weeks, phase, eeksFade, eeksWidth, daysFade]);
 
   useEffect(() => {
-    if (weeks.length < 2 && phase === "days") {
+    if (!isWeeksComplete(weeks) && phase === "days") {
       setPhase("weeks");
       onChangeDays("");
       Animated.parallel([
@@ -113,66 +120,98 @@ export default function GestationalAgeInput({
     }
   }, [weeks, phase, eeksFade, eeksWidth, daysFade, onChangeDays]);
 
+  // A single digit 2-9 counts as a complete weeks entry (auto-advance).
+  // 0 or 1 requires a second digit (e.g. 01, 05, 10, 12).
+  const isWeeksComplete = (w: string) => {
+    if (w.length === 0) {return false;}
+    if (w.length >= 2) {return true;}
+    const first = parseInt(w[0], 10);
+    return first >= 2;
+  };
+
   const handleInput = (text: string) => {
     const digits = text.replace(/[^0-9]/g, "");
     if (phase === "weeks") {
-      onChangeWeeks(digits.slice(0, 2));
+      const first = parseInt(digits[0], 10);
+      if (digits.length === 1 && first >= 2) {
+        // Single digit 2-9: complete weeks, pad with leading 0
+        onChangeWeeks(`0${digits[0]}`);
+      } else {
+        onChangeWeeks(digits.slice(0, 2));
+      }
     } else {
-      if (digits.length <= 2) {
+      // In days phase, the hidden input has weeks+days concatenated.
+      // Weeks portion length depends on whether it was a single-digit auto-advance.
+      const wLen = weeks.length;
+      const wDigits = digits.slice(0, wLen);
+      const dDigits = digits.slice(wLen, wLen + 1);
+      if (digits.length <= wLen) {
         onChangeWeeks(digits);
         onChangeDays("");
       } else {
-        onChangeWeeks(digits.slice(0, 2));
-        onChangeDays(digits.slice(2, 3));
+        onChangeWeeks(wDigits);
+        onChangeDays(dDigits);
       }
     }
   };
 
   const hiddenValue = weeks + days;
   const focusInput = () => hiddenRef.current?.focus();
-  const weeksEntered = weeks.length >= 2;
+  const weeksEntered = isWeeksComplete(weeks);
   const daysEntered = days.length >= 1;
+  const isSingularWeek = weeks === "01";
+
+  // Inline cursor: zero-width wrapper so it doesn't add space
+  const cursor = (
+    <View style={styles.cursorWrapper}>
+      <Animated.View style={[styles.cursor, { opacity: cursorOpacity }]} />
+    </View>
+  );
 
   return (
     <Pressable style={styles.wrapper} onPress={focusInput}>
-      {/* Weeks digits or placeholder */}
-      {weeks.length > 0 ? (
-        <Text style={styles.value}>{weeks}</Text>
-      ) : (
-        <Text style={styles.placeholder}>WW</Text>
-      )}
+      {/* All text in a single nested Text for shared baseline */}
+      <Text style={styles.baseText}>
+        {/* Cursor before placeholder in weeks phase */}
+        {phase === "weeks" && weeks.length === 0 && (
+          <View style={styles.cursorWrapper}>
+            <Animated.View
+              style={[styles.cursor, { opacity: cursorOpacity }]}
+            />
+          </View>
+        )}
 
-      {/* "w" always visible, "eeks" fades + collapses */}
-      <Text style={styles.label}>w</Text>
-      <Animated.View
-        style={{
-          overflow: "hidden",
-          maxWidth: eeksWidth.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 120],
-          }),
-          opacity: eeksFade,
-        }}
-      >
-        <Text style={styles.label}>eeks</Text>
-      </Animated.View>
-
-      {/* Days section — fades in */}
-      <Animated.View style={[styles.daysSection, { opacity: daysFade }]}>
-        <Text style={styles.spacer}> </Text>
-        {daysEntered ? (
-          <Text style={styles.value}>{days}</Text>
+        {/* Weeks digits or placeholder */}
+        {weeks.length > 0 ? (
+          <Text style={styles.value}>{weeks}</Text>
         ) : (
-          weeksEntered && <Text style={styles.placeholder}>DD</Text>
+          <Text style={styles.placeholder}>00</Text>
         )}
-        {weeksEntered && !daysEntered && (
-          <Text style={styles.label}> days</Text>
-        )}
-        {daysEntered && <Text style={styles.label}>d</Text>}
-      </Animated.View>
 
-      {/* Blinking cursor — inline with text baseline */}
-      <Animated.View style={[styles.cursor, { opacity: cursorOpacity }]} />
+        {/* Cursor after entered weeks digits */}
+        {phase === "weeks" && weeks.length > 0 && cursor}
+
+        {/* " week(s)" label — " w" always visible, "eek(s)" fades */}
+        <Text style={styles.label}> w</Text>
+        <Animated.Text style={[styles.label, { opacity: eeksFade }]}>
+          {isSingularWeek ? "eek" : "eeks"}
+        </Animated.Text>
+
+        {/* Days section — fades in */}
+        <Animated.Text style={{ opacity: daysFade }}>
+          <Text style={styles.label}> </Text>
+          {daysEntered ? (
+            <Text style={styles.value}>{days}</Text>
+          ) : (
+            weeksEntered && <Text style={styles.placeholder}>00</Text>
+          )}
+          {phase === "days" && cursor}
+          {weeksEntered && !daysEntered && (
+            <Text style={styles.label}> days</Text>
+          )}
+          {daysEntered && <Text style={styles.label}>d</Text>}
+        </Animated.Text>
+      </Text>
 
       {/* Hidden input to capture keypad */}
       <TextInput
@@ -199,6 +238,11 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     minWidth: 0,
   },
+  baseText: {
+    fontFamily: "DMSans-Bold",
+    fontSize: 48,
+    color: "#391b59",
+  },
   value: {
     fontFamily: "DMSans-Bold",
     fontSize: 48,
@@ -214,19 +258,15 @@ const styles = StyleSheet.create({
     fontSize: 48,
     color: "#391b59",
   },
-  spacer: {
-    fontSize: 48,
-  },
-  daysSection: {
-    flexDirection: "row",
-    alignItems: "baseline",
+  cursorWrapper: {
+    width: 2,
+    height: 40,
+    alignSelf: "center",
   },
   cursor: {
     width: 2,
     height: 40,
     backgroundColor: "#391b59",
-    marginLeft: 1,
-    marginBottom: 6,
   },
   hiddenInput: {
     position: "absolute",

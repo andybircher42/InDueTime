@@ -36,7 +36,6 @@ export default function ViewPatientScreen({ navigation, route }: Props) {
   const translateY = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
   const rotation = useRef(new Animated.Value(0)).current;
-  const borderRadius = useRef(new Animated.Value(12)).current;
   const uiFade = useRef(new Animated.Value(tileOrigin ? 0 : 1)).current;
 
   const [animStarted, setAnimStarted] = useState(false);
@@ -70,21 +69,16 @@ export default function ViewPatientScreen({ navigation, route }: Props) {
       const dy = tileCY - cardCY;
       originDelta.current = { dx, dy, scaleRatio };
 
-      // Compensate border radius for scale: 12px visual at tile size
-      const initialRadius = 12 / scaleRatio;
-
       // Set starting state: tile position and size
       translateX.setValue(dx);
       translateY.setValue(dy);
       scale.setValue(scaleRatio);
       rotation.setValue(0);
-      borderRadius.setValue(initialRadius);
 
       setAnimStarted(true);
 
       // All transitions simultaneously, then fade in surrounding UI
-      // Native-driven group (transform + opacity)
-      const nativeAnims = Animated.parallel([
+      Animated.parallel([
         Animated.timing(translateX, {
           toValue: 0,
           duration: ANIM_DURATION,
@@ -105,22 +99,13 @@ export default function ViewPatientScreen({ navigation, route }: Props) {
           duration: ANIM_DURATION,
           useNativeDriver: true,
         }),
-      ]);
-      // Non-native-driven (borderRadius)
-      const radiusAnim = Animated.timing(borderRadius, {
-        toValue: 12,
-        duration: ANIM_DURATION,
-        useNativeDriver: false,
-      });
-
-      Animated.sequence([
-        Animated.parallel([nativeAnims, radiusAnim]),
+      ]).start(() => {
         Animated.timing(uiFade, {
           toValue: 1,
           duration: FADE_DURATION,
           useNativeDriver: true,
-        }),
-      ]).start();
+        }).start();
+      });
     });
   }, [
     animStarted,
@@ -129,7 +114,6 @@ export default function ViewPatientScreen({ navigation, route }: Props) {
     translateY,
     scale,
     rotation,
-    borderRadius,
     uiFade,
   ]);
 
@@ -154,13 +138,11 @@ export default function ViewPatientScreen({ navigation, route }: Props) {
       return;
     }
     const { dx, dy, scaleRatio } = originDelta.current;
-    const targetRadius = 12 / scaleRatio;
-    Animated.sequence([
-      Animated.timing(uiFade, {
-        toValue: 0,
-        duration: FADE_DURATION,
-        useNativeDriver: true,
-      }),
+    Animated.timing(uiFade, {
+      toValue: 0,
+      duration: FADE_DURATION,
+      useNativeDriver: true,
+    }).start(() => {
       Animated.parallel([
         Animated.timing(translateX, {
           toValue: dx,
@@ -182,25 +164,11 @@ export default function ViewPatientScreen({ navigation, route }: Props) {
           duration: ANIM_DURATION,
           useNativeDriver: true,
         }),
-        Animated.timing(borderRadius, {
-          toValue: targetRadius,
-          duration: ANIM_DURATION,
-          useNativeDriver: false,
-        }),
-      ]),
-    ]).start(() => {
-      navigation.goBack();
+      ]).start(() => {
+        navigation.goBack();
+      });
     });
-  }, [
-    tileOrigin,
-    navigation,
-    uiFade,
-    translateX,
-    translateY,
-    scale,
-    rotation,
-    borderRadius,
-  ]);
+  }, [tileOrigin, navigation, uiFade, translateX, translateY, scale, rotation]);
 
   const handleEdit = useCallback(() => {
     if (Platform.OS === "ios") {
@@ -280,40 +248,44 @@ export default function ViewPatientScreen({ navigation, route }: Props) {
       </Animated.View>
 
       <View style={styles.content}>
-        {/* Card — moves, spins, grows from tile origin */}
+        {/* Perspective wrapper — perspective on parent, rotation on child */}
         <Animated.View
           ref={cardRef}
           onLayout={onCardLayout}
           style={[
-            styles.card,
-            { backgroundColor: patient.birthstone.color },
+            styles.cardPerspective,
             {
               opacity: cardOpacity,
-              borderRadius,
               transform: [
                 { perspective: 800 },
                 { translateX },
                 { translateY },
-                { rotateY },
                 { scale },
               ],
             },
           ]}
         >
-          <Animated.View
-            style={[
-              styles.cardInner,
-              { transform: [{ rotateY: contentRotateY }] },
-            ]}
-          >
-            <BirthstoneIcon
-              image={getBirthstoneImage(patient.birthstone.name)}
-              size={148}
-            />
-            <View style={styles.textGroup}>
-              <Text style={styles.cardTitle}>{patient.name}&rsquo;s Baby</Text>
-              <Text style={styles.cardDate}>{formatDueDate(patient.edd)}</Text>
-            </View>
+          <Animated.View style={[styles.card, { transform: [{ rotateY }] }]}>
+            <Animated.View
+              style={[
+                styles.cardInner,
+                { backgroundColor: patient.birthstone.color },
+                { transform: [{ rotateY: contentRotateY }] },
+              ]}
+            >
+              <BirthstoneIcon
+                image={getBirthstoneImage(patient.birthstone.name)}
+                size={148}
+              />
+              <View style={styles.textGroup}>
+                <Text style={styles.cardTitle}>
+                  {patient.name}&rsquo;s Baby
+                </Text>
+                <Text style={styles.cardDate}>
+                  {formatDueDate(patient.edd)}
+                </Text>
+              </View>
+            </Animated.View>
           </Animated.View>
         </Animated.View>
 
@@ -398,9 +370,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingTop: 24,
   },
+  cardPerspective: {
+    width: "100%",
+    aspectRatio: 1,
+  },
   card: {
-    borderRadius: 12,
-    overflow: "hidden",
     width: "100%",
     aspectRatio: 1,
   },
@@ -408,6 +382,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+    borderRadius: 12,
     paddingVertical: 17,
     gap: 16,
   },

@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -44,15 +45,40 @@ function generatePatientId(): string {
 // Shared layout: progress bar + content + bottom buttons
 // ---------------------------------------------------------------------------
 
-const KEYBOARD_OFFSET = Platform.OS === "web" ? 316 : 0;
+const WEB_KEYBOARD_OFFSET = 316;
+
+function useKeyboardHeight(): number {
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (Platform.OS === "web") {return;}
+
+    const showSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (e) => setHeight(e.endCoordinates.height),
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => setHeight(0),
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  return Platform.OS === "web" ? WEB_KEYBOARD_OFFSET : height;
+}
 
 interface StepLayoutProps {
   step: 1 | 2 | 3;
-  insets: { top: number };
+  insets: { top: number; bottom: number };
   onBack: () => void;
   onStepTap?: (step: 1 | 2 | 3) => void;
   contentFade?: Animated.Value;
   floatButtons?: boolean;
+  keyboardHeight?: number;
   children: ReactNode;
   buttons: ReactNode;
 }
@@ -64,6 +90,7 @@ function StepLayout({
   onStepTap,
   contentFade,
   floatButtons,
+  keyboardHeight = 0,
   children,
   buttons,
 }: StepLayoutProps) {
@@ -72,7 +99,11 @@ function StepLayout({
       {/* Progress indicator */}
       <View style={[styles.progressBar, { paddingTop: insets.top + 12 }]}>
         <Pressable onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backArrow}>←</Text>
+          {step === 1 ? (
+            <MaterialIcons name="close" size={24} color="#391b59" />
+          ) : (
+            <Text style={styles.backArrow}>←</Text>
+          )}
         </Pressable>
         <View style={styles.stepPills}>
           {STEP_LABELS.map((label, i) => {
@@ -108,7 +139,9 @@ function StepLayout({
 
       <KeyboardAvoidingView
         style={styles.content}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={
+          !floatButtons && Platform.OS === "ios" ? "padding" : undefined
+        }
       >
         <Animated.View
           style={[
@@ -134,7 +167,9 @@ function StepLayout({
           style={[
             styles.buttonArea,
             styles.buttonAreaFloat,
-            contentFade ? { opacity: contentFade } : undefined,
+            {
+              bottom: keyboardHeight > 0 ? keyboardHeight : insets.bottom + 8,
+            },
           ]}
         >
           {buttons}
@@ -267,6 +302,7 @@ export default function AddPatientScreen({ navigation, route }: Props) {
   const nameInputRef = useRef<TextInput>(null);
   const patientCount = route.params?.patientCount ?? 0;
   const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
 
   // Fade animation for step 1 arrow button
   const step1ButtonOpacity = useRef(new Animated.Value(0)).current;
@@ -392,11 +428,13 @@ export default function AddPatientScreen({ navigation, route }: Props) {
   });
 
   const handleDone = () => {
-    if (isEditMode) {
-      navigation.navigate("Home", { updatedPatient: buildPatient() });
-    } else {
-      navigation.navigate("Home", { newPatient: buildPatient() });
-    }
+    const patient = buildPatient();
+    const params = isEditMode
+      ? { updatedPatient: patient }
+      : { newPatient: patient };
+
+    // Navigate to Home with params — this both delivers data and dismisses the modal
+    navigation.navigate("Home", params);
   };
 
   const handleAddAnother = () => {
@@ -493,7 +531,7 @@ export default function AddPatientScreen({ navigation, route }: Props) {
   const dueDateInput = (
     <View style={styles.inputRow}>
       <TextInput
-        style={styles.fieldInput}
+        style={[styles.fieldInput, styles.fieldInputInRow]}
         value={dueDateText}
         onChangeText={handleDueDateChange}
         placeholder="MM/DD"
@@ -542,6 +580,7 @@ export default function AddPatientScreen({ navigation, route }: Props) {
         onStepTap={handleStepTap}
         contentFade={contentFade}
         floatButtons
+        keyboardHeight={keyboardHeight}
         buttons={arrowButton(handleStep1Next, step1ButtonOpacity, hasName)}
       >
         <QuestionStep
@@ -579,6 +618,7 @@ export default function AddPatientScreen({ navigation, route }: Props) {
         onStepTap={handleStepTap}
         contentFade={contentFade}
         floatButtons
+        keyboardHeight={keyboardHeight}
         buttons={arrowButton(handleStep2Next, step2ButtonOpacity, hasDateInput)}
       >
         <QuestionStep question={questionText} error={error}>
@@ -667,7 +707,6 @@ const styles = StyleSheet.create({
   },
   buttonAreaFloat: {
     position: "absolute",
-    bottom: KEYBOARD_OFFSET,
     left: 0,
     right: 0,
   },
@@ -700,22 +739,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   pillActive: {
-    backgroundColor: "#391b59",
-  },
-  pillCompleted: {
     borderWidth: 1,
     borderColor: "#391b59",
   },
-  pillFuture: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.1)",
-  },
+  pillCompleted: {},
+  pillFuture: {},
   pillText: {
     fontFamily: "DMSans-Bold",
     fontSize: 18,
   },
   pillTextActive: {
-    color: "#f0f1d6",
+    color: "#391b59",
   },
   pillTextCompleted: {
     color: "#391b59",
@@ -744,6 +778,11 @@ const styles = StyleSheet.create({
     width: "100%",
     outlineStyle: "none",
   } as never,
+  fieldInputInRow: {
+    width: undefined,
+    flex: 1,
+    minWidth: 0,
+  },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",

@@ -45,7 +45,15 @@ export default function AppNavigator() {
       >
         <Stack.Screen name="Launch" component={LaunchScreen} />
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-        <Stack.Screen name="AddPatient" component={AddPatientScreen} />
+        <Stack.Screen
+          name="AddPatient"
+          component={AddPatientScreen}
+          options={{
+            presentation: "modal",
+            animation: "default",
+            contentStyle: { backgroundColor: "#f0f1d6" },
+          }}
+        />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen
           name="ViewPatient"
