@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   DevSettings,
   Image,
   ImageBackground,
@@ -48,9 +49,10 @@ const SPLASH_DURATION_MS = 2000;
 const APP_LABEL = (Constants.expoConfig?.extra?.appLabel as string) ?? "";
 
 if (!__DEV__) {
-  void import("vexo-analytics").then(({ vexo }) =>
-    vexo("5febe5d7-f01f-4716-ba33-d3c0b33794c8"),
-  );
+  void import("vexo-analytics").then(({ vexo }) => {
+    vexo("5febe5d7-f01f-4716-ba33-d3c0b33794c8");
+    Alert.alert("Vexo Active", "Vexo analytics initialized successfully.");
+  });
 }
 
 /** Root component that wraps AppContent with ThemeProvider. */
