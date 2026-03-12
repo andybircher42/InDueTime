@@ -79,7 +79,7 @@ describe("EntryForm — Gestational Age mode", () => {
     expect(onAdd).not.toHaveBeenCalled();
   });
 
-  it("resets form after submission (name cleared, fields hidden)", () => {
+  it("resets form after submission and shows confirmation", () => {
     renderInWeeksDaysMode();
 
     fireEvent.changeText(screen.getByLabelText("Weeks"), "10");
@@ -90,6 +90,8 @@ describe("EntryForm — Gestational Age mode", () => {
     expect(screen.getByLabelText("Name").props.value).toBe("");
     expect(screen.queryByLabelText("Weeks")).toBeNull();
     expect(screen.queryByLabelText("Days")).toBeNull();
+    // Shows confirmation
+    expect(screen.getByLabelText("Added Baby")).toBeTruthy();
   });
 
   it("does not call onAdd when name is only whitespace", () => {

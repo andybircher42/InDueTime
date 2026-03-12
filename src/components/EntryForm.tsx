@@ -1,5 +1,7 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Animated,
+  Easing,
   Keyboard,
   LayoutAnimation,
   Platform,
@@ -56,6 +58,9 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
   const [daysTouched, setDaysTouched] = useState(false);
   const [dateTouched, setDateTouched] = useState(false);
   const wasRevealedRef = useRef(false);
+  const [addedName, setAddedName] = useState<string | null>(null);
+  const confirmOpacity = useRef(new Animated.Value(0)).current;
+  const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hasName = name.trim().length > 0;
 
@@ -128,20 +133,30 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
     setDueDate(parseDateText(updated));
   };
 
+  useEffect(() => {
+    return () => {
+      if (confirmTimer.current) {
+        clearTimeout(confirmTimer.current);
+      }
+    };
+  }, []);
+
   const handleAdd = () => {
     if (!canAdd) {
       return;
     }
 
+    const trimmedName = name.trim();
+
     if (mode === "weeksDays") {
       const computed_dueDate = computeDueDate(w, d);
       onAdd({
-        name: name.trim(),
+        name: trimmedName,
         dueDate: toISODateString(computed_dueDate),
       });
     } else if (dueDate) {
       onAdd({
-        name: name.trim(),
+        name: trimmedName,
         dueDate: toISODateString(dueDate),
       });
     }
@@ -155,6 +170,21 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
     setDaysTouched(false);
     setDateTouched(false);
     Keyboard.dismiss();
+
+    // Show brief confirmation
+    if (confirmTimer.current) {
+      clearTimeout(confirmTimer.current);
+    }
+    setAddedName(trimmedName);
+    confirmOpacity.setValue(1);
+    confirmTimer.current = setTimeout(() => {
+      Animated.timing(confirmOpacity, {
+        toValue: 0,
+        duration: 400,
+        easing: Easing.in(Easing.quad),
+        useNativeDriver: true,
+      }).start(() => setAddedName(null));
+    }, 1500);
   };
 
   const handleDateChange = useCallback(
@@ -190,6 +220,17 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
         maxLength={50}
         autoFocus
       />
+
+      {addedName && (
+        <Animated.View
+          style={[styles.confirmRow, { opacity: confirmOpacity }]}
+          accessibilityLabel={`Added ${addedName}`}
+          accessibilityRole="alert"
+        >
+          <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+          <Text style={styles.confirmText}>Added {addedName}</Text>
+        </Animated.View>
+      )}
 
       {hasName && (
         <>
@@ -433,6 +474,17 @@ function createStyles(colors: ColorTokens) {
       marginBottom: 10,
       backgroundColor: colors.inputBackground,
       color: colors.textPrimary,
+    },
+    confirmRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      marginBottom: 10,
+    },
+    confirmText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.primary,
     },
     toggleRow: {
       flexDirection: "row",

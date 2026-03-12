@@ -182,8 +182,6 @@ export default function EntryList({
   const handleAdd = useCallback(
     (entry: { name: string; dueDate: string }) => {
       onAdd(entry);
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setShowForm(false);
     },
     [onAdd],
   );

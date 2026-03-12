@@ -430,7 +430,7 @@ describe("EntryList", () => {
     expect(screen.queryByLabelText("Name")).toBeNull();
   });
 
-  it("hides inline form after adding an entry", () => {
+  it("keeps form open after adding and shows confirmation", () => {
     const onAdd = jest.fn();
     renderList([], { onAdd });
 
@@ -445,6 +445,9 @@ describe("EntryList", () => {
     fireEvent.press(screen.getByLabelText("Add this person"));
 
     expect(onAdd).toHaveBeenCalledTimes(1);
-    expect(screen.queryByLabelText("Name")).toBeNull();
+    // Form stays open for batch entry
+    expect(screen.getByLabelText("Name")).toBeTruthy();
+    // Shows confirmation
+    expect(screen.getByLabelText("Added Baby")).toBeTruthy();
   });
 });
