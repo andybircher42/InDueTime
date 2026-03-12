@@ -8,8 +8,8 @@ jest.mock("expo-router", () => ({
   Slot: () => null,
 }));
 
-import renderWithTheme from "../src/test/renderWithTheme";
-import WelcomeScreen from "./welcome";
+import renderWithTheme from "../../src/test/renderWithTheme";
+import WelcomeScreen from "../welcome";
 
 const originalConsoleError = console.error;
 

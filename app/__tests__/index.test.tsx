@@ -1,12 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 
-import headerLogoLight from "../assets/icon.png";
-import headerLogoDark from "../assets/icon-dark.png";
-import splashBgDark from "../assets/splash-bg-dark.png";
-import splashBgLight from "../assets/splash-bg-light.png";
-import renderWithTheme from "../src/test/renderWithTheme";
-import HomeScreen from "./index";
+import headerLogoLight from "../../assets/icon.png";
+import headerLogoDark from "../../assets/icon-dark.png";
+import splashBgDark from "../../assets/splash-bg-dark.png";
+import splashBgLight from "../../assets/splash-bg-light.png";
+import renderWithTheme from "../../src/test/renderWithTheme";
+import HomeScreen from "../index";
 
 const originalConsoleError = console.error;
 

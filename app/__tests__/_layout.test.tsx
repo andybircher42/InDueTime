@@ -18,11 +18,11 @@ jest.mock("expo-router", () => {
 
 import * as storage from "@/storage";
 
-import splashBgDark from "../assets/splash-bg-dark.png";
-import splashBgLight from "../assets/splash-bg-light.png";
-import splashLogoLight from "../assets/splash-icon.png";
-import splashLogoDark from "../assets/splash-icon-dark.png";
-import RootLayout from "./_layout";
+import splashBgDark from "../../assets/splash-bg-dark.png";
+import splashBgLight from "../../assets/splash-bg-light.png";
+import splashLogoLight from "../../assets/splash-icon.png";
+import splashLogoDark from "../../assets/splash-icon-dark.png";
+import RootLayout from "../_layout";
 
 const Updates = jest.requireMock<{
   checkForUpdateAsync: jest.Mock;
