@@ -4,6 +4,7 @@ import {
   formatDueDate,
   getDateBounds,
   getDateError,
+  inferYear,
   parseDateParts,
   parseDateText,
   toDisplayDateString,
@@ -89,8 +90,8 @@ describe("getDateError", () => {
     expect(getDateError("06-05-2026", now)).toBeNull();
   });
 
-  it("returns format error for incomplete input", () => {
-    expect(getDateError("6-15", now)).toBe("Enter date as MM-DD-YYYY");
+  it("returns null for MM-DD input (year inferred)", () => {
+    expect(getDateError("6-15", now)).toBeNull();
   });
 
   it("returns format error for text without hyphens", () => {
@@ -202,6 +203,14 @@ describe("parseDateText", () => {
   it("returns null for single-digit year", () => {
     expect(parseDateText("6-15-6")).toBeNull();
   });
+
+  it("parses MM-DD and infers year", () => {
+    const now = new Date(2026, 2, 2);
+    // June 15 is in the future → 2026
+    expect(parseDateText("6-15", now)).toEqual(new Date(2026, 5, 15));
+    // Jan 15 is in the past → 2027
+    expect(parseDateText("1-15", now)).toEqual(new Date(2027, 0, 15));
+  });
 });
 
 describe("parseDateParts", () => {
@@ -211,8 +220,18 @@ describe("parseDateParts", () => {
     expect(parseDateParts("abc", now)).toBeNull();
   });
 
-  it("returns null for incomplete date", () => {
-    expect(parseDateParts("6-15", now)).toBeNull();
+  it("infers year for MM-DD input", () => {
+    const result = parseDateParts("6-15", now);
+    expect(result).toEqual(
+      expect.objectContaining({ month: 6, day: 15, year: 2026 }),
+    );
+  });
+
+  it("infers year for MM-DD- input (trailing hyphen)", () => {
+    const result = parseDateParts("6-15-", now);
+    expect(result).toEqual(
+      expect.objectContaining({ month: 6, day: 15, year: 2026 }),
+    );
   });
 
   it("extracts month, day, and 4-digit year", () => {
@@ -242,6 +261,31 @@ describe("parseDateParts", () => {
   });
 });
 
+describe("inferYear", () => {
+  // now = March 2, 2026
+  const now = new Date(2026, 2, 2);
+
+  it("uses current year for a future date this year", () => {
+    expect(inferYear(6, 15, now)).toBe(2026);
+  });
+
+  it("uses current year for today's date", () => {
+    expect(inferYear(3, 2, now)).toBe(2026);
+  });
+
+  it("uses next year for a date that has already passed", () => {
+    expect(inferYear(1, 15, now)).toBe(2027);
+  });
+
+  it("uses next year for yesterday", () => {
+    expect(inferYear(3, 1, now)).toBe(2027);
+  });
+
+  it("uses current year for December (future month)", () => {
+    expect(inferYear(12, 25, now)).toBe(2026);
+  });
+});
+
 describe("formatDateInput", () => {
   const now = new Date(2026, 2, 2);
 
@@ -259,6 +303,14 @@ describe("formatDateInput", () => {
 
   it("expands a 2-digit year", () => {
     expect(formatDateInput("6-15-26", now)).toBe("06-15-2026");
+  });
+
+  it("infers year from MM-DD input", () => {
+    expect(formatDateInput("6-15", now)).toBe("06-15-2026");
+  });
+
+  it("infers next year for past MM-DD input", () => {
+    expect(formatDateInput("1-15", now)).toBe("01-15-2027");
   });
 });
 

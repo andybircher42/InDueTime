@@ -540,12 +540,23 @@ describe("EntryForm — typed date input", () => {
     renderFormWithName();
     const input = screen.getByLabelText("Due date");
 
-    fireEvent.changeText(input, "6-15");
+    fireEvent.changeText(input, "6");
     expect(screen.queryByLabelText("Date error")).toBeNull();
 
     fireEvent(input, "blur");
     expect(screen.getByLabelText("Date error")).toBeTruthy();
     expect(screen.getByText("Enter date as MM-DD-YYYY")).toBeTruthy();
+  });
+
+  it("accepts MM-DD input and infers year on blur", () => {
+    renderFormWithName();
+    const input = screen.getByLabelText("Due date");
+
+    fireEvent.changeText(input, "6-15");
+    fireEvent(input, "blur");
+
+    expect(screen.queryByLabelText("Date error")).toBeNull();
+    expect(input.props.value).toBe("06-15-2026");
   });
 
   it("shows error for invalid month after blur", () => {

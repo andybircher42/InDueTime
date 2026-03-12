@@ -4,6 +4,7 @@ export {
   formatDueDate,
   getDateBounds,
   getDateError,
+  inferYear,
   parseDateParts,
   parseDateText,
   toDisplayDateString,

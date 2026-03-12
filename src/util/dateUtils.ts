@@ -22,24 +22,45 @@ export function expandTwoDigitYear(
   return candidate > now.getFullYear() + 10 ? candidate - 100 : candidate;
 }
 
-const DATE_PATTERN = /^(\d{1,2})-(\d{1,2})-(\d{2,4})$/;
+const DATE_WITH_YEAR = /^(\d{1,2})-(\d{1,2})-(\d{2,4})$/;
+const DATE_NO_YEAR = /^(\d{1,2})-(\d{1,2})-?$/;
 
-/** Extracts month, day, and year from an MM-DD-YYYY or M-D-YY text string, expanding 2-digit years. */
+/** Infers the year for a month-day pair: uses the current year if the date is today or later, otherwise next year. */
+export function inferYear(
+  month: number,
+  day: number,
+  now: Date = new Date(),
+): number {
+  const thisYear = now.getFullYear();
+  const candidate = new Date(thisYear, month - 1, day);
+  // Use today at midnight for comparison so "today" counts as this year
+  const today = new Date(thisYear, now.getMonth(), now.getDate());
+  return candidate >= today ? thisYear : thisYear + 1;
+}
+
+/** Extracts month, day, and year from date text. Accepts MM-DD-YYYY, M-D-YY, or MM-DD (year inferred). */
 export function parseDateParts(
   text: string,
   now: Date = new Date(),
 ): { month: number; day: number; year: number; raw: RegExpMatchArray } | null {
-  const match = text.match(DATE_PATTERN);
-  if (!match) {
-    return null;
+  const matchFull = text.match(DATE_WITH_YEAR);
+  if (matchFull) {
+    const month = parseInt(matchFull[1], 10);
+    const day = parseInt(matchFull[2], 10);
+    let year = parseInt(matchFull[3], 10);
+    if (year < 100) {
+      year = expandTwoDigitYear(year, now);
+    }
+    return { month, day, year, raw: matchFull };
   }
-  const month = parseInt(match[1], 10);
-  const day = parseInt(match[2], 10);
-  let year = parseInt(match[3], 10);
-  if (year < 100) {
-    year = expandTwoDigitYear(year, now);
+  const matchShort = text.match(DATE_NO_YEAR);
+  if (matchShort) {
+    const month = parseInt(matchShort[1], 10);
+    const day = parseInt(matchShort[2], 10);
+    const year = inferYear(month, day, now);
+    return { month, day, year, raw: matchShort };
   }
-  return { month, day, year, raw: match };
+  return null;
 }
 
 /** Validates a date text string and returns a user-facing error message, or null if valid. */
