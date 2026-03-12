@@ -34,3 +34,19 @@ jest.mock("react-native-safe-area-context", () => ({
   SafeAreaView: ({ children }: { children: React.ReactNode }) => children,
   SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
+
+const mockRouter = {
+  replace: jest.fn(),
+  push: jest.fn(),
+  back: jest.fn(),
+};
+
+jest.mock("expo-router", () => ({
+  useRouter: () => mockRouter,
+  Slot: () => null,
+}));
+
+jest.mock("expo-constants", () => ({
+  __esModule: true,
+  default: { expoConfig: { extra: {} } },
+}));
