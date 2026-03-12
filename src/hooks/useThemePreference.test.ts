@@ -7,47 +7,128 @@ beforeEach(() => {
   void AsyncStorage.clear();
 });
 
-/** Stores a value, renders the hook, loads preference, and returns result. */
-async function setupWithStored(value: string) {
-  await AsyncStorage.setItem("@theme_mode", value);
-  const { result } = renderHook(() => useThemePreference());
-  await act(async () => {
-    await result.current.loadThemePreference();
-  });
-  return result;
-}
-
 describe("useThemePreference", () => {
-  it("defaults to system mode", () => {
+  it("defaults to classic personality and system brightness", () => {
     const { result } = renderHook(() => useThemePreference());
-    expect(result.current.themeMode).toBe("system");
+    expect(result.current.personality).toBe("classic");
+    expect(result.current.brightness).toBe("system");
   });
 
-  it("hydrates stored theme mode", async () => {
-    const result = await setupWithStored("dark");
-    expect(result.current.themeMode).toBe("dark");
+  it("hydrates stored personality and brightness", async () => {
+    await AsyncStorage.setItem("@theme_personality", "warm");
+    await AsyncStorage.setItem("@theme_brightness", "dark");
+    const { result } = renderHook(() => useThemePreference());
+    await act(async () => {
+      await result.current.loadThemePreference();
+    });
+    expect(result.current.personality).toBe("warm");
+    expect(result.current.brightness).toBe("dark");
   });
 
-  it("hydrates mono theme mode", async () => {
-    const result = await setupWithStored("mono");
-    expect(result.current.themeMode).toBe("mono");
+  it("hydrates mono personality", async () => {
+    await AsyncStorage.setItem("@theme_personality", "mono");
+    await AsyncStorage.setItem("@theme_brightness", "light");
+    const { result } = renderHook(() => useThemePreference());
+    await act(async () => {
+      await result.current.loadThemePreference();
+    });
+    expect(result.current.personality).toBe("mono");
+    expect(result.current.brightness).toBe("light");
   });
 
-  it("persists theme mode when set", async () => {
+  it("persists personality when set", async () => {
     const { result } = renderHook(() => useThemePreference());
 
     act(() => {
-      result.current.setThemeMode("light");
+      result.current.setPersonality("warm");
     });
 
-    expect(result.current.themeMode).toBe("light");
-
-    const stored = await AsyncStorage.getItem("@theme_mode");
-    expect(stored).toBe("light");
+    expect(result.current.personality).toBe("warm");
+    const stored = await AsyncStorage.getItem("@theme_personality");
+    expect(stored).toBe("warm");
   });
 
-  it("falls back to system on invalid stored value", async () => {
-    const result = await setupWithStored("invalid");
-    expect(result.current.themeMode).toBe("system");
+  it("persists brightness when set", async () => {
+    const { result } = renderHook(() => useThemePreference());
+
+    act(() => {
+      result.current.setBrightness("dark");
+    });
+
+    expect(result.current.brightness).toBe("dark");
+    const stored = await AsyncStorage.getItem("@theme_brightness");
+    expect(stored).toBe("dark");
+  });
+
+  it("falls back to defaults on invalid stored values", async () => {
+    await AsyncStorage.setItem("@theme_personality", "invalid");
+    await AsyncStorage.setItem("@theme_brightness", "invalid");
+    const { result } = renderHook(() => useThemePreference());
+    await act(async () => {
+      await result.current.loadThemePreference();
+    });
+    expect(result.current.personality).toBe("classic");
+    expect(result.current.brightness).toBe("system");
+  });
+
+  describe("legacy migration", () => {
+    it("migrates legacy 'mono' to mono+system", async () => {
+      await AsyncStorage.setItem("@theme_mode", "mono");
+      const { result } = renderHook(() => useThemePreference());
+      await act(async () => {
+        await result.current.loadThemePreference();
+      });
+      expect(result.current.personality).toBe("mono");
+      expect(result.current.brightness).toBe("system");
+
+      // Verify migration persisted new keys
+      expect(await AsyncStorage.getItem("@theme_personality")).toBe("mono");
+      expect(await AsyncStorage.getItem("@theme_brightness")).toBe("system");
+      // Verify legacy key removed
+      expect(await AsyncStorage.getItem("@theme_mode")).toBeNull();
+    });
+
+    it("migrates legacy 'dark' to classic+dark", async () => {
+      await AsyncStorage.setItem("@theme_mode", "dark");
+      const { result } = renderHook(() => useThemePreference());
+      await act(async () => {
+        await result.current.loadThemePreference();
+      });
+      expect(result.current.personality).toBe("classic");
+      expect(result.current.brightness).toBe("dark");
+    });
+
+    it("migrates legacy 'light' to classic+light", async () => {
+      await AsyncStorage.setItem("@theme_mode", "light");
+      const { result } = renderHook(() => useThemePreference());
+      await act(async () => {
+        await result.current.loadThemePreference();
+      });
+      expect(result.current.personality).toBe("classic");
+      expect(result.current.brightness).toBe("light");
+    });
+
+    it("migrates legacy 'system' to classic+system", async () => {
+      await AsyncStorage.setItem("@theme_mode", "system");
+      const { result } = renderHook(() => useThemePreference());
+      await act(async () => {
+        await result.current.loadThemePreference();
+      });
+      expect(result.current.personality).toBe("classic");
+      expect(result.current.brightness).toBe("system");
+    });
+
+    it("does not migrate if new keys already exist", async () => {
+      await AsyncStorage.setItem("@theme_mode", "dark");
+      await AsyncStorage.setItem("@theme_personality", "warm");
+      await AsyncStorage.setItem("@theme_brightness", "light");
+      const { result } = renderHook(() => useThemePreference());
+      await act(async () => {
+        await result.current.loadThemePreference();
+      });
+      // Should use new keys, not legacy
+      expect(result.current.personality).toBe("warm");
+      expect(result.current.brightness).toBe("light");
+    });
   });
 });

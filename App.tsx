@@ -56,10 +56,21 @@ if (!__DEV__) {
 
 /** Root component that wraps AppContent with ThemeProvider. */
 export default function App() {
-  const { themeMode, setThemeMode, loadThemePreference } = useThemePreference();
+  const {
+    personality,
+    brightness,
+    setPersonality,
+    setBrightness,
+    loadThemePreference,
+  } = useThemePreference();
 
   return (
-    <ThemeProvider themeMode={themeMode} setThemeMode={setThemeMode}>
+    <ThemeProvider
+      personality={personality}
+      brightness={brightness}
+      setPersonality={setPersonality}
+      setBrightness={setBrightness}
+    >
       <AppContent loadThemePreference={loadThemePreference} />
     </ThemeProvider>
   );
@@ -71,7 +82,14 @@ interface AppContentProps {
 
 /** Main app content that consumes theme context. */
 function AppContent({ loadThemePreference }: AppContentProps) {
-  const { colors, resolvedTheme, themeMode, setThemeMode } = useTheme();
+  const {
+    colors,
+    resolvedTheme,
+    personality,
+    brightness,
+    setPersonality,
+    setBrightness,
+  } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [showAgreement, setShowAgreement] = useState(false);
   const [agreementLoaded, setAgreementLoaded] = useState(false);
@@ -298,8 +316,10 @@ function AppContent({ loadThemePreference }: AppContentProps) {
         <EntryFormModal ref={formModalRef} onAdd={add} />
         <ThemePickerModal
           visible={showThemePicker}
-          currentMode={themeMode}
-          onSelect={setThemeMode}
+          currentPersonality={personality}
+          currentBrightness={brightness}
+          onSelectPersonality={setPersonality}
+          onSelectBrightness={setBrightness}
           onClose={() => setShowThemePicker(false)}
           onAppInfo={() => setShowAppInfo(true)}
           anchor={pickerAnchor}

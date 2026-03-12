@@ -51,8 +51,12 @@ async function renderApp() {
   });
 }
 
-async function renderAppWithTheme(mode: string) {
-  await AsyncStorage.setItem("@theme_mode", mode);
+async function renderAppWithTheme(
+  brightness: string,
+  personality: string = "classic",
+) {
+  await AsyncStorage.setItem("@theme_brightness", brightness);
+  await AsyncStorage.setItem("@theme_personality", personality);
   render(<App />);
   await act(async () => {});
   await act(async () => {
@@ -308,7 +312,7 @@ describe("App", () => {
 
   it("uses light logos in mono mode", async () => {
     await skipToMainUI();
-    await renderAppWithTheme("mono");
+    await renderAppWithTheme("light", "mono");
 
     await waitFor(() => {
       expect(screen.getByText("in due time")).toBeTruthy();
@@ -319,7 +323,7 @@ describe("App", () => {
   });
 
   it("uses dark splash logo in dark mode", async () => {
-    await AsyncStorage.setItem("@theme_mode", "dark");
+    await AsyncStorage.setItem("@theme_brightness", "dark");
     render(<App />);
 
     await waitFor(() => {
@@ -330,7 +334,7 @@ describe("App", () => {
   });
 
   it("uses light splash logo in light mode", async () => {
-    await AsyncStorage.setItem("@theme_mode", "light");
+    await AsyncStorage.setItem("@theme_brightness", "light");
     render(<App />);
 
     await waitFor(() => {
@@ -341,7 +345,7 @@ describe("App", () => {
   });
 
   it("uses dark splash background in dark mode", async () => {
-    await AsyncStorage.setItem("@theme_mode", "dark");
+    await AsyncStorage.setItem("@theme_brightness", "dark");
     render(<App />);
 
     await waitFor(() => {
@@ -350,7 +354,7 @@ describe("App", () => {
   });
 
   it("uses light splash background in light mode", async () => {
-    await AsyncStorage.setItem("@theme_mode", "light");
+    await AsyncStorage.setItem("@theme_brightness", "light");
     render(<App />);
 
     await waitFor(() => {
@@ -359,7 +363,8 @@ describe("App", () => {
   });
 
   it("uses light splash background in mono mode", async () => {
-    await AsyncStorage.setItem("@theme_mode", "mono");
+    await AsyncStorage.setItem("@theme_personality", "mono");
+    await AsyncStorage.setItem("@theme_brightness", "light");
     render(<App />);
 
     await waitFor(() => {
@@ -387,7 +392,7 @@ describe("App", () => {
 
   it("uses light app background in mono mode", async () => {
     await skipToMainUI();
-    await renderAppWithTheme("mono");
+    await renderAppWithTheme("light", "mono");
 
     await waitFor(() => {
       expect(screen.getByTestId("app-bg").props.source).toBe(splashBgLight);

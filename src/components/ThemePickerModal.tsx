@@ -12,12 +12,14 @@ import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import * as Updates from "expo-updates";
 
-import { ColorTokens, ThemeMode, useTheme } from "@/theme";
+import { Brightness, ColorTokens, Personality, useTheme } from "@/theme";
 
 interface ThemePickerModalProps {
   visible: boolean;
-  currentMode: ThemeMode;
-  onSelect: (mode: ThemeMode) => void;
+  currentPersonality: Personality;
+  currentBrightness: Brightness;
+  onSelectPersonality: (p: Personality) => void;
+  onSelectBrightness: (b: Brightness) => void;
   onClose: () => void;
   onAppInfo?: () => void;
   anchor?: { top: number; right: number };
@@ -49,22 +51,33 @@ function buildBugReportUrl(): string {
 const FEATURE_REQUEST_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSeLS03h_8s3t0-IYXM04UjVv2fAhH37i2n56fPHB83OuHaQhw/viewform";
 
-const THEME_OPTIONS: {
-  mode: ThemeMode;
+const STYLE_OPTIONS: {
+  value: Personality;
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
 }[] = [
-  { mode: "system", label: "System", icon: "contrast-outline" },
-  { mode: "light", label: "Light", icon: "sunny-outline" },
-  { mode: "dark", label: "Dark", icon: "moon-outline" },
-  { mode: "mono", label: "B&W", icon: "ellipse-outline" },
+  { value: "classic", label: "Classic", icon: "color-palette-outline" },
+  { value: "warm", label: "Warm", icon: "flame-outline" },
+  { value: "mono", label: "B&W", icon: "ellipse-outline" },
+];
+
+const BRIGHTNESS_OPTIONS: {
+  value: Brightness;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}[] = [
+  { value: "system", label: "System", icon: "contrast-outline" },
+  { value: "light", label: "Light", icon: "sunny-outline" },
+  { value: "dark", label: "Dark", icon: "moon-outline" },
 ];
 
 /** Dropdown modal for selecting the app theme, anchored below the settings button. */
 export default function ThemePickerModal({
   visible,
-  currentMode,
-  onSelect,
+  currentPersonality,
+  currentBrightness,
+  onSelectPersonality,
+  onSelectBrightness,
   onClose,
   onAppInfo,
   anchor,
@@ -83,14 +96,13 @@ export default function ThemePickerModal({
           accessibilityLabel="Close theme picker"
         />
         <View style={[styles.dropdown, dropdownPosition]}>
-          <Text style={styles.title}>Appearance</Text>
-          {THEME_OPTIONS.map(({ mode, label, icon }) => (
+          <Text style={styles.title}>Style</Text>
+          {STYLE_OPTIONS.map(({ value, label, icon }) => (
             <Pressable
-              key={mode}
+              key={value}
               style={styles.row}
               onPress={() => {
-                onSelect(mode);
-                onClose();
+                onSelectPersonality(value);
               }}
               accessibilityRole="button"
               accessibilityLabel={label}
@@ -102,12 +114,41 @@ export default function ThemePickerModal({
                 style={styles.rowIcon}
               />
               <Text style={styles.rowLabel}>{label}</Text>
-              {currentMode === mode && (
+              {currentPersonality === value && (
                 <Ionicons
                   name="checkmark"
                   size={20}
                   color={colors.primary}
-                  testID={`checkmark-${mode}`}
+                  testID={`checkmark-style-${value}`}
+                />
+              )}
+            </Pressable>
+          ))}
+          <View style={styles.separator} />
+          <Text style={styles.title}>Brightness</Text>
+          {BRIGHTNESS_OPTIONS.map(({ value, label, icon }) => (
+            <Pressable
+              key={value}
+              style={styles.row}
+              onPress={() => {
+                onSelectBrightness(value);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={label}
+            >
+              <Ionicons
+                name={icon}
+                size={20}
+                color={colors.textPrimary}
+                style={styles.rowIcon}
+              />
+              <Text style={styles.rowLabel}>{label}</Text>
+              {currentBrightness === value && (
+                <Ionicons
+                  name="checkmark"
+                  size={20}
+                  color={colors.primary}
+                  testID={`checkmark-brightness-${value}`}
                 />
               )}
             </Pressable>

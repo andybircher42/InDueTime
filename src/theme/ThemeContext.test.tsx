@@ -2,60 +2,123 @@ import { Text } from "react-native";
 import * as RN from "react-native";
 import { render, screen } from "@testing-library/react-native";
 
-import { darkColors, lightColors, monoColors } from "./colors";
+import { palettes } from "./colors";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 
 function TestConsumer() {
-  const { colors, resolvedTheme } = useTheme();
+  const { colors, resolvedTheme, personality, brightness } = useTheme();
   return (
     <>
       <Text testID="bg">{colors.background}</Text>
       <Text testID="theme">{resolvedTheme}</Text>
+      <Text testID="personality">{personality}</Text>
+      <Text testID="brightness">{brightness}</Text>
     </>
   );
 }
 
+const noopSet = jest.fn();
+
 describe("ThemeContext", () => {
-  it("provides light colors when themeMode is light", () => {
+  it("provides classic light colors when classic+light", () => {
     render(
-      <ThemeProvider themeMode="light" setThemeMode={jest.fn()}>
+      <ThemeProvider
+        personality="classic"
+        brightness="light"
+        setPersonality={noopSet}
+        setBrightness={noopSet}
+      >
         <TestConsumer />
       </ThemeProvider>,
     );
 
     expect(screen.getByTestId("bg").props.children).toBe(
-      lightColors.background,
+      palettes.classic.light.colors.background,
     );
     expect(screen.getByTestId("theme").props.children).toBe("light");
+    expect(screen.getByTestId("personality").props.children).toBe("classic");
   });
 
-  it("provides dark colors when themeMode is dark", () => {
+  it("provides classic dark colors when classic+dark", () => {
     render(
-      <ThemeProvider themeMode="dark" setThemeMode={jest.fn()}>
+      <ThemeProvider
+        personality="classic"
+        brightness="dark"
+        setPersonality={noopSet}
+        setBrightness={noopSet}
+      >
         <TestConsumer />
       </ThemeProvider>,
     );
 
-    expect(screen.getByTestId("bg").props.children).toBe(darkColors.background);
+    expect(screen.getByTestId("bg").props.children).toBe(
+      palettes.classic.dark.colors.background,
+    );
     expect(screen.getByTestId("theme").props.children).toBe("dark");
   });
 
-  it("provides mono colors when themeMode is mono", () => {
+  it("provides warm light colors when warm+light", () => {
     render(
-      <ThemeProvider themeMode="mono" setThemeMode={jest.fn()}>
+      <ThemeProvider
+        personality="warm"
+        brightness="light"
+        setPersonality={noopSet}
+        setBrightness={noopSet}
+      >
         <TestConsumer />
       </ThemeProvider>,
     );
 
-    expect(screen.getByTestId("bg").props.children).toBe(monoColors.background);
-    expect(screen.getByTestId("theme").props.children).toBe("mono");
+    expect(screen.getByTestId("bg").props.children).toBe(
+      palettes.warm.light.colors.background,
+    );
+    expect(screen.getByTestId("personality").props.children).toBe("warm");
   });
 
-  it("resolves system mode using useColorScheme", () => {
+  it("provides warm dark colors when warm+dark", () => {
+    render(
+      <ThemeProvider
+        personality="warm"
+        brightness="dark"
+        setPersonality={noopSet}
+        setBrightness={noopSet}
+      >
+        <TestConsumer />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByTestId("bg").props.children).toBe(
+      palettes.warm.dark.colors.background,
+    );
+  });
+
+  it("provides mono colors when mono+light", () => {
+    render(
+      <ThemeProvider
+        personality="mono"
+        brightness="light"
+        setPersonality={noopSet}
+        setBrightness={noopSet}
+      >
+        <TestConsumer />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByTestId("bg").props.children).toBe(
+      palettes.mono.light.colors.background,
+    );
+  });
+
+  it("resolves system brightness using useColorScheme", () => {
     jest.spyOn(RN, "useColorScheme").mockReturnValue("dark");
 
     render(
-      <ThemeProvider themeMode="system" setThemeMode={jest.fn()}>
+      <ThemeProvider
+        personality="classic"
+        brightness="system"
+        setPersonality={noopSet}
+        setBrightness={noopSet}
+      >
         <TestConsumer />
       </ThemeProvider>,
     );
@@ -69,7 +132,12 @@ describe("ThemeContext", () => {
     jest.spyOn(RN, "useColorScheme").mockReturnValue(null);
 
     render(
-      <ThemeProvider themeMode="system" setThemeMode={jest.fn()}>
+      <ThemeProvider
+        personality="classic"
+        brightness="system"
+        setPersonality={noopSet}
+        setBrightness={noopSet}
+      >
         <TestConsumer />
       </ThemeProvider>,
     );

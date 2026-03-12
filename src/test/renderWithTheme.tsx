@@ -1,18 +1,26 @@
 import { ReactElement } from "react";
 import { render } from "@testing-library/react-native";
 
-import { ThemeMode, ThemeProvider } from "@/theme";
+import { Brightness, Personality, ThemeProvider } from "@/theme";
 
 /**
  * Renders a component wrapped in ThemeProvider for testing.
- * Defaults to light mode.
+ * Defaults to classic personality with light brightness.
  */
 export default function renderWithTheme(
   ui: ReactElement,
-  themeMode: ThemeMode = "light",
+  {
+    personality = "classic",
+    brightness = "light",
+  }: { personality?: Personality; brightness?: Brightness } = {},
 ) {
   return render(
-    <ThemeProvider themeMode={themeMode} setThemeMode={jest.fn()}>
+    <ThemeProvider
+      personality={personality}
+      brightness={brightness}
+      setPersonality={jest.fn()}
+      setBrightness={jest.fn()}
+    >
       {ui}
     </ThemeProvider>,
   );

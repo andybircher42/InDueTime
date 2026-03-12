@@ -7,8 +7,10 @@ import ThemePickerModal from "./ThemePickerModal";
 
 const defaultProps = {
   visible: true,
-  currentMode: "system" as const,
-  onSelect: jest.fn(),
+  currentPersonality: "classic" as const,
+  currentBrightness: "system" as const,
+  onSelectPersonality: jest.fn(),
+  onSelectBrightness: jest.fn(),
   onClose: jest.fn(),
 };
 
@@ -17,40 +19,66 @@ beforeEach(() => {
 });
 
 describe("ThemePickerModal", () => {
-  it("renders all 4 option labels when visible", () => {
+  it("renders style and brightness sections when visible", () => {
     renderWithTheme(<ThemePickerModal {...defaultProps} />);
 
-    expect(screen.getByText("Appearance")).toBeTruthy();
+    expect(screen.getByText("Style")).toBeTruthy();
+    expect(screen.getByText("Classic")).toBeTruthy();
+    expect(screen.getByText("Warm")).toBeTruthy();
+    expect(screen.getByText("B&W")).toBeTruthy();
+
+    expect(screen.getByText("Brightness")).toBeTruthy();
     expect(screen.getByText("System")).toBeTruthy();
     expect(screen.getByText("Light")).toBeTruthy();
     expect(screen.getByText("Dark")).toBeTruthy();
-    expect(screen.getByText("B&W")).toBeTruthy();
   });
 
-  it("shows checkmark on the active mode", () => {
-    renderWithTheme(<ThemePickerModal {...defaultProps} currentMode="dark" />);
+  it("shows checkmark on the active personality", () => {
+    renderWithTheme(
+      <ThemePickerModal {...defaultProps} currentPersonality="warm" />,
+    );
 
-    expect(screen.getByTestId("checkmark-dark")).toBeTruthy();
-    expect(screen.queryByTestId("checkmark-system")).toBeNull();
-    expect(screen.queryByTestId("checkmark-light")).toBeNull();
-    expect(screen.queryByTestId("checkmark-mono")).toBeNull();
+    expect(screen.getByTestId("checkmark-style-warm")).toBeTruthy();
+    expect(screen.queryByTestId("checkmark-style-classic")).toBeNull();
+    expect(screen.queryByTestId("checkmark-style-mono")).toBeNull();
   });
 
-  it("calls onSelect and onClose when an option is pressed", () => {
-    const onSelect = jest.fn();
-    const onClose = jest.fn();
+  it("shows checkmark on the active brightness", () => {
+    renderWithTheme(
+      <ThemePickerModal {...defaultProps} currentBrightness="dark" />,
+    );
+
+    expect(screen.getByTestId("checkmark-brightness-dark")).toBeTruthy();
+    expect(screen.queryByTestId("checkmark-brightness-system")).toBeNull();
+    expect(screen.queryByTestId("checkmark-brightness-light")).toBeNull();
+  });
+
+  it("calls onSelectPersonality when a style option is pressed", () => {
+    const onSelectPersonality = jest.fn();
     renderWithTheme(
       <ThemePickerModal
         {...defaultProps}
-        onSelect={onSelect}
-        onClose={onClose}
+        onSelectPersonality={onSelectPersonality}
+      />,
+    );
+
+    fireEvent.press(screen.getByText("Warm"));
+
+    expect(onSelectPersonality).toHaveBeenCalledWith("warm");
+  });
+
+  it("calls onSelectBrightness when a brightness option is pressed", () => {
+    const onSelectBrightness = jest.fn();
+    renderWithTheme(
+      <ThemePickerModal
+        {...defaultProps}
+        onSelectBrightness={onSelectBrightness}
       />,
     );
 
     fireEvent.press(screen.getByText("Light"));
 
-    expect(onSelect).toHaveBeenCalledWith("light");
-    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onSelectBrightness).toHaveBeenCalledWith("light");
   });
 
   it("calls onClose when backdrop is pressed", () => {
@@ -94,7 +122,7 @@ describe("ThemePickerModal", () => {
   it("does not render content when visible=false", () => {
     renderWithTheme(<ThemePickerModal {...defaultProps} visible={false} />);
 
-    expect(screen.queryByText("Choose Theme")).toBeNull();
+    expect(screen.queryByText("Style")).toBeNull();
   });
 
   it("calls onAppInfo and onClose when App Info row is pressed", () => {

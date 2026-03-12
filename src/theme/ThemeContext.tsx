@@ -1,65 +1,74 @@
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import { useColorScheme } from "react-native";
 
-import {
-  ColorTokens,
-  darkColors,
-  darkRowColors,
-  lightColors,
-  lightRowColors,
-  monoColors,
-  monoRowColors,
-} from "./colors";
+import { Brightness, ColorTokens, palettes, Personality } from "./colors";
 
-/** User-selected theme mode. */
-export type ThemeMode = "system" | "light" | "dark" | "mono";
+/** The effective visual brightness after resolving system preference. */
+export type ResolvedTheme = "light" | "dark";
 
-/** The effective visual theme after resolving system preference. */
-export type ResolvedTheme = "light" | "dark" | "mono";
+/**
+ * @deprecated Use `Brightness` for the brightness axis and `Personality` for
+ * the style axis. Kept temporarily for migration; will be removed.
+ */
+export type ThemeMode = Brightness;
 
 interface ThemeContextValue {
   colors: ColorTokens;
   rowColors: readonly string[];
   resolvedTheme: ResolvedTheme;
-  themeMode: ThemeMode;
-  setThemeMode: (mode: ThemeMode) => void;
+  personality: Personality;
+  brightness: Brightness;
+  setPersonality: (p: Personality) => void;
+  setBrightness: (b: Brightness) => void;
+  /** @deprecated Use `brightness` + `personality` instead. */
+  themeMode: Brightness;
+  /** @deprecated Use `setBrightness` instead. */
+  setThemeMode: (mode: Brightness) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 interface ThemeProviderProps {
-  themeMode: ThemeMode;
-  setThemeMode: (mode: ThemeMode) => void;
+  personality: Personality;
+  brightness: Brightness;
+  setPersonality: (p: Personality) => void;
+  setBrightness: (b: Brightness) => void;
   children: ReactNode;
 }
 
 /** Provides resolved theme colors to the component tree. */
 export function ThemeProvider({
-  themeMode,
-  setThemeMode,
+  personality,
+  brightness,
+  setPersonality,
+  setBrightness,
   children,
 }: ThemeProviderProps) {
   const systemScheme = useColorScheme();
 
   const resolvedTheme: ResolvedTheme =
-    themeMode === "system"
+    brightness === "system"
       ? systemScheme === "dark"
         ? "dark"
         : "light"
-      : themeMode;
+      : brightness;
 
   const value = useMemo<ThemeContextValue>(() => {
-    const palettes: Record<
-      ResolvedTheme,
-      { colors: ColorTokens; rowColors: readonly string[] }
-    > = {
-      light: { colors: lightColors, rowColors: lightRowColors },
-      dark: { colors: darkColors, rowColors: darkRowColors },
-      mono: { colors: monoColors, rowColors: monoRowColors },
+    const palette = palettes[personality];
+    const variant = palette[resolvedTheme];
+    return {
+      colors: variant.colors,
+      rowColors: variant.rowColors,
+      resolvedTheme,
+      personality,
+      brightness,
+      setPersonality,
+      setBrightness,
+      // Legacy aliases
+      themeMode: brightness,
+      setThemeMode: setBrightness,
     };
-    const { colors, rowColors } = palettes[resolvedTheme];
-    return { colors, rowColors, resolvedTheme, themeMode, setThemeMode };
-  }, [resolvedTheme, themeMode, setThemeMode]);
+  }, [resolvedTheme, personality, brightness, setPersonality, setBrightness]);
 
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

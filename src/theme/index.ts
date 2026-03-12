@@ -1,4 +1,9 @@
-export type { ColorTokens } from "./colors";
+export type {
+  Brightness,
+  ColorTokens,
+  Personality,
+  PersonalityPalette,
+} from "./colors";
 export {
   darkColors,
   darkRowColors,
@@ -6,6 +11,7 @@ export {
   lightRowColors,
   monoColors,
   monoRowColors,
+  palettes,
 } from "./colors";
 export type { ResolvedTheme, ThemeMode } from "./ThemeContext";
 export { ThemeProvider, useTheme } from "./ThemeContext";
