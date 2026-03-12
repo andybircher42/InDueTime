@@ -491,12 +491,12 @@ function createStyles(colors: ColorTokens) {
     },
     calendarButton: {
       borderWidth: 1,
-      borderColor: colors.primary,
+      borderColor: colors.inputBorder,
       borderRadius: 8,
       paddingHorizontal: 12,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: colors.contentBackground,
+      backgroundColor: colors.inputBackground,
     },
     inputError: {
       borderColor: colors.destructive,
