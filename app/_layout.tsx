@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Image, ImageBackground, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Slot, useRouter } from "expo-router";
+import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Updates from "expo-updates";
 
+import { HipaaAgreementModal, OnboardingOverlay } from "@/components";
 import { useThemePreference } from "@/hooks";
 import {
+  acceptAgreement,
   checkAgreement,
   checkOnboardingComplete,
   getOrCreateDeviceId,
@@ -54,21 +56,24 @@ interface RootGateProps {
   loadThemePreference: () => Promise<void>;
 }
 
-/** Handles initialization, splash screen, and routing to welcome or home. */
+type GatePhase = "init" | "welcome" | "splash" | "ready";
+
+/**
+ * Handles the full init sequence: check agreement/onboarding → welcome
+ * (if needed) → splash → home. No route navigation during init to avoid
+ * visual hiccups.
+ */
 function RootGate({ loadThemePreference }: RootGateProps) {
   const { resolvedTheme } = useTheme();
-  const router = useRouter();
-  const [ready, setReady] = useState(false);
+  const [phase, setPhase] = useState<GatePhase>("init");
+  const [showAgreement, setShowAgreement] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const onboardingDoneRef = useRef(false);
   const isLoadingRef = useRef(true);
 
   const isDark = resolvedTheme === "dark";
   const splashLogo = isDark ? splashLogoDark : splashLogoLight;
   const splashBg = isDark ? splashBgDark : splashBgLight;
-
-  const finishSplash = useCallback(() => {
-    isLoadingRef.current = false;
-    setReady(true);
-  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -94,27 +99,19 @@ function RootGate({ loadThemePreference }: RootGateProps) {
         }),
       ]);
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) {return;}
 
-      const needsWelcome = !accepted || !onboardingDone;
+      onboardingDoneRef.current = !!onboardingDone;
 
-      if (needsWelcome) {
-        // Go straight to welcome — no splash delay
-        setReady(true);
-        setTimeout(() => {
-          if (mounted) {
-            router.replace("/welcome");
-          }
-        }, 0);
+      if (!accepted) {
+        setShowAgreement(true);
+        setPhase("welcome");
+      } else if (!onboardingDone) {
+        setShowOnboarding(true);
+        setPhase("welcome");
       } else {
-        // Returning user — show splash then go to home
-        setTimeout(() => {
-          if (mounted) {
-            finishSplash();
-          }
-        }, SPLASH_DURATION_MS);
+        // Returning user — go straight to splash
+        setPhase("splash");
       }
 
       if (!__DEV__) {
@@ -141,9 +138,60 @@ function RootGate({ loadThemePreference }: RootGateProps) {
     return () => {
       mounted = false;
     };
-  }, [loadThemePreference, router, finishSplash]);
+  }, [loadThemePreference]);
 
-  if (!ready) {
+  // Start splash timer when entering splash phase
+  useEffect(() => {
+    if (phase !== "splash") {return;}
+    const timer = setTimeout(() => {
+      isLoadingRef.current = false;
+      setPhase("ready");
+    }, SPLASH_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [phase]);
+
+  const handleAcceptAgreement = useCallback(() => {
+    acceptAgreement()
+      .then(() => {
+        setShowAgreement(false);
+        if (onboardingDoneRef.current) {
+          setPhase("splash");
+        } else {
+          setShowOnboarding(true);
+        }
+      })
+      .catch((e) => console.error("Failed to save agreement", e));
+  }, []);
+
+  const handleOnboardingComplete = useCallback(() => {
+    setShowOnboarding(false);
+    setPhase("splash");
+  }, []);
+
+  // Init + welcome: show background with optional modals
+  if (phase === "init" || phase === "welcome") {
+    return (
+      <ImageBackground
+        source={splashBg}
+        resizeMode="cover"
+        style={styles.splashContainer}
+        testID="splash-bg"
+      >
+        <HipaaAgreementModal
+          visible={showAgreement}
+          onAccept={handleAcceptAgreement}
+        />
+        <OnboardingOverlay
+          visible={showOnboarding && !showAgreement}
+          onComplete={handleOnboardingComplete}
+        />
+        <StatusBar style="auto" />
+      </ImageBackground>
+    );
+  }
+
+  // Splash: show logo with timed transition to ready
+  if (phase === "splash") {
     return (
       <ImageBackground
         source={splashBg}
@@ -162,6 +210,7 @@ function RootGate({ loadThemePreference }: RootGateProps) {
     );
   }
 
+  // Ready: render the matched route (home screen)
   return <Slot />;
 }
 
