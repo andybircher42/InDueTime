@@ -50,6 +50,34 @@ export default tseslint.config(
     },
   },
   {
+    files: ["eslint-rules/**/*.js"],
+    languageOptions: {
+      globals: {
+        module: "readonly",
+        require: "readonly",
+        console: "readonly",
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
+    files: ["eslint-rules/**/*.js"],
+    languageOptions: {
+      sourceType: "commonjs",
+      globals: {
+        module: "readonly",
+        require: "readonly",
+        console: "readonly",
+        __dirname: "readonly",
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
     ignores: [
       "node_modules/",
       "babel.config.js",
