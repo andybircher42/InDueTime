@@ -272,6 +272,14 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
   if (batch) {
     return (
       <View style={styles.form}>
+        <Pressable
+          onPress={toggleBatch}
+          accessibilityRole="button"
+          accessibilityLabel="Switch to single entry"
+        >
+          <Text style={styles.modeSwitchTextTop}>Add one at a time</Text>
+        </Pressable>
+
         <View style={styles.batchHeader}>
           <Text style={styles.label}>Add multiple people</Text>
           <Pressable
@@ -362,20 +370,20 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
             <Text style={styles.addButtonText}>Add All</Text>
           </Pressable>
         </View>
-
-        <Pressable
-          onPress={toggleBatch}
-          accessibilityRole="button"
-          accessibilityLabel="Switch to single entry"
-        >
-          <Text style={styles.modeSwitchText}>Add one at a time</Text>
-        </Pressable>
       </View>
     );
   }
 
   return (
     <View style={styles.form}>
+      <Pressable
+        onPress={toggleBatch}
+        accessibilityRole="button"
+        accessibilityLabel="Switch to batch entry"
+      >
+        <Text style={styles.modeSwitchTextTop}>Add multiple at once</Text>
+      </Pressable>
+
       <TextInput
         style={styles.nameInput}
         placeholder="Who are you tracking?"
@@ -591,14 +599,6 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
           )}
         </>
       )}
-
-      <Pressable
-        onPress={toggleBatch}
-        accessibilityRole="button"
-        accessibilityLabel="Switch to batch entry"
-      >
-        <Text style={styles.modeSwitchText}>Add multiple at once</Text>
-      </Pressable>
     </View>
   );
 }
@@ -644,6 +644,13 @@ function createStyles(colors: ColorTokens) {
       color: colors.primary,
       marginTop: 10,
       textDecorationLine: "underline",
+    },
+    modeSwitchTextTop: {
+      fontSize: 14,
+      color: colors.primary,
+      marginBottom: 10,
+      textDecorationLine: "underline",
+      alignSelf: "flex-end",
     },
     ageRow: {
       flexDirection: "row",
