@@ -7,7 +7,7 @@ import CalendarView from "./CalendarView";
 describe("CalendarView", () => {
   it("shows empty state when no entries", () => {
     renderWithTheme(<CalendarView entries={[]} />);
-    expect(screen.getByText(/Add patients to see delivery/)).toBeTruthy();
+    expect(screen.getByText(/Add someone to see delivery/)).toBeTruthy();
   });
 
   it("renders month components when entries exist", () => {

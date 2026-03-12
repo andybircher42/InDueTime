@@ -134,29 +134,39 @@ describe("deliveryLoadForDate", () => {
 });
 
 describe("colorForLoad", () => {
+  const BASE = "#2e78c2";
+
   it("returns transparent for low load", () => {
-    expect(colorForLoad(0)).toBe("transparent");
-    expect(colorForLoad(0.004)).toBe("transparent");
+    expect(colorForLoad(0, BASE)).toBe("transparent");
+    expect(colorForLoad(0.004, BASE)).toBe("transparent");
   });
 
-  it("returns rgba for load above threshold", () => {
-    const color = colorForLoad(0.05);
-    expect(color).toMatch(/^rgba\(57,27,89,/);
+  it("returns rgba using base color for load above threshold", () => {
+    const color = colorForLoad(0.05, BASE);
+    expect(color).toMatch(/^rgba\(46,120,194,/);
   });
 
   it("caps at max opacity", () => {
-    const color = colorForLoad(1.0);
-    expect(color).toBe("rgba(57,27,89,0.400)");
+    const color = colorForLoad(1.0, BASE);
+    expect(color).toBe("rgba(46,120,194,0.400)");
+  });
+
+  it("supports short hex (#RGB)", () => {
+    const color = colorForLoad(0.1, "#f00");
+    expect(color).toMatch(/^rgba\(255,0,0,/);
   });
 });
 
 describe("calendarHeatMap", () => {
+  const BASE = "#2e78c2";
+
   it("returns one entry per day in range", () => {
     const result = calendarHeatMap(
       [],
       "2026-06-01",
       "2026-06-30",
       "2026-06-01",
+      BASE,
     );
     expect(result).toHaveLength(30);
     expect(result[0].date).toBe("2026-06-01");
@@ -170,6 +180,7 @@ describe("calendarHeatMap", () => {
       "2026-06-10",
       "2026-06-20",
       "2026-06-01",
+      BASE,
     );
     // Due date (June 15) should have some load
     const dueDateEntry = result.find((e) => e.date === "2026-06-15");

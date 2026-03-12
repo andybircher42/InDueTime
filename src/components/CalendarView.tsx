@@ -45,7 +45,13 @@ export default function CalendarView({ entries }: CalendarViewProps) {
       const endDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
-      const heatMap = calendarHeatMap(entries, startDate, endDate, todayStr);
+      const heatMap = calendarHeatMap(
+        entries,
+        startDate,
+        endDate,
+        todayStr,
+        colors.primary,
+      );
 
       const cells: DayCell[] = heatMap.map((entry) => {
         const dayNum = parseInt(entry.date.split("-")[2], 10);
@@ -62,13 +68,13 @@ export default function CalendarView({ entries }: CalendarViewProps) {
     }
 
     return result;
-  }, [entries, today, dueDateMap]);
+  }, [entries, today, dueDateMap, colors.primary]);
 
   if (entries.length === 0) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>
-          Add patients to see delivery{"\n"}probability on the calendar
+          Add someone to see delivery{"\n"}probability on the calendar
         </Text>
       </View>
     );

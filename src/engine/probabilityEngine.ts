@@ -18,11 +18,8 @@ const LOW = 140;
 const HIGH = 301;
 const INDUCTION_DAY = 287; // 41w0d
 
-// Heat-map: single color (#391B59) with opacity scaled linearly.
+// Heat-map opacity is scaled linearly from the theme's primary color.
 // Max opacity 40% at load >= 0.10 (10% combined delivery probability).
-const HEAT_COLOR_R = 0x39;
-const HEAT_COLOR_G = 0x1b;
-const HEAT_COLOR_B = 0x59;
 const MAX_OPACITY = 0.4;
 const MAX_LOAD = 0.1; // load at which opacity caps out
 const MIN_LOAD = 0.005; // below this, no color shown
@@ -267,29 +264,56 @@ export function deliveryLoadForDate(
 }
 
 /**
+ * Parse a hex color string (#RGB, #RRGGBB) into [r, g, b].
+ * Returns [0, 0, 0] for invalid input.
+ */
+function parseHex(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  if (h.length === 3) {
+    return [
+      parseInt(h[0] + h[0], 16),
+      parseInt(h[1] + h[1], 16),
+      parseInt(h[2] + h[2], 16),
+    ];
+  }
+  if (h.length === 6) {
+    return [
+      parseInt(h.slice(0, 2), 16),
+      parseInt(h.slice(2, 4), 16),
+      parseInt(h.slice(4, 6), 16),
+    ];
+  }
+  return [0, 0, 0];
+}
+
+/**
  * Map a numeric delivery load to an rgba color string.
  *
- * Uses #391B59 with opacity linearly scaled from 0 to 40%.
+ * Uses the provided base color with opacity linearly scaled from 0 to 40%.
  * Fixed scale: load 0.10 (10%) = 40% opacity. Loads below 0.005 are transparent.
  */
-export function colorForLoad(load: number): string {
+export function colorForLoad(load: number, baseColor: string): string {
   if (load < MIN_LOAD) {
     return "transparent";
   }
+  const [r, g, b] = parseHex(baseColor);
   const t = Math.min(load / MAX_LOAD, 1);
   const alpha = (t * MAX_OPACITY).toFixed(3);
-  return `rgba(${HEAT_COLOR_R},${HEAT_COLOR_G},${HEAT_COLOR_B},${alpha})`;
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 /**
  * Build a heat-map array for every calendar date in [startDate, endDate].
  * Each entry contains { date, load, color }.
+ *
+ * @param baseColor - Hex color string (e.g. "#2e78c2") used as the heat tint.
  */
 export function calendarHeatMap(
   entries: readonly Entry[],
   startDate: string,
   endDate: string,
   today: string,
+  baseColor: string,
 ): HeatMapEntry[] {
   const result: HeatMapEntry[] = [];
   const start = parseDate(startDate);
@@ -299,7 +323,7 @@ export function calendarHeatMap(
   while (current <= end) {
     const iso = formatDate(current);
     const load = deliveryLoadForDate(entries, iso, today);
-    result.push({ date: iso, load, color: colorForLoad(load) });
+    result.push({ date: iso, load, color: colorForLoad(load, baseColor) });
     current.setUTCDate(current.getUTCDate() + 1);
   }
 
