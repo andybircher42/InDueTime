@@ -234,48 +234,6 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
 
       {hasName && (
         <>
-          {/* Mode toggle */}
-          <View style={styles.toggleRow} accessibilityRole="tablist">
-            <Pressable
-              style={[
-                styles.toggleButton,
-                mode === "dueDate" && styles.toggleButtonActive,
-              ]}
-              onPress={() => setMode("dueDate")}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: mode === "dueDate" }}
-              accessibilityLabel="Due Date input mode"
-            >
-              <Text
-                style={[
-                  styles.toggleText,
-                  mode === "dueDate" && styles.toggleTextActive,
-                ]}
-              >
-                Due Date
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.toggleButton,
-                mode === "weeksDays" && styles.toggleButtonActive,
-              ]}
-              onPress={() => setMode("weeksDays")}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: mode === "weeksDays" }}
-              accessibilityLabel="Gestational Age input mode"
-            >
-              <Text
-                style={[
-                  styles.toggleText,
-                  mode === "weeksDays" && styles.toggleTextActive,
-                ]}
-              >
-                Gestational Age
-              </Text>
-            </Pressable>
-          </View>
-
           {mode === "weeksDays" ? (
             <>
               <View style={styles.ageRow}>
@@ -353,6 +311,15 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
                   Due date: {toDisplayDateString(computeDueDate(w, d))}
                 </Text>
               )}
+              <Pressable
+                onPress={() => setMode("dueDate")}
+                accessibilityRole="button"
+                accessibilityLabel="Switch to due date input"
+              >
+                <Text style={styles.modeSwitchText}>
+                  Enter due date instead
+                </Text>
+              </Pressable>
             </>
           ) : (
             <View>
@@ -422,6 +389,15 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
                   Gestational age: {computed.weeks}w {computed.days}d
                 </Text>
               )}
+              <Pressable
+                onPress={() => setMode("weeksDays")}
+                accessibilityRole="button"
+                accessibilityLabel="Switch to gestational age input"
+              >
+                <Text style={styles.modeSwitchText}>
+                  Enter gestational age instead
+                </Text>
+              </Pressable>
               {showPicker && (
                 <View>
                   <DateTimePicker
@@ -486,30 +462,10 @@ function createStyles(colors: ColorTokens) {
       fontWeight: "600",
       color: colors.primary,
     },
-    toggleRow: {
-      flexDirection: "row",
-      marginBottom: 10,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: colors.primary,
-      overflow: "hidden",
-    },
-    toggleButton: {
-      flex: 1,
-      paddingVertical: 8,
-      alignItems: "center",
-      backgroundColor: colors.contentBackground,
-    },
-    toggleButtonActive: {
-      backgroundColor: colors.primary,
-    },
-    toggleText: {
+    modeSwitchText: {
       fontSize: 14,
-      fontWeight: "600",
-      color: colors.primary,
-    },
-    toggleTextActive: {
-      color: colors.white,
+      color: colors.textTertiary,
+      marginTop: 10,
     },
     ageRow: {
       flexDirection: "row",

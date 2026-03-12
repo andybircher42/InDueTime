@@ -438,8 +438,8 @@ describe("EntryList", () => {
 
     // Type name first to reveal date fields (progressive disclosure)
     fireEvent.changeText(screen.getByLabelText("Name"), "Baby");
-    // Switch to gestational age mode and fill in
-    fireEvent.press(screen.getByText("Gestational Age"));
+    // Switch to gestational age mode via text link and fill in
+    fireEvent.press(screen.getByText("Enter gestational age instead"));
     fireEvent.changeText(screen.getByLabelText("Weeks"), "20");
     fireEvent.changeText(screen.getByLabelText("Days"), "3");
     fireEvent.press(screen.getByLabelText("Add this person"));

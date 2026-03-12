@@ -36,7 +36,7 @@ function renderFormWithName(onAdd = jest.fn()) {
 /** Renders EntryForm in Gestational Age mode and returns the onAdd mock. */
 function renderInWeeksDaysMode(onAdd = jest.fn()) {
   renderFormWithName(onAdd);
-  fireEvent.press(screen.getByText("Gestational Age"));
+  fireEvent.press(screen.getByLabelText("Switch to gestational age input"));
   return onAdd;
 }
 
@@ -254,17 +254,12 @@ describe("EntryForm — progressive disclosure", () => {
     renderForm();
 
     expect(screen.queryByLabelText("Due date")).toBeNull();
-    expect(screen.queryByRole("tab")).toBeNull();
+    expect(screen.queryByText("Enter gestational age instead")).toBeNull();
 
     typeName("Baby");
 
     expect(screen.getByLabelText("Due date")).toBeTruthy();
-    expect(
-      screen.getByRole("tab", { name: "Due Date input mode" }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("tab", { name: "Gestational Age input mode" }),
-    ).toBeTruthy();
+    expect(screen.getByText("Enter gestational age instead")).toBeTruthy();
   });
 
   it("hides date fields when name is cleared", () => {
@@ -284,7 +279,7 @@ describe("EntryForm — progressive disclosure", () => {
   });
 });
 
-describe("EntryForm — mode toggle", () => {
+describe("EntryForm — mode switch", () => {
   it("starts in Due Date mode by default", () => {
     renderFormWithName();
 
@@ -294,55 +289,27 @@ describe("EntryForm — mode toggle", () => {
     expect(screen.queryByLabelText("Days")).toBeNull();
   });
 
-  it("switches to Gestational Age mode when toggle is pressed", () => {
+  it("switches to Gestational Age mode via text link", () => {
     renderFormWithName();
 
-    fireEvent.press(screen.getByText("Gestational Age"));
+    fireEvent.press(screen.getByText("Enter gestational age instead"));
 
     expect(screen.getByLabelText("Weeks")).toBeTruthy();
     expect(screen.getByLabelText("Days")).toBeTruthy();
     expect(screen.queryByLabelText("Due date")).toBeNull();
-    expect(screen.queryByLabelText("Select due date")).toBeNull();
+    expect(screen.getByText("Enter due date instead")).toBeTruthy();
   });
 
-  it("switches back to Due Date mode", () => {
+  it("switches back to Due Date mode via text link", () => {
     renderFormWithName();
 
-    fireEvent.press(screen.getByText("Gestational Age"));
-    fireEvent.press(screen.getByText("Due Date"));
+    fireEvent.press(screen.getByText("Enter gestational age instead"));
+    fireEvent.press(screen.getByText("Enter due date instead"));
 
     expect(screen.getByLabelText("Due date")).toBeTruthy();
     expect(screen.getByLabelText("Select due date")).toBeTruthy();
     expect(screen.queryByLabelText("Weeks")).toBeNull();
     expect(screen.queryByLabelText("Days")).toBeNull();
-  });
-
-  it("mode toggle buttons communicate selected state for accessibility", () => {
-    renderFormWithName();
-
-    const dueDateTab = screen.getByRole("tab", {
-      name: "Due Date input mode",
-    });
-    const gaTab = screen.getByRole("tab", {
-      name: "Gestational Age input mode",
-    });
-
-    expect(dueDateTab.props.accessibilityState).toEqual({ selected: true });
-    expect(gaTab.props.accessibilityState).toEqual({ selected: false });
-
-    fireEvent.press(gaTab);
-
-    const dueDateTab2 = screen.getByRole("tab", {
-      name: "Due Date input mode",
-    });
-    const gaTab2 = screen.getByRole("tab", {
-      name: "Gestational Age input mode",
-    });
-
-    expect(dueDateTab2.props.accessibilityState).toEqual({
-      selected: false,
-    });
-    expect(gaTab2.props.accessibilityState).toEqual({ selected: true });
   });
 });
 

@@ -101,7 +101,7 @@ async function addEntry(name: string, weeks: string, days: string) {
   fireEvent.press(screen.getByLabelText("Add someone new"));
   // Type name first to reveal date fields (progressive disclosure)
   fireEvent.changeText(screen.getByLabelText("Name"), name);
-  fireEvent.press(screen.getByText("Gestational Age"));
+  fireEvent.press(screen.getByText("Enter gestational age instead"));
   fireEvent.changeText(screen.getByLabelText("Weeks"), weeks);
   fireEvent.changeText(screen.getByLabelText("Days"), days);
   fireEvent.press(screen.getByLabelText("Add this person"));
