@@ -631,3 +631,117 @@ describe("EntryForm — dueDate in onAdd callback", () => {
     );
   });
 });
+
+/** Enters batch mode by pressing the toggle link. */
+function enterBatchMode() {
+  fireEvent.press(screen.getByLabelText("Switch to batch entry"));
+}
+
+describe("EntryForm — batch mode", () => {
+  it("shows batch input after pressing toggle", () => {
+    renderForm();
+    enterBatchMode();
+
+    expect(screen.getByLabelText("Batch entries")).toBeTruthy();
+    expect(screen.getByText("Add multiple people")).toBeTruthy();
+  });
+
+  it("can switch back to single entry mode", () => {
+    renderForm();
+    enterBatchMode();
+
+    fireEvent.press(screen.getByLabelText("Switch to single entry"));
+
+    expect(screen.getByLabelText("Name")).toBeTruthy();
+    expect(screen.queryByLabelText("Batch entries")).toBeNull();
+  });
+
+  it("shows help tooltip when help button is pressed", () => {
+    renderForm();
+    enterBatchMode();
+
+    fireEvent.press(screen.getByLabelText("Show format help"));
+
+    expect(screen.getByLabelText("Format help")).toBeTruthy();
+    expect(screen.getByText("Separate entries with commas")).toBeTruthy();
+  });
+
+  it("hides help tooltip when pressed again", () => {
+    renderForm();
+    enterBatchMode();
+
+    fireEvent.press(screen.getByLabelText("Show format help"));
+    fireEvent.press(screen.getByLabelText("Show format help"));
+
+    expect(screen.queryByLabelText("Format help")).toBeNull();
+  });
+
+  it("calls onAdd for each valid entry and shows confirmation", () => {
+    const onAdd = renderForm();
+    enterBatchMode();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Batch entries"),
+      "Alice 6/14, Bob 35w5d",
+    );
+    fireEvent.press(screen.getByText("Add All"));
+
+    expect(onAdd).toHaveBeenCalledTimes(2);
+    expect(onAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "Alice" }),
+    );
+    expect(onAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "Bob" }),
+    );
+
+    // Confirmation message
+    expect(screen.getByLabelText("Added 2 people, Alice, Bob")).toBeTruthy();
+  });
+
+  it("clears text after successful batch add", () => {
+    renderForm();
+    enterBatchMode();
+
+    fireEvent.changeText(screen.getByLabelText("Batch entries"), "Alice 6/14");
+    fireEvent.press(screen.getByText("Add All"));
+
+    expect(screen.getByLabelText("Batch entries").props.value).toBe("");
+  });
+
+  it("shows errors for invalid entries", () => {
+    renderForm();
+    enterBatchMode();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Batch entries"),
+      "Alice 6/14, Bob",
+    );
+    fireEvent.press(screen.getByText("Add All"));
+
+    // Error shown for "Bob"
+    expect(screen.getByText(/Bob/)).toBeTruthy();
+    expect(screen.getByText(/No date or gestational age found/)).toBeTruthy();
+  });
+
+  it("keeps errored entries in input when some succeed", () => {
+    renderForm();
+    enterBatchMode();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Batch entries"),
+      "Alice 6/14, Bob",
+    );
+    fireEvent.press(screen.getByText("Add All"));
+
+    // Text field now contains only the errored entry
+    expect(screen.getByLabelText("Batch entries").props.value).toBe("Bob");
+  });
+
+  it("disables Add All when input is empty", () => {
+    renderForm();
+    enterBatchMode();
+
+    const addAll = screen.getByLabelText("Add all");
+    expect(addAll.props.accessibilityState.disabled).toBe(true);
+  });
+});

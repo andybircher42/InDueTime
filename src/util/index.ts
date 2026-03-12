@@ -1,3 +1,5 @@
+export type { BatchEntryError, BatchEntryResult } from "./batchParse";
+export { parseBatchInput } from "./batchParse";
 export {
   expandTwoDigitYear,
   formatDateInput,

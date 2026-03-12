@@ -19,11 +19,13 @@ import DateTimePicker, {
 
 import { ColorTokens, useTheme } from "@/theme";
 import {
+  BatchEntryError,
   computeDueDate,
   computeGestationalAge,
   formatDateInput,
   getDateBounds,
   getDateError,
+  parseBatchInput,
   parseDateText,
   toDisplayDateString,
   toISODateString,
@@ -64,6 +66,12 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
   } | null>(null);
   const confirmOpacity = useRef(new Animated.Value(0)).current;
   const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Batch mode state
+  const [batch, setBatch] = useState(false);
+  const [batchText, setBatchText] = useState("");
+  const [batchErrors, setBatchErrors] = useState<BatchEntryError[]>([]);
+  const [showHelp, setShowHelp] = useState(false);
 
   const hasName = name.trim().length > 0;
 
@@ -144,6 +152,26 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
     };
   }, []);
 
+  /** Shows a brief confirmation message that fades out. */
+  const showConfirmation = useCallback(
+    (info: { name: string; detail: string }) => {
+      if (confirmTimer.current) {
+        clearTimeout(confirmTimer.current);
+      }
+      setAddedInfo(info);
+      confirmOpacity.setValue(1);
+      confirmTimer.current = setTimeout(() => {
+        Animated.timing(confirmOpacity, {
+          toValue: 0,
+          duration: 400,
+          easing: Easing.in(Easing.quad),
+          useNativeDriver: true,
+        }).start(() => setAddedInfo(null));
+      }, 1500);
+    },
+    [confirmOpacity],
+  );
+
   const handleAdd = () => {
     if (!canAdd) {
       return;
@@ -179,20 +207,37 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
     setDateTouched(false);
     Keyboard.dismiss();
 
-    // Show brief confirmation
-    if (confirmTimer.current) {
-      clearTimeout(confirmTimer.current);
+    showConfirmation({ name: trimmedName, detail });
+  };
+
+  const handleBatchAdd = () => {
+    const { entries, errors } = parseBatchInput(batchText);
+    if (entries.length === 0 && errors.length === 0) {
+      return;
     }
-    setAddedInfo({ name: trimmedName, detail });
-    confirmOpacity.setValue(1);
-    confirmTimer.current = setTimeout(() => {
-      Animated.timing(confirmOpacity, {
-        toValue: 0,
-        duration: 400,
-        easing: Easing.in(Easing.quad),
-        useNativeDriver: true,
-      }).start(() => setAddedInfo(null));
-    }, 1500);
+
+    setBatchErrors(errors);
+
+    if (entries.length > 0) {
+      for (const entry of entries) {
+        onAdd({ name: entry.name, dueDate: entry.dueDate });
+      }
+
+      if (errors.length === 0) {
+        setBatchText("");
+      } else {
+        // Keep only the errored entries in the text field
+        setBatchText(errors.map((e) => e.raw).join(", "));
+      }
+
+      Keyboard.dismiss();
+
+      const count = entries.length;
+      showConfirmation({
+        name: `${count} ${count === 1 ? "person" : "people"}`,
+        detail: entries.map((e) => e.name).join(", "),
+      });
+    }
   };
 
   const handleDateChange = useCallback(
@@ -214,6 +259,120 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
     setShowPicker(false);
     setDateTouched(true);
   };
+
+  const toggleBatch = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setBatch((prev) => !prev);
+    setBatchErrors([]);
+    setShowHelp(false);
+  };
+
+  const canBatchAdd = batchText.trim().length > 0;
+
+  if (batch) {
+    return (
+      <View style={styles.form}>
+        <View style={styles.batchHeader}>
+          <Text style={styles.label}>Add multiple people</Text>
+          <Pressable
+            onPress={() => setShowHelp((prev) => !prev)}
+            accessibilityRole="button"
+            accessibilityLabel="Show format help"
+            hitSlop={8}
+          >
+            <Ionicons
+              name="help-circle-outline"
+              size={20}
+              color={colors.textTertiary}
+            />
+          </Pressable>
+        </View>
+
+        {showHelp && (
+          <View
+            style={[
+              styles.helpBox,
+              { backgroundColor: colors.inputBackground },
+            ]}
+            accessibilityLabel="Format help"
+          >
+            <Text style={styles.helpTitle}>Separate entries with commas</Text>
+            <Text style={styles.helpExample}>Due date formats:</Text>
+            <Text style={styles.helpCode}>
+              Alice 6/14, Bob 6-14-2026, Carol 6/14/26
+            </Text>
+            <Text style={styles.helpExample}>Gestational age formats:</Text>
+            <Text style={styles.helpCode}>
+              Alice 35w5d, Bob 35w 5d, Carol 20w3d
+            </Text>
+          </View>
+        )}
+
+        <TextInput
+          style={styles.batchInput}
+          placeholder="Alice 6/14, Bob 35w5d, Carol 6-14-26"
+          placeholderTextColor={colors.textTertiary}
+          accessibilityLabel="Batch entries"
+          value={batchText}
+          onChangeText={(text) => {
+            setBatchText(text);
+            setBatchErrors([]);
+          }}
+          multiline
+          textAlignVertical="top"
+          autoFocus
+        />
+
+        {batchErrors.length > 0 && (
+          <View style={styles.batchErrorBox}>
+            {batchErrors.map((err) => (
+              <Text key={err.raw} style={styles.errorText}>
+                &ldquo;{err.raw}&rdquo; &mdash; {err.error}
+              </Text>
+            ))}
+          </View>
+        )}
+
+        {addedInfo && (
+          <Animated.View
+            style={[styles.confirmRow, { opacity: confirmOpacity }]}
+            accessibilityLabel={`Added ${addedInfo.name}, ${addedInfo.detail}`}
+            accessibilityRole="alert"
+          >
+            <Ionicons
+              name="checkmark-circle"
+              size={18}
+              color={colors.primary}
+            />
+            <Text style={styles.confirmText}>
+              Added {addedInfo.name} — {addedInfo.detail}
+            </Text>
+          </Animated.View>
+        )}
+
+        <View style={styles.batchActions}>
+          <Pressable
+            style={[styles.addButton, !canBatchAdd && styles.addButtonDisabled]}
+            onPress={handleBatchAdd}
+            disabled={!canBatchAdd}
+            accessibilityRole="button"
+            accessibilityLabel="Add all"
+            accessibilityState={{ disabled: !canBatchAdd }}
+          >
+            <Text style={styles.addButtonText}>Add All</Text>
+          </Pressable>
+        </View>
+
+        <Pressable
+          onPress={toggleBatch}
+          accessibilityRole="button"
+          accessibilityLabel="Switch to single entry"
+        >
+          <Text style={styles.modeSwitchText}>Add one at a time</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.form}>
@@ -432,6 +591,14 @@ export default function EntryForm({ onAdd }: EntryFormProps) {
           )}
         </>
       )}
+
+      <Pressable
+        onPress={toggleBatch}
+        accessibilityRole="button"
+        accessibilityLabel="Switch to batch entry"
+      >
+        <Text style={styles.modeSwitchText}>Add multiple at once</Text>
+      </Pressable>
     </View>
   );
 }
@@ -547,6 +714,7 @@ function createStyles(colors: ColorTokens) {
       backgroundColor: colors.primary,
       borderRadius: 8,
       paddingHorizontal: 24,
+      paddingVertical: 12,
       justifyContent: "center",
       alignItems: "center",
     },
@@ -557,6 +725,53 @@ function createStyles(colors: ColorTokens) {
       color: colors.white,
       fontSize: 16,
       fontWeight: "600",
+    },
+    batchHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 4,
+    },
+    batchInput: {
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+      borderRadius: 8,
+      padding: 12,
+      fontSize: 15,
+      backgroundColor: colors.inputBackground,
+      color: colors.textPrimary,
+      minHeight: 80,
+      marginBottom: 8,
+    },
+    batchActions: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+    },
+    batchErrorBox: {
+      marginBottom: 8,
+    },
+    helpBox: {
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 8,
+    },
+    helpTitle: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: colors.textPrimary,
+      marginBottom: 6,
+    },
+    helpExample: {
+      fontSize: 12,
+      color: colors.textTertiary,
+      marginTop: 4,
+    },
+    helpCode: {
+      fontSize: 12,
+      color: colors.textPrimary,
+      fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+      marginTop: 2,
+      marginBottom: 2,
     },
   });
 }
