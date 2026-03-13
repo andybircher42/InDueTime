@@ -12,7 +12,8 @@ export interface DayCell {
   day: number; // day of month (1-31)
   color: string; // heat map color
   load: number; // numeric probability load
-  dueEntries: Entry[]; // entries with dueDate on this date
+  dueEntries: Entry[]; // active entries with dueDate on this date
+  deliveredEntries: Entry[]; // entries delivered on this date
 }
 
 interface CalendarMonthProps {
@@ -71,6 +72,7 @@ export default function CalendarMonth({
         color: "transparent",
         load: 0,
         dueEntries: [],
+        deliveredEntries: [],
       };
       currentRow.push(cell);
       if (currentRow.length === 7) {
@@ -106,26 +108,45 @@ export default function CalendarMonth({
         <View key={rowIndex} style={styles.weekRow}>
           {row.map((cell, cellIndex) => {
             const hasDueEntries = cell != null && cell.dueEntries.length > 0;
-            const CellWrapper = hasDueEntries ? Pressable : View;
+            const hasDelivered =
+              cell != null && (cell.deliveredEntries?.length ?? 0) > 0;
+            const isTappable = hasDueEntries || hasDelivered;
+            const CellWrapper = isTappable ? Pressable : View;
             return (
               <CellWrapper
                 key={cellIndex}
                 style={[
                   styles.dayCell,
                   { backgroundColor: cell ? cell.color : "transparent" },
-                  hasDueEntries && styles.dayCellTappable,
+                  isTappable && styles.dayCellTappable,
                 ]}
-                {...(hasDueEntries && {
-                  onPress: () => onDayPress?.(cell.date, cell.dueEntries),
+                {...(isTappable && {
+                  onPress: () =>
+                    onDayPress?.(cell.date, [
+                      ...cell.dueEntries,
+                      ...(cell.deliveredEntries ?? []),
+                    ]),
                   accessibilityRole: "button" as const,
-                  accessibilityLabel: `${cell.dueEntries.length} due on day ${cell.day}`,
+                  accessibilityLabel: [
+                    hasDueEntries &&
+                      `${cell.dueEntries.length} due on day ${cell.day}`,
+                    hasDelivered &&
+                      `${(cell.deliveredEntries ?? []).length} delivered on day ${cell.day}`,
+                  ]
+                    .filter(Boolean)
+                    .join(", "),
                 })}
               >
                 {cell && (
                   <>
                     <Text style={styles.dayText}>{cell.day}</Text>
-                    {cell.dueEntries.length > 0 && (
+                    {(hasDueEntries || hasDelivered) && (
                       <View style={styles.iconsRow}>
+                        {(cell.deliveredEntries ?? []).map((e) => (
+                          <Text key={e.id} style={styles.babyIcon}>
+                            👶
+                          </Text>
+                        ))}
                         {cell.dueEntries.length <= 3 ? (
                           cell.dueEntries.map((e) => (
                             <BirthstoneIcon
@@ -215,6 +236,10 @@ function createStyles(colors: ColorTokens) {
       alignItems: "center",
       gap: 2,
       marginTop: 1,
+    },
+    babyIcon: {
+      fontSize: 12,
+      lineHeight: lineHeight(14),
     },
     overflowText: {
       fontWeight: "700",

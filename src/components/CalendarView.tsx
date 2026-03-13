@@ -23,15 +23,37 @@ export default function CalendarView({
   const styles = useMemo(() => createStyles(colors), [colors]);
   const today = useMemo(() => new Date(), []);
 
-  // Build a map of ISO date -> entries with that dueDate
+  const activeEntries = useMemo(
+    () => entries.filter((e) => !e.deliveredAt),
+    [entries],
+  );
+
+  // Build a map of ISO date -> active entries with that dueDate
   const dueDateMap = useMemo(() => {
     const map = new Map<string, Entry[]>();
-    for (const e of entries) {
+    for (const e of activeEntries) {
       const existing = map.get(e.dueDate);
       if (existing) {
         existing.push(e);
       } else {
         map.set(e.dueDate, [e]);
+      }
+    }
+    return map;
+  }, [activeEntries]);
+
+  // Build a map of ISO date -> delivered entries (keyed by delivery date)
+  const deliveredDateMap = useMemo(() => {
+    const map = new Map<string, Entry[]>();
+    for (const e of entries) {
+      if (!e.deliveredAt) {continue;}
+      const d = new Date(e.deliveredAt);
+      const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      const existing = map.get(iso);
+      if (existing) {
+        existing.push(e);
+      } else {
+        map.set(iso, [e]);
       }
     }
     return map;
@@ -52,7 +74,7 @@ export default function CalendarView({
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
       const heatMap = calendarHeatMap(
-        entries,
+        activeEntries,
         startDate,
         endDate,
         todayStr,
@@ -67,6 +89,7 @@ export default function CalendarView({
           color: entry.color,
           load: entry.load,
           dueEntries: dueDateMap.get(entry.date) ?? [],
+          deliveredEntries: deliveredDateMap.get(entry.date) ?? [],
         };
       });
 
@@ -74,7 +97,7 @@ export default function CalendarView({
     }
 
     return result;
-  }, [entries, today, dueDateMap, colors.primary]);
+  }, [activeEntries, today, dueDateMap, deliveredDateMap, colors.primary]);
 
   if (entries.length === 0) {
     return (
