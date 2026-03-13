@@ -278,13 +278,26 @@ export default function EntryList({
     }
   }, []);
 
+  const activeEntries = useMemo(
+    () => entries.filter((e) => !e.deliveredAt),
+    [entries],
+  );
+
+  const deliveredEntries = useMemo(
+    () =>
+      entries
+        .filter((e) => !!e.deliveredAt)
+        .sort((a, b) => (b.deliveredAt ?? 0) - (a.deliveredAt ?? 0)),
+    [entries],
+  );
+
   const sorted = useMemo(() => {
     if (sortBy === "none") {
-      const copy = [...entries];
+      const copy = [...activeEntries];
       copy.sort((a, b) => b.createdAt - a.createdAt);
       return copy;
     }
-    const copy = [...entries];
+    const copy = [...activeEntries];
     const dir = sortDir === "asc" ? 1 : -1;
     if (sortBy === "dueDate") {
       copy.sort((a, b) => {
@@ -306,7 +319,7 @@ export default function EntryList({
       });
     }
     return copy;
-  }, [entries, sortBy, sortDir]);
+  }, [activeEntries, sortBy, sortDir]);
 
   const renderItem = useCallback(
     ({ item, index }: { item: Entry; index: number }) => (
@@ -468,6 +481,26 @@ export default function EntryList({
             </Text>
           </Pressable>
         }
+        ListFooterComponent={
+          deliveredEntries.length > 0 ? (
+            <View style={styles.deliveredSection}>
+              <View style={styles.deliveredHeader}>
+                <Text style={styles.deliveredIcon}>👶</Text>
+                <Text style={styles.deliveredTitle}>Delivered</Text>
+              </View>
+              {deliveredEntries.map((entry) => (
+                <View key={entry.id} style={styles.deliveredRow}>
+                  <Text style={styles.deliveredName} numberOfLines={1}>
+                    {entry.name}
+                  </Text>
+                  <Text style={styles.deliveredDate}>
+                    {formatDueDate(entry.dueDate)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null
+        }
       />
       <EntryDetailModal
         entry={selectedEntry}
@@ -610,6 +643,45 @@ function createStyles(colors: ColorTokens) {
       flexDirection: "row",
       alignItems: "center",
       gap: 6,
+    },
+    deliveredSection: {
+      marginHorizontal: 16,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    deliveredHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      marginBottom: 8,
+    },
+    deliveredIcon: {
+      fontSize: 16,
+    },
+    deliveredTitle: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.textTertiary,
+    },
+    deliveredRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 8,
+      marginBottom: 4,
+      backgroundColor: colors.inputBackground,
+      opacity: 0.6,
+    },
+    deliveredName: {
+      fontSize: 14,
+      color: colors.textPrimary,
+      flex: 1,
+    },
+    deliveredDate: {
+      fontSize: 13,
+      color: colors.textTertiary,
     },
     entryName: {
       fontSize: 16,

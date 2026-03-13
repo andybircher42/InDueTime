@@ -69,6 +69,9 @@ export const resetOnboarding = async (): Promise<void> => {
 /** Fixed base timestamp for migrating legacy entries without createdAt. */
 const MIGRATION_BASE_DATE = 1700000000000; // 2023-11-14T22:13:20Z
 
+/** Delivered entries are auto-purged after this many milliseconds. */
+const DELIVERED_TTL_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}/;
 
 /** Type guard that validates a value has the shape of a valid Entry. */
@@ -139,11 +142,15 @@ export const loadEntries = async (): Promise<LoadResult> => {
         needsMigration = true;
       }
 
+      const deliveredAt =
+        typeof obj.deliveredAt === "number" ? obj.deliveredAt : undefined;
+
       entries.push({
         id: item.id,
         name: item.name,
         dueDate: item.dueDate,
         createdAt: createdAt ?? MIGRATION_BASE_DATE + entries.length * 1000,
+        deliveredAt,
         birthstone: birthstone ?? getBirthstoneForDate(item.dueDate),
       });
     } else {
@@ -151,9 +158,17 @@ export const loadEntries = async (): Promise<LoadResult> => {
     }
   }
 
-  if (discardedCount > 0 || needsMigration) {
-    await saveEntries(entries);
+  // Auto-purge delivered entries older than TTL
+  const now = Date.now();
+  const beforePurge = entries.length;
+  const purged = entries.filter(
+    (e) => !e.deliveredAt || now - e.deliveredAt < DELIVERED_TTL_MS,
+  );
+  const purgedCount = beforePurge - purged.length;
+
+  if (discardedCount > 0 || needsMigration || purgedCount > 0) {
+    await saveEntries(purged);
   }
 
-  return { entries, discardedCount };
+  return { entries: purged, discardedCount };
 };
