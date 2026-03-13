@@ -31,7 +31,6 @@ describe("generateSeedEntries", () => {
 
   it("produces different names across calls", () => {
     const names1 = generateSeedEntries().map((e) => e.name);
-    // Run enough times that randomness should produce a different order
     let foundDifference = false;
     for (let i = 0; i < 20; i++) {
       const names2 = generateSeedEntries().map((e) => e.name);
@@ -58,19 +57,29 @@ describe("generateSeedEntries", () => {
 });
 
 describe("DevToolbar", () => {
-  it("renders Seed Data and Reset HIPAA buttons", () => {
-    renderWithTheme(
-      <DevToolbar onSeedData={jest.fn()} onResetAgreement={jest.fn()} />,
-    );
+  const defaultProps = {
+    visible: true,
+    onSeedData: jest.fn(),
+    onResetAgreement: jest.fn(),
+    onClose: jest.fn(),
+  };
+
+  it("renders Seed Data and Reset HIPAA buttons when visible", () => {
+    renderWithTheme(<DevToolbar {...defaultProps} />);
 
     expect(screen.getByText("Seed Data")).toBeTruthy();
     expect(screen.getByText("Reset HIPAA")).toBeTruthy();
   });
 
-  it("calls onSeedData with entries when Seed Data is pressed", () => {
+  it("calls onSeedData with entries and closes when Seed Data is pressed", () => {
     const onSeedData = jest.fn();
+    const onClose = jest.fn();
     renderWithTheme(
-      <DevToolbar onSeedData={onSeedData} onResetAgreement={jest.fn()} />,
+      <DevToolbar
+        {...defaultProps}
+        onSeedData={onSeedData}
+        onClose={onClose}
+      />,
     );
 
     fireEvent.press(screen.getByText("Seed Data"));
@@ -78,16 +87,23 @@ describe("DevToolbar", () => {
     expect(onSeedData).toHaveBeenCalledTimes(1);
     const entries = onSeedData.mock.calls[0][0];
     expect(entries).toHaveLength(10);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onResetAgreement when Reset HIPAA is pressed", () => {
+  it("calls onResetAgreement and closes when Reset HIPAA is pressed", () => {
     const onResetAgreement = jest.fn();
+    const onClose = jest.fn();
     renderWithTheme(
-      <DevToolbar onSeedData={jest.fn()} onResetAgreement={onResetAgreement} />,
+      <DevToolbar
+        {...defaultProps}
+        onResetAgreement={onResetAgreement}
+        onClose={onClose}
+      />,
     );
 
     fireEvent.press(screen.getByText("Reset HIPAA"));
 
     expect(onResetAgreement).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

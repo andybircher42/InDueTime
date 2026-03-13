@@ -19,6 +19,7 @@ import { StatusBar } from "expo-status-bar";
 import {
   AppInfoModal,
   CalendarView,
+  DeliveredList,
   DevToolbar,
   EntryGrid,
   EntryList,
@@ -53,11 +54,15 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const [view, setView] = useState<"list" | "calendar">("list");
+  type ViewTab = "expecting" | "delivered" | "calendar";
+  const [view, setView] = useState<ViewTab>("expecting");
   const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showDevTools, setShowDevTools] = useState(false);
   const [showAppInfo, setShowAppInfo] = useState(false);
   const [pickerAnchor, setPickerAnchor] = useState({ top: 0, right: 0 });
+  const [devAnchor, setDevAnchor] = useState({ top: 0, right: 0 });
   const settingsRef = useRef<View>(null);
+  const devRef = useRef<View>(null);
 
   const isDark = resolvedTheme === "dark";
   const splashBg = isDark ? splashBgDark : splashBgLight;
@@ -67,6 +72,13 @@ export default function HomeScreen() {
     settingsRef.current?.measureInWindow((_x, y, _width, height) => {
       setPickerAnchor({ top: y + height + 4, right: 12 });
       setShowThemePicker(true);
+    });
+  }, []);
+
+  const openDevTools = useCallback(() => {
+    devRef.current?.measureInWindow((_x, y, _width, height) => {
+      setDevAnchor({ top: y + height + 4, right: 12 });
+      setShowDevTools(true);
     });
   }, []);
 
@@ -144,22 +156,21 @@ export default function HomeScreen() {
             in due time
           </Text>
           {APP_LABEL !== "" && <Text style={styles.appLabel}>{APP_LABEL}</Text>}
-          <Pressable
-            onPress={() => setView((v) => (v === "list" ? "calendar" : "list"))}
-            accessibilityLabel={
-              view === "list"
-                ? "Switch to calendar view"
-                : "Switch to list view"
-            }
-            accessibilityRole="button"
-            hitSlop={10}
-          >
-            <Ionicons
-              name={view === "list" ? "calendar-outline" : "list-outline"}
-              size={24}
-              color={colors.textPrimary}
-            />
-          </Pressable>
+          {__DEV__ && (
+            <Pressable
+              ref={devRef}
+              onPress={openDevTools}
+              accessibilityLabel="Dev tools"
+              accessibilityRole="button"
+              hitSlop={10}
+            >
+              <Ionicons
+                name="build-outline"
+                size={22}
+                color={colors.textPrimary}
+              />
+            </Pressable>
+          )}
           <Pressable
             ref={settingsRef}
             onPress={openThemePicker}
@@ -173,15 +184,42 @@ export default function HomeScreen() {
               color={colors.textPrimary}
             />
           </Pressable>
-          {__DEV__ && (
-            <DevToolbar
-              onSeedData={seed}
-              onResetAgreement={handleResetAgreement}
-            />
-          )}
         </View>
 
-        {view === "list" ? (
+        <View style={styles.tabBar}>
+          {(["expecting", "delivered", "calendar"] as const).map((tab) => {
+            const count =
+              tab === "expecting"
+                ? entries.filter((e) => !e.deliveredAt).length
+                : tab === "delivered"
+                  ? entries.filter((e) => !!e.deliveredAt).length
+                  : 0;
+            return (
+              <Pressable
+                key={tab}
+                style={[styles.tab, view === tab && styles.tabActive]}
+                onPress={() => setView(tab)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: view === tab }}
+              >
+                <Text
+                  style={[styles.tabText, view === tab && styles.tabTextActive]}
+                >
+                  {tab === "expecting"
+                    ? "Expecting"
+                    : tab === "delivered"
+                      ? "Delivered"
+                      : "Calendar"}
+                  {count > 0 && (
+                    <Text style={styles.tabBadge}>{` ${count}`}</Text>
+                  )}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {view === "expecting" ? (
           layout === "cozy" ? (
             <EntryGrid
               entries={entries}
@@ -199,6 +237,8 @@ export default function HomeScreen() {
               onAdd={add}
             />
           )
+        ) : view === "delivered" ? (
+          <DeliveredList entries={entries} onDelete={remove} />
         ) : (
           <CalendarView entries={entries} onDayPress={handleDayPress} />
         )}
@@ -216,6 +256,15 @@ export default function HomeScreen() {
           onAppInfo={() => setShowAppInfo(true)}
           anchor={pickerAnchor}
         />
+        {__DEV__ && (
+          <DevToolbar
+            visible={showDevTools}
+            onSeedData={seed}
+            onResetAgreement={handleResetAgreement}
+            onClose={() => setShowDevTools(false)}
+            anchor={devAnchor}
+          />
+        )}
         <AppInfoModal
           visible={showAppInfo}
           onClose={() => setShowAppInfo(false)}
@@ -278,14 +327,40 @@ function createStyles(colors: ColorTokens) {
       flexDirection: "row",
       alignItems: "center",
       // paddingTop is applied dynamically via useSafeAreaInsets
-      paddingBottom: 16,
+      paddingBottom: 12,
       paddingHorizontal: 20,
       backgroundColor: colors.contentBackground,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
       gap: 10,
       zIndex: 10,
       overflow: "visible",
+    },
+    tabBar: {
+      flexDirection: "row",
+      backgroundColor: colors.contentBackground,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      paddingHorizontal: 20,
+    },
+    tab: {
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderBottomWidth: 2,
+      borderBottomColor: "transparent",
+    },
+    tabActive: {
+      borderBottomColor: colors.primary,
+    },
+    tabText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.textTertiary,
+    },
+    tabTextActive: {
+      color: colors.primary,
+    },
+    tabBadge: {
+      fontSize: 12,
+      fontWeight: "700",
     },
     headerLogo: {
       width: 36,

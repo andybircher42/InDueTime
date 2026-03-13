@@ -11,6 +11,7 @@ import {
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
 import {
+  deliveryTimingLabel,
   formatDueDate,
   gestationalAgeFromDueDate,
   getBirthstoneImage,
@@ -37,6 +38,19 @@ export default function EntryDetailModal({
   }
 
   const { weeks, days } = gestationalAgeFromDueDate(entry.dueDate);
+  const isDelivered = !!entry.deliveredAt;
+
+  const deliveredDateStr = isDelivered
+    ? new Date(entry.deliveredAt!).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "";
+
+  const timingLabel = isDelivered
+    ? deliveryTimingLabel(entry.dueDate, entry.deliveredAt!)
+    : "";
 
   return (
     <Modal
@@ -53,7 +67,8 @@ export default function EntryDetailModal({
           ]}
           onPress={() => {}}
         >
-          {entry.birthstone && (
+          {isDelivered && <Text style={styles.deliveredEmoji}>👶</Text>}
+          {entry.birthstone && !isDelivered && (
             <BirthstoneIcon
               image={getBirthstoneImage(entry.birthstone.name)}
               size={48}
@@ -62,18 +77,32 @@ export default function EntryDetailModal({
           <Text style={styles.name}>{entry.name}</Text>
 
           <View style={styles.details}>
+            {isDelivered && (
+              <>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Delivered</Text>
+                  <Text style={styles.detailValue}>{deliveredDateStr}</Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Timing</Text>
+                  <Text style={styles.detailValue}>{timingLabel}</Text>
+                </View>
+              </>
+            )}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Due date</Text>
               <Text style={styles.detailValue}>
                 {formatDueDate(entry.dueDate)}
               </Text>
             </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Gestational age</Text>
-              <Text style={styles.detailValue}>
-                {weeks}w {days}d
-              </Text>
-            </View>
+            {!isDelivered && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Gestational age</Text>
+                <Text style={styles.detailValue}>
+                  {weeks}w {days}d
+                </Text>
+              </View>
+            )}
             {entry.birthstone && (
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Birthstone</Text>
@@ -123,6 +152,9 @@ function createStyles(colors: ColorTokens) {
           elevation: 8,
         },
       }),
+    },
+    deliveredEmoji: {
+      fontSize: 48,
     },
     name: {
       fontSize: 22,

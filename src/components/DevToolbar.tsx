@@ -1,13 +1,24 @@
 import { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
 import { toISODateString } from "@/util";
 
 interface DevToolbarProps {
+  visible: boolean;
   onSeedData: (entries: Entry[]) => void;
   onResetAgreement: () => void;
+  onClose: () => void;
+  anchor?: { top: number; right: number };
 }
 
 const FIRST_NAMES = [
@@ -69,57 +80,162 @@ export function generateSeedEntries(): Entry[] {
   });
 }
 
-/** Dev-only toolbar with Seed Data, Reset HIPAA, and Form Mode buttons. */
+/** Generates 5 randomized entries with due dates and deliveredAt timestamps. */
+export function generateSeedDeliveries(): Entry[] {
+  const names = pickRandom(FIRST_NAMES, 5);
+  const today = new Date();
+  const now = Date.now();
+  return names.map((name, i) => {
+    // Due dates spread across -2 weeks to +2 weeks from today
+    const dueDayOffset = Math.floor(Math.random() * 29) - 14;
+    const dueDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() + dueDayOffset,
+    );
+    // Delivered within ±5 days of the due date
+    const deliveryOffset = Math.floor(Math.random() * 11) - 5;
+    const deliveredDate = new Date(
+      dueDate.getFullYear(),
+      dueDate.getMonth(),
+      dueDate.getDate() + deliveryOffset,
+    );
+    return {
+      id: `${now}-seed-del-${i}`,
+      name,
+      dueDate: toISODateString(dueDate),
+      createdAt: now + i,
+      deliveredAt: deliveredDate.getTime(),
+    };
+  });
+}
+
+/** Dev-only dropdown with Seed Data and Reset HIPAA actions. */
 export default function DevToolbar({
+  visible,
   onSeedData,
   onResetAgreement,
+  onClose,
+  anchor,
 }: DevToolbarProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const dropdownPosition = anchor ?? { top: 100, right: 12 };
 
   return (
-    <View style={styles.devRow}>
-      <Pressable
-        onPress={() => onSeedData(generateSeedEntries())}
-        style={styles.devButton}
-        accessibilityRole="button"
-        accessibilityLabel="Seed sample data"
-      >
-        <Text style={styles.devButtonText}>Seed Data</Text>
-      </Pressable>
-      <Pressable
-        onPress={onResetAgreement}
-        style={styles.devButton}
-        accessibilityRole="button"
-        accessibilityLabel="Reset HIPAA agreement"
-      >
-        <Text style={styles.devButtonText}>Reset HIPAA</Text>
-      </Pressable>
-    </View>
+    <Modal visible={visible} transparent animationType="fade">
+      <View style={styles.container}>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Close dev tools"
+        />
+        <View style={[styles.dropdown, dropdownPosition]}>
+          <Text style={styles.title}>Dev Tools</Text>
+          <Pressable
+            style={styles.row}
+            onPress={() => {
+              onSeedData(generateSeedEntries());
+              onClose();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Seed sample data"
+          >
+            <Ionicons
+              name="flask-outline"
+              size={20}
+              color={colors.textPrimary}
+              style={styles.rowIcon}
+            />
+            <Text style={styles.rowLabel}>Seed Data</Text>
+          </Pressable>
+          <Pressable
+            style={styles.row}
+            onPress={() => {
+              onSeedData(generateSeedDeliveries());
+              onClose();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Seed delivered entries"
+          >
+            <Ionicons
+              name="heart-outline"
+              size={20}
+              color={colors.textPrimary}
+              style={styles.rowIcon}
+            />
+            <Text style={styles.rowLabel}>Seed Deliveries</Text>
+          </Pressable>
+          <Pressable
+            style={styles.row}
+            onPress={() => {
+              onResetAgreement();
+              onClose();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Reset HIPAA agreement"
+          >
+            <Ionicons
+              name="refresh-outline"
+              size={20}
+              color={colors.textPrimary}
+              style={styles.rowIcon}
+            />
+            <Text style={styles.rowLabel}>Reset HIPAA</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
 /** Creates styles based on the active color palette. */
 function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
-    devRow: {
-      flexDirection: "row",
-      gap: 8,
+    container: {
+      flex: 1,
+    },
+    dropdown: {
       position: "absolute",
-      right: 20,
-      bottom: -20,
-      zIndex: 10,
+      backgroundColor: colors.contentBackground,
+      borderRadius: 12,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      minWidth: 180,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
+        },
+        android: {
+          elevation: 8,
+        },
+      }),
     },
-    devButton: {
-      backgroundColor: colors.devButton,
-      borderRadius: 6,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-    },
-    devButtonText: {
-      color: colors.white,
-      fontSize: 11,
+    title: {
+      fontSize: 13,
       fontWeight: "600",
+      color: colors.textTertiary,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      marginTop: 4,
+      marginBottom: 4,
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      minHeight: 44,
+    },
+    rowIcon: {
+      marginRight: 12,
+    },
+    rowLabel: {
+      flex: 1,
+      fontSize: 15,
+      color: colors.textPrimary,
     },
   });
 }

@@ -14,12 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
-import {
-  deliveryTimingLabel,
-  formatDueDate,
-  getBirthstone,
-  getBirthstoneImage,
-} from "@/util";
+import { getBirthstone, getBirthstoneImage } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
 import EntryCard from "./EntryCard";
@@ -107,14 +102,6 @@ export default function EntryGrid({
 
   const activeEntries = useMemo(
     () => entries.filter((e) => !e.deliveredAt),
-    [entries],
-  );
-
-  const deliveredEntries = useMemo(
-    () =>
-      entries
-        .filter((e) => !!e.deliveredAt)
-        .sort((a, b) => (b.deliveredAt ?? 0) - (a.deliveredAt ?? 0)),
     [entries],
   );
 
@@ -333,46 +320,6 @@ export default function EntryGrid({
         numColumns={2}
         contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.gridRow}
-        ListFooterComponent={
-          deliveredEntries.length > 0 ? (
-            <View style={styles.deliveredSection}>
-              <View style={styles.deliveredHeader}>
-                <Text style={styles.deliveredEmoji}>🎉</Text>
-                <Text style={styles.deliveredTitle}>Delivered</Text>
-                <Text style={styles.deliveredCount}>
-                  {deliveredEntries.length}
-                </Text>
-              </View>
-              {deliveredEntries.map((entry) => (
-                <View key={entry.id} style={styles.deliveredRow}>
-                  <Text style={styles.deliveredBaby}>👶</Text>
-                  <View style={styles.deliveredInfo}>
-                    <Text style={styles.deliveredName} numberOfLines={1}>
-                      {entry.name}
-                    </Text>
-                    <Text style={styles.deliveredTiming}>
-                      {entry.deliveredAt
-                        ? deliveryTimingLabel(entry.dueDate, entry.deliveredAt)
-                        : formatDueDate(entry.dueDate)}
-                    </Text>
-                  </View>
-                  <Pressable
-                    onPress={() => onDelete(entry.id)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Remove ${entry.name}`}
-                    hitSlop={8}
-                  >
-                    <Ionicons
-                      name="close-circle-outline"
-                      size={18}
-                      color={colors.textTertiary}
-                    />
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-          ) : null
-        }
       />
       <EntryDetailModal
         entry={selectedEntry}
@@ -471,66 +418,6 @@ function createStyles(colors: ColorTokens) {
       color: colors.textTertiary,
       fontSize: 14,
       fontWeight: "600",
-    },
-    deliveredSection: {
-      marginTop: 8,
-      marginBottom: 8,
-      backgroundColor: colors.contentBackground,
-      borderRadius: 12,
-      padding: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    deliveredHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-      marginBottom: 8,
-    },
-    deliveredEmoji: {
-      fontSize: 18,
-    },
-    deliveredTitle: {
-      fontSize: 15,
-      fontWeight: "700",
-      color: colors.textPrimary,
-      flex: 1,
-    },
-    deliveredCount: {
-      fontSize: 13,
-      fontWeight: "600",
-      color: colors.textTertiary,
-      backgroundColor: colors.inputBackground,
-      paddingHorizontal: 8,
-      paddingVertical: 2,
-      borderRadius: 10,
-      overflow: "hidden",
-    },
-    deliveredRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 8,
-      paddingHorizontal: 10,
-      borderRadius: 10,
-      marginBottom: 4,
-      backgroundColor: colors.primaryLightBg,
-      gap: 8,
-    },
-    deliveredBaby: {
-      fontSize: 18,
-    },
-    deliveredInfo: {
-      flex: 1,
-    },
-    deliveredName: {
-      fontSize: 14,
-      fontWeight: "600",
-      color: colors.textPrimary,
-    },
-    deliveredTiming: {
-      fontSize: 12,
-      color: colors.textTertiary,
-      marginTop: 1,
     },
     emptyContent: {
       flex: 1,
