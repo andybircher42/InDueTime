@@ -28,6 +28,7 @@ import { ColorTokens, useTheme } from "@/theme";
 import {
   formatDueDate,
   gestationalAgeFromDueDate,
+  getBirthstone,
   getBirthstoneImage,
 } from "@/util";
 
@@ -341,13 +342,32 @@ export default function EntryList({
         </View>
       ) : (
         <Pressable
-          style={styles.addButton}
+          style={[
+            styles.addButton,
+            {
+              borderColor: colors.primary,
+              backgroundColor: colors.primaryLightBg,
+            },
+          ]}
           onPress={toggleForm}
           accessibilityRole="button"
           accessibilityLabel="Add someone new"
         >
-          <Ionicons name="add" size={24} color={colors.primary} />
-          <Text style={styles.addButtonText}>Add someone</Text>
+          <BirthstoneIcon
+            image={getBirthstoneImage(
+              getBirthstone(new Date().getMonth() + 1).name,
+            )}
+            size={28}
+          />
+          <Text style={[styles.addButtonText, { color: colors.primary }]}>
+            Add someone
+          </Text>
+          <BirthstoneIcon
+            image={getBirthstoneImage(
+              getBirthstone(new Date().getMonth() + 1).name,
+            )}
+            size={28}
+          />
         </Pressable>
       )}
       {entries.length > 0 && (
@@ -459,15 +479,12 @@ function createStyles(colors: ColorTokens) {
       justifyContent: "center",
       marginHorizontal: 16,
       marginTop: 12,
-      paddingVertical: 14,
-      borderRadius: 10,
+      paddingVertical: 12,
+      borderRadius: 12,
       borderWidth: 2,
-      borderColor: colors.primary,
-      borderStyle: "dashed",
-      gap: 6,
+      gap: 10,
     },
     addButtonText: {
-      color: colors.primary,
       fontSize: 16,
       fontWeight: "600",
     },
