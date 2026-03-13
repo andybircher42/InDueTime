@@ -219,8 +219,10 @@ export default function HomeScreen() {
           })}
         </View>
 
-        {view === "expecting" ? (
-          layout === "cozy" ? (
+        <View
+          style={[styles.tabContent, view !== "expecting" && styles.hidden]}
+        >
+          {layout === "cozy" ? (
             <EntryGrid
               entries={entries}
               onDelete={remove}
@@ -236,12 +238,16 @@ export default function HomeScreen() {
               onDeleteAll={removeAll}
               onAdd={add}
             />
-          )
-        ) : view === "delivered" ? (
+          )}
+        </View>
+        <View
+          style={[styles.tabContent, view !== "delivered" && styles.hidden]}
+        >
           <DeliveredList entries={entries} onDelete={remove} />
-        ) : (
+        </View>
+        <View style={[styles.tabContent, view !== "calendar" && styles.hidden]}>
           <CalendarView entries={entries} onDayPress={handleDayPress} />
-        )}
+        </View>
         <ThemePickerModal
           visible={showThemePicker}
           currentPersonality={personality}
@@ -381,6 +387,12 @@ function createStyles(colors: ColorTokens) {
       paddingVertical: 4,
       borderRadius: 6,
       overflow: "hidden",
+    },
+    tabContent: {
+      flex: 1,
+    },
+    hidden: {
+      display: "none",
     },
   });
 }
