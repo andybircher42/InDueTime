@@ -27,7 +27,7 @@ import {
   ThemePickerModal,
   UndoToast,
 } from "@/components";
-import { useEntries } from "@/hooks";
+import { useEntries, useShakeUndo } from "@/hooks";
 import { Entry, resetAgreement, resetOnboarding } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
 import { reportError } from "@/util";
@@ -103,6 +103,14 @@ export default function HomeScreen() {
     dismissDiscarded,
     dismissSaveError,
   } = useEntries();
+
+  // Shake phone to trigger undo when a toast is visible
+  const shakeHandler = deletedEntry
+    ? undo
+    : deliveredEntry
+      ? undoDeliver
+      : undefined;
+  useShakeUndo(shakeHandler, !!(deletedEntry || deliveredEntry));
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
