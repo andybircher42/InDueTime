@@ -32,7 +32,7 @@ interface EntryGridProps {
 type SortBy = "dueDate" | "name" | "none";
 type SortDir = "asc" | "desc";
 
-type GridItem = Entry | "add";
+type GridItem = Entry | "add" | "spacer";
 
 const SORT_OPTIONS: { field: SortBy; dir: SortDir; label: string }[] = [
   { field: "none", dir: "desc", label: "No sort" },
@@ -153,13 +153,17 @@ export default function EntryGrid({
     [onDelete, onDeliver],
   );
 
-  const gridData: GridItem[] = useMemo(
-    () => [...sorted, "add" as const],
-    [sorted],
-  );
+  const gridData: GridItem[] = useMemo(() => {
+    const data: GridItem[] = [...sorted, "add" as const];
+    if (data.length % 2 !== 0) {data.push("spacer" as const);}
+    return data;
+  }, [sorted]);
 
   const renderItem = useCallback(
     ({ item }: { item: GridItem }) => {
+      if (item === "spacer") {
+        return <View style={styles.spacer} />;
+      }
       if (item === "add") {
         return (
           <Pressable
@@ -191,7 +195,8 @@ export default function EntryGrid({
   );
 
   const keyExtractor = useCallback(
-    (item: GridItem) => (typeof item === "string" ? "add-btn" : item.id),
+    (item: GridItem) =>
+      item === "add" ? "add-btn" : item === "spacer" ? "spacer" : item.id,
     [],
   );
 
@@ -340,6 +345,9 @@ function createStyles(colors: ColorTokens) {
     gridRow: {
       gap: 12,
       marginBottom: 12,
+    },
+    spacer: {
+      flex: 1,
     },
     addCard: {
       flex: 1,
