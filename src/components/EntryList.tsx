@@ -6,7 +6,6 @@ import React, {
   useState,
 } from "react";
 import {
-  ActionSheetIOS,
   Alert,
   Animated,
   Easing,
@@ -35,6 +34,7 @@ import {
 import BirthstoneIcon from "./BirthstoneIcon";
 import EntryDetailModal from "./EntryDetailModal";
 import EntryForm from "./EntryForm";
+import SortPickerModal from "./SortPickerModal";
 
 if (
   Platform.OS === "android" &&
@@ -189,6 +189,7 @@ export default function EntryList({
   const [sortBy, setSortBy] = useState<SortBy>("dueDate");
   const [sortDir, setSortDir] = useState<SortDir>(DEFAULT_DIR.dueDate);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const [showSortPicker, setShowSortPicker] = useState(false);
   const nameWidths = useRef(new Map<string, number>());
   const [maxNameWidth, setMaxNameWidth] = useState(0);
   const [showForm, setShowForm] = useState(false);
@@ -244,43 +245,10 @@ export default function EntryList({
     }
   }, [entries]);
 
-  const SORT_OPTIONS: { field: SortBy; dir: SortDir; label: string }[] = [
-    { field: "none", dir: "desc", label: "No sort" },
-    { field: "dueDate", dir: "desc", label: "Due date (newest first)" },
-    { field: "dueDate", dir: "asc", label: "Due date (oldest first)" },
-    { field: "name", dir: "asc", label: "Name (A–Z)" },
-    { field: "name", dir: "desc", label: "Name (Z–A)" },
-  ];
-
-  const openSortPicker = useCallback(() => {
-    const labels = SORT_OPTIONS.map((o) =>
-      o.field === sortBy && o.dir === sortDir
-        ? `✓ ${o.label}`
-        : `   ${o.label}`,
-    );
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        { options: [...labels, "Cancel"], cancelButtonIndex: labels.length },
-        (index) => {
-          if (index < SORT_OPTIONS.length) {
-            setSortBy(SORT_OPTIONS[index].field);
-            setSortDir(SORT_OPTIONS[index].dir);
-          }
-        },
-      );
-    } else {
-      Alert.alert("Sort by", undefined, [
-        ...SORT_OPTIONS.map((o, i) => ({
-          text: labels[i],
-          onPress: () => {
-            setSortBy(o.field);
-            setSortDir(o.dir);
-          },
-        })),
-        { text: "Cancel", style: "cancel" as const },
-      ]);
-    }
-  }, [sortBy, sortDir]);
+  const handleSortSelect = useCallback((field: SortBy, dir: SortDir) => {
+    setSortBy(field);
+    setSortDir(dir);
+  }, []);
 
   const activeEntries = useMemo(
     () => entries.filter((e) => !e.deliveredAt),
@@ -414,7 +382,7 @@ export default function EntryList({
       {entries.length > 0 && (
         <View style={styles.toolbarRow}>
           <Pressable
-            onPress={openSortPicker}
+            onPress={() => setShowSortPicker(true)}
             accessibilityRole="button"
             accessibilityLabel={`Sort: ${sortBy === "none" ? "insertion order" : sortBy === "dueDate" ? "due date" : "name"}, ${sortDir === "asc" ? "ascending" : "descending"}`}
             hitSlop={8}
@@ -481,6 +449,13 @@ export default function EntryList({
       <EntryDetailModal
         entry={selectedEntry}
         onClose={() => setSelectedEntry(null)}
+      />
+      <SortPickerModal
+        visible={showSortPicker}
+        sortBy={sortBy}
+        sortDir={sortDir}
+        onSelect={handleSortSelect}
+        onClose={() => setShowSortPicker(false)}
       />
     </View>
   );

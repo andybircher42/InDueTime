@@ -1,10 +1,8 @@
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  ActionSheetIOS,
   Alert,
   FlatList,
   LayoutAnimation,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -20,6 +18,7 @@ import BirthstoneIcon from "./BirthstoneIcon";
 import EntryCard from "./EntryCard";
 import EntryDetailModal from "./EntryDetailModal";
 import EntryForm from "./EntryForm";
+import SortPickerModal from "./SortPickerModal";
 
 interface EntryGridProps {
   entries: Entry[];
@@ -34,14 +33,6 @@ type SortDir = "asc" | "desc";
 
 type GridItem = Entry | "add" | "spacer";
 
-const SORT_OPTIONS: { field: SortBy; dir: SortDir; label: string }[] = [
-  { field: "none", dir: "desc", label: "No sort" },
-  { field: "dueDate", dir: "desc", label: "Due date (newest first)" },
-  { field: "dueDate", dir: "asc", label: "Due date (oldest first)" },
-  { field: "name", dir: "asc", label: "Name (A\u2013Z)" },
-  { field: "name", dir: "desc", label: "Name (Z\u2013A)" },
-];
-
 /** Cozy 2-column card grid layout for entries. */
 export default function EntryGrid({
   entries,
@@ -55,6 +46,7 @@ export default function EntryGrid({
   const [showForm, setShowForm] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const [showSortPicker, setShowSortPicker] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>("none");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const formKeyRef = React.useRef(0);
@@ -74,35 +66,10 @@ export default function EntryGrid({
     setBatchMode((prev) => !prev);
   }, []);
 
-  const openSortPicker = useCallback(() => {
-    const labels = SORT_OPTIONS.map((o) =>
-      o.field === sortBy && o.dir === sortDir
-        ? `✓ ${o.label}`
-        : `   ${o.label}`,
-    );
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        { options: [...labels, "Cancel"], cancelButtonIndex: labels.length },
-        (index) => {
-          if (index < SORT_OPTIONS.length) {
-            setSortBy(SORT_OPTIONS[index].field);
-            setSortDir(SORT_OPTIONS[index].dir);
-          }
-        },
-      );
-    } else {
-      Alert.alert("Sort by", undefined, [
-        ...SORT_OPTIONS.map((o, i) => ({
-          text: labels[i],
-          onPress: () => {
-            setSortBy(o.field);
-            setSortDir(o.dir);
-          },
-        })),
-        { text: "Cancel", style: "cancel" as const },
-      ]);
-    }
-  }, [sortBy, sortDir]);
+  const handleSortSelect = useCallback((field: SortBy, dir: SortDir) => {
+    setSortBy(field);
+    setSortDir(dir);
+  }, []);
 
   const activeEntries = useMemo(
     () => entries.filter((e) => !e.deliveredAt),
@@ -288,7 +255,7 @@ export default function EntryGrid({
       {entries.length > 0 && (
         <View style={styles.toolbarRow}>
           <Pressable
-            onPress={openSortPicker}
+            onPress={() => setShowSortPicker(true)}
             accessibilityRole="button"
             accessibilityLabel={`Sort: ${sortBy === "none" ? "insertion order" : sortBy === "dueDate" ? "due date" : "name"}, ${sortDir === "asc" ? "ascending" : "descending"}`}
             hitSlop={8}
@@ -335,6 +302,13 @@ export default function EntryGrid({
       <EntryDetailModal
         entry={selectedEntry}
         onClose={() => setSelectedEntry(null)}
+      />
+      <SortPickerModal
+        visible={showSortPicker}
+        sortBy={sortBy}
+        sortDir={sortDir}
+        onSelect={handleSortSelect}
+        onClose={() => setShowSortPicker(false)}
       />
     </View>
   );

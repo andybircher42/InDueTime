@@ -1,5 +1,5 @@
-import { ActionSheetIOS, Alert } from "react-native";
-import { act, fireEvent, screen } from "@testing-library/react-native";
+import { Alert } from "react-native";
+import { fireEvent, screen } from "@testing-library/react-native";
 
 import { Entry } from "@/storage";
 import renderWithTheme from "@/test/renderWithTheme";
@@ -71,27 +71,10 @@ const sameNameEntries = [
   makeEntry({ id: "3", name: "Sam", dueDate: "2026-07-20" }), // 20w0d
 ];
 
-const SORT_LABELS = [
-  "No sort",
-  "Due date (newest first)",
-  "Due date (oldest first)",
-  "Name (A\u2013Z)",
-  "Name (Z\u2013A)",
-];
-
-/** Presses the sort icon and selects an option by label via ActionSheetIOS. */
+/** Presses the sort icon and selects an option by label via SortPickerModal. */
 function selectSort(label: string) {
-  let capturedCallback: ((index: number) => void) | undefined;
-  jest
-    .spyOn(ActionSheetIOS, "showActionSheetWithOptions")
-    .mockImplementation((_opts, callback) => {
-      capturedCallback = callback;
-    });
   fireEvent.press(screen.getByLabelText(/Sort:/));
-  const index = SORT_LABELS.indexOf(label);
-  act(() => {
-    capturedCallback?.(index);
-  });
+  fireEvent.press(screen.getByLabelText(label));
 }
 
 // Fixed "today" for all tests so gestationalAgeFromDueDate produces predictable values.
@@ -193,38 +176,29 @@ describe("EntryList", () => {
     expect(names[2]).toHaveTextContent("Alex");
   });
 
-  it("opens sort picker when sort icon is pressed", () => {
-    const spy = jest
-      .spyOn(ActionSheetIOS, "showActionSheetWithOptions")
-      .mockImplementation(() => {});
+  it("opens sort picker modal when sort icon is pressed", () => {
     renderList([makeEntry({ id: "1", name: "Baby", dueDate: "2026-09-28" })]);
 
     fireEvent.press(screen.getByLabelText(/Sort:/));
 
-    expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        options: expect.arrayContaining(["Cancel"]),
-      }),
-      expect.any(Function),
-    );
+    expect(screen.getByText("Sort by")).toBeTruthy();
+    expect(screen.getByText("Cancel")).toBeTruthy();
   });
 
-  it("highlights current sort option with a checkmark", () => {
-    const spy = jest
-      .spyOn(ActionSheetIOS, "showActionSheetWithOptions")
-      .mockImplementation(() => {});
+  it("highlights current sort option with selected state", () => {
     renderList([makeEntry({ id: "1", name: "Baby", dueDate: "2026-09-28" })]);
 
-    // Default sort is "Due date (newest first)"
     fireEvent.press(screen.getByLabelText(/Sort:/));
 
-    const options = spy.mock.calls[0][0].options as string[];
-    expect(options[1]).toMatch(/^✓.*Due date \(newest first\)/);
-    // Other options should not have checkmark
-    expect(options[0]).not.toMatch(/✓/);
-    expect(options[2]).not.toMatch(/✓/);
-    expect(options[3]).not.toMatch(/✓/);
-    expect(options[4]).not.toMatch(/✓/);
+    // Default sort is "Due date (newest first)" — should be marked selected
+    const activeOption = screen.getByLabelText("Due date (newest first)");
+    expect(activeOption.props.accessibilityState).toEqual(
+      expect.objectContaining({ selected: true }),
+    );
+    // Other options should not be selected
+    expect(screen.getByLabelText("No sort").props.accessibilityState).toEqual(
+      expect.objectContaining({ selected: false }),
+    );
   });
 
   it("sort icon has accessible label reflecting current sort", () => {
