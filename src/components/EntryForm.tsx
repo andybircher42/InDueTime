@@ -331,7 +331,15 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
               <View style={styles.dateInputRow}>
                 <Pressable
                   style={styles.calendarButton}
-                  onPress={() => setShowPicker(true)}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    // Pre-fill today's date if the field is empty, so iOS
+                    // spinner "Done" works even without scrolling the picker
+                    if (!parsedResult) {
+                      setDateAgeText(toDisplayDateString(new Date()));
+                    }
+                    setShowPicker(true);
+                  }}
                   accessibilityLabel="Select due date"
                 >
                   <Ionicons
