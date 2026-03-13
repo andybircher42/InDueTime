@@ -404,7 +404,7 @@ export default function EntryList({
               accessibilityLabel="Close form"
               hitSlop={8}
             >
-              <Ionicons name="close" size={24} color={colors.textTertiary} />
+              <Ionicons name="close" size={20} color={colors.textTertiary} />
             </Pressable>
           </View>
           <EntryForm
@@ -590,11 +590,12 @@ function createStyles(colors: ColorTokens) {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      paddingHorizontal: 16,
-      paddingTop: 12,
+      paddingHorizontal: 12,
+      paddingTop: 6,
+      paddingBottom: 2,
     },
     batchToggleText: {
-      fontSize: 14,
+      fontSize: 12,
       color: colors.primary,
       textDecorationLine: "underline",
     },
