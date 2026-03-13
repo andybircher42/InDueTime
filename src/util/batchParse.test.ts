@@ -1,4 +1,4 @@
-import { parseBatchEntry, parseBatchInput } from "./batchParse";
+import { parseBatchEntry, parseBatchInput, parseDateOrAge } from "./batchParse";
 
 // Fixed "now" for deterministic tests: March 2, 2026
 const now = new Date(2026, 2, 2);
@@ -144,6 +144,87 @@ describe("parseBatchEntry", () => {
       // 0w0d = due date 280 days away (40 weeks), within 42-week limit
       const result = parseBatchEntry("Alice 0w0d", now);
       expect("dueDate" in result).toBe(true);
+    });
+  });
+});
+
+describe("parseDateOrAge", () => {
+  describe("gestational age", () => {
+    it("parses '35w5d'", () => {
+      const result = parseDateOrAge("35w5d", now);
+      expect(result).toEqual(expect.objectContaining({ weeks: 35, days: 5 }));
+      expect(result && "dueDate" in result).toBe(true);
+    });
+
+    it("parses '35w 5d' (with space)", () => {
+      const result = parseDateOrAge("35w 5d", now);
+      expect(result).toEqual(expect.objectContaining({ weeks: 35, days: 5 }));
+    });
+
+    it("returns error for weeks > 42", () => {
+      const result = parseDateOrAge("45w0d", now);
+      expect(result && "error" in result).toBe(true);
+    });
+
+    it("returns error for days > 6", () => {
+      const result = parseDateOrAge("10w7d", now);
+      expect(result && "error" in result).toBe(true);
+    });
+  });
+
+  describe("date formats", () => {
+    it("parses '6-14-2026' (hyphen)", () => {
+      const result = parseDateOrAge("6-14-2026", now);
+      expect(result && "dueDate" in result).toBe(true);
+      if (result && "dueDate" in result) {
+        expect(result.dueDate.getMonth()).toBe(5); // June
+        expect(result.dueDate.getDate()).toBe(14);
+      }
+    });
+
+    it("parses '6/14/2026' (slash)", () => {
+      const result = parseDateOrAge("6/14/2026", now);
+      expect(result && "dueDate" in result).toBe(true);
+    });
+
+    it("parses '6/14' (no year, inferred)", () => {
+      const result = parseDateOrAge("6/14", now);
+      expect(result && "dueDate" in result).toBe(true);
+    });
+
+    it("parses '6-14-26' (2-digit year)", () => {
+      const result = parseDateOrAge("6-14-26", now);
+      expect(result && "dueDate" in result).toBe(true);
+    });
+
+    it("returns weeks and days for valid date", () => {
+      const result = parseDateOrAge("6-14-2026", now);
+      expect(result && "weeks" in result && typeof result.weeks).toBe("number");
+      expect(result && "days" in result && typeof result.days).toBe("number");
+    });
+
+    it("returns error for invalid month", () => {
+      const result = parseDateOrAge("13-1-2026", now);
+      expect(result && "error" in result).toBe(true);
+    });
+
+    it("returns error for date too far in the future", () => {
+      const result = parseDateOrAge("03-02-2028", now);
+      expect(result && "error" in result).toBe(true);
+    });
+  });
+
+  describe("unrecognized input", () => {
+    it("returns null for empty string", () => {
+      expect(parseDateOrAge("", now)).toBeNull();
+    });
+
+    it("returns null for plain text", () => {
+      expect(parseDateOrAge("abc", now)).toBeNull();
+    });
+
+    it("returns null for partial input", () => {
+      expect(parseDateOrAge("6", now)).toBeNull();
     });
   });
 });

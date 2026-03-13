@@ -20,18 +20,12 @@ import DateTimePicker, {
 import { ColorTokens, useTheme } from "@/theme";
 import {
   BatchEntryError,
-  computeDueDate,
-  computeGestationalAge,
-  formatDateInput,
   getDateBounds,
-  getDateError,
   parseBatchInput,
-  parseDateText,
+  parseDateOrAge,
   toDisplayDateString,
   toISODateString,
 } from "@/util";
-
-type InputMode = "weeksDays" | "dueDate";
 
 interface EntryFormProps {
   onAdd: (entry: { name: string; dueDate: string }) => void;
@@ -51,15 +45,9 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [name, setName] = useState("");
-  const [weeks, setWeeks] = useState("");
-  const [days, setDays] = useState("");
-  const [dueDate, setDueDate] = useState<Date | null>(null);
-  const [dateText, setDateText] = useState("");
-  const [mode, setMode] = useState<InputMode>("dueDate");
+  const [dateAgeText, setDateAgeText] = useState("");
   const [showPicker, setShowPicker] = useState(false);
-  const [weeksTouched, setWeeksTouched] = useState(false);
-  const [daysTouched, setDaysTouched] = useState(false);
-  const [dateTouched, setDateTouched] = useState(false);
+  const [touched, setTouched] = useState(false);
   const wasRevealedRef = useRef(false);
   const [addedInfo, setAddedInfo] = useState<{
     name: string;
@@ -84,69 +72,20 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
     setName(text);
   }, []);
 
-  const w = weeks ? parseInt(weeks, 10) : 0;
-  const d = days ? parseInt(days, 10) : 0;
-  const weeksValid = !weeks || (!isNaN(w) && w >= 0 && w <= 42);
-  const daysValid = !days || (!isNaN(d) && d >= 0 && d <= 6);
-  const weeksError = weeks && !weeksValid ? "Weeks must be 0\u201342" : null;
-  const daysError = days && !daysValid ? "Days must be 0\u20136" : null;
+  const parsed = parseDateOrAge(dateAgeText);
+  const parseError = parsed && "error" in parsed ? parsed.error : null;
+  const parsedResult = parsed && !("error" in parsed) ? parsed : null;
 
-  const dateBounds = getDateBounds();
-  const dateError = getDateError(dateText);
-  const computed =
-    dueDate && !dateError ? computeGestationalAge(dueDate) : null;
+  const canAdd = !!name.trim() && parsedResult !== null;
 
-  const canAdd =
-    !!name.trim() &&
-    (mode === "weeksDays"
-      ? !!weeks && !!days && weeksValid && daysValid
-      : dueDate !== null && !dateError);
-  const showWeeksError = weeksTouched && weeksError;
-  const showDaysError = daysTouched && daysError;
-  const showDateError = dateTouched && dateError;
-
-  /** onChangeText handler that accepts only digits for the weeks input. */
-  const handleWeeksChange = useCallback((text: string) => {
-    if (/^\d*$/.test(text)) {
-      setWeeksTouched(false);
-      setWeeks(text);
-    }
-  }, []);
-
-  /** onChangeText handler that accepts only digits for the days input. */
-  const handleDaysChange = useCallback((text: string) => {
-    if (/^\d*$/.test(text)) {
-      setDaysTouched(false);
-      setDays(text);
-    }
-  }, []);
-
-  const handleDateTextChange = (text: string) => {
-    let updated = text.replace(/[^\d-]/g, "-").replace(/-{2,}/g, "-");
-    // Limit to DD-DD-DDDD pattern: truncate after 2nd hyphen + 4 digits
-    const parts = updated.split("-");
-    if (parts.length > 3) {
-      updated = parts.slice(0, 3).join("-");
-    }
-    if (parts.length === 3 && parts[2].length > 4) {
-      parts[2] = parts[2].slice(0, 4);
-      updated = parts.join("-");
-    }
-    if (text.length > dateText.length) {
-      if (/^\d{2}$/.test(updated)) {
-        updated += "-";
-      } else if (/^\d{1,2}-\d{2}$/.test(updated)) {
-        updated += "-";
-      }
-    }
-    setDateText(updated);
-    const parsed = parseDateText(updated);
-    setDueDate(parsed);
-    // Show error immediately when a complete date is out of bounds
-    if (parsed && getDateError(updated)) {
-      setDateTouched(true);
+  const handleDateAgeChange = (text: string) => {
+    setDateAgeText(text);
+    // Show error immediately when input is recognized but invalid
+    const result = parseDateOrAge(text);
+    if (result && "error" in result) {
+      setTouched(true);
     } else {
-      setDateTouched(false);
+      setTouched(false);
     }
   };
 
@@ -179,38 +118,21 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
   );
 
   const handleAdd = () => {
-    if (!canAdd) {
+    if (!canAdd || !parsedResult) {
       return;
     }
 
     const trimmedName = name.trim();
-    let detail: string;
+    const detail = `${parsedResult.weeks}w ${parsedResult.days}d`;
 
-    if (mode === "weeksDays") {
-      detail = `${w}w ${d}d`;
-      const computed_dueDate = computeDueDate(w, d);
-      onAdd({
-        name: trimmedName,
-        dueDate: toISODateString(computed_dueDate),
-      });
-    } else if (dueDate) {
-      detail = toDisplayDateString(dueDate);
-      onAdd({
-        name: trimmedName,
-        dueDate: toISODateString(dueDate),
-      });
-    } else {
-      return;
-    }
+    onAdd({
+      name: trimmedName,
+      dueDate: toISODateString(parsedResult.dueDate),
+    });
 
     setName("");
-    setWeeks("");
-    setDays("");
-    setDueDate(null);
-    setDateText("");
-    setWeeksTouched(false);
-    setDaysTouched(false);
-    setDateTouched(false);
+    setDateAgeText("");
+    setTouched(false);
     Keyboard.dismiss();
 
     showConfirmation({ name: trimmedName, detail });
@@ -262,8 +184,7 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
             : selected > bounds.max
               ? bounds.max
               : selected;
-        setDueDate(clamped);
-        setDateText(toDisplayDateString(clamped));
+        setDateAgeText(toDisplayDateString(clamped));
       }
     },
     [],
@@ -271,7 +192,7 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
 
   const handlePickerDone = () => {
     setShowPicker(false);
-    setDateTouched(true);
+    setTouched(true);
   };
 
   const canBatchAdd = batchText.trim().length > 0;
@@ -403,208 +324,92 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
       )}
 
       {hasName && (
-        <>
-          {mode === "weeksDays" ? (
-            <>
-              <View style={styles.ageRow}>
-                <View style={styles.inputWithHint}>
-                  <Text style={styles.label}>Weeks</Text>
-                  <TextInput
-                    style={[
-                      styles.numberInput,
-                      showWeeksError && styles.inputError,
-                    ]}
-                    accessibilityLabel="Weeks"
-                    placeholder={"0\u201342"}
-                    placeholderTextColor={colors.textTertiary}
-                    value={weeks}
-                    onChangeText={handleWeeksChange}
-                    onBlur={() => setWeeksTouched(true)}
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    returnKeyType="next"
-                  />
-                  {showWeeksError && (
-                    <Text
-                      style={styles.errorText}
-                      accessibilityLabel="Weeks error"
-                    >
-                      {weeksError}
-                    </Text>
-                  )}
-                </View>
-                <View style={styles.inputWithHint}>
-                  <Text style={styles.label}>Days</Text>
-                  <TextInput
-                    style={[
-                      styles.numberInput,
-                      showDaysError && styles.inputError,
-                    ]}
-                    accessibilityLabel="Days"
-                    placeholder={"0\u20136"}
-                    placeholderTextColor={colors.textTertiary}
-                    value={days}
-                    onChangeText={handleDaysChange}
-                    onBlur={() => setDaysTouched(true)}
-                    keyboardType="number-pad"
-                    maxLength={1}
-                    returnKeyType="done"
-                  />
-                  {showDaysError && (
-                    <Text
-                      style={styles.errorText}
-                      accessibilityLabel="Days error"
-                    >
-                      {daysError}
-                    </Text>
-                  )}
-                </View>
+        <View>
+          <View style={styles.ageRow}>
+            <View style={styles.inputWithHint}>
+              <Text style={styles.label}>Due Date or Gestational Age</Text>
+              <View style={styles.dateInputRow}>
                 <Pressable
-                  style={[
-                    styles.addButton,
-                    !canAdd && styles.addButtonDisabled,
-                  ]}
-                  onPress={handleAdd}
-                  disabled={!canAdd}
-                  accessibilityRole="button"
-                  accessibilityLabel="Add this person"
-                  accessibilityState={{ disabled: !canAdd }}
+                  style={styles.calendarButton}
+                  onPress={() => setShowPicker(true)}
+                  accessibilityLabel="Select due date"
                 >
-                  <Text
-                    style={[
-                      styles.addButtonText,
-                      !canAdd && styles.addButtonTextDisabled,
-                    ]}
-                  >
-                    Add
-                  </Text>
+                  <Ionicons
+                    name="calendar-outline"
+                    size={22}
+                    color={colors.primary}
+                  />
                 </Pressable>
+                <TextInput
+                  style={[
+                    styles.dateTextInput,
+                    touched && parseError && styles.inputError,
+                  ]}
+                  accessibilityLabel="Due date or gestational age"
+                  placeholder="35w5d or 06-15-2026"
+                  placeholderTextColor={colors.textTertiary}
+                  value={dateAgeText}
+                  onChangeText={handleDateAgeChange}
+                  onBlur={() => setTouched(true)}
+                  returnKeyType="done"
+                />
               </View>
-              {weeks && days && weeksValid && daysValid && (
-                <Text
-                  style={styles.preview}
-                  accessibilityLabel="Due date preview"
-                >
-                  Due date: {toDisplayDateString(computeDueDate(w, d))}
+              {touched && parseError && (
+                <Text style={styles.errorText} accessibilityLabel="Input error">
+                  {parseError}
                 </Text>
               )}
-              <Pressable
-                onPress={() => setMode("dueDate")}
-                accessibilityRole="button"
-                accessibilityLabel="Switch to due date input"
+            </View>
+            <Pressable
+              style={[styles.addButton, !canAdd && styles.addButtonDisabled]}
+              onPress={handleAdd}
+              disabled={!canAdd}
+              accessibilityRole="button"
+              accessibilityLabel="Add this person"
+              accessibilityState={{ disabled: !canAdd }}
+            >
+              <Text
+                style={[
+                  styles.addButtonText,
+                  !canAdd && styles.addButtonTextDisabled,
+                ]}
               >
-                <Text style={styles.modeSwitchText}>
-                  Enter due date instead
-                </Text>
-              </Pressable>
-            </>
-          ) : (
+                Add
+              </Text>
+            </Pressable>
+          </View>
+          {parsedResult && (
+            <Text
+              style={styles.preview}
+              accessibilityLabel={`Due ${toDisplayDateString(parsedResult.dueDate)}, ${parsedResult.weeks} weeks ${parsedResult.days} days`}
+            >
+              <Text style={styles.previewLabel}>Calculated: </Text>
+              {toDisplayDateString(parsedResult.dueDate)}
+              {"  \u2013  "}
+              {parsedResult.weeks}w {parsedResult.days}d
+            </Text>
+          )}
+          {showPicker && (
             <View>
-              <View style={styles.ageRow}>
-                <View style={styles.inputWithHint}>
-                  <Text style={styles.label}>Due Date</Text>
-                  <View style={styles.dateInputRow}>
-                    <Pressable
-                      style={styles.calendarButton}
-                      onPress={() => setShowPicker(true)}
-                      accessibilityLabel="Select due date"
-                    >
-                      <Ionicons
-                        name="calendar-outline"
-                        size={22}
-                        color={colors.primary}
-                      />
-                    </Pressable>
-                    <TextInput
-                      style={[
-                        styles.dateTextInput,
-                        showDateError && styles.inputError,
-                      ]}
-                      accessibilityLabel="Due date"
-                      placeholder="MM-DD-YYYY"
-                      placeholderTextColor={colors.textTertiary}
-                      value={dateText}
-                      keyboardType="number-pad"
-                      onChangeText={handleDateTextChange}
-                      onBlur={() => {
-                        setDateTouched(true);
-                        const formatted = formatDateInput(dateText);
-                        if (formatted) {
-                          setDateText(formatted);
-                        }
-                      }}
-                    />
-                  </View>
-                  {showDateError && (
-                    <Text
-                      style={styles.errorText}
-                      accessibilityLabel="Date error"
-                    >
-                      {dateError}
-                    </Text>
-                  )}
-                </View>
+              <DateTimePicker
+                value={parsedResult?.dueDate ?? new Date()}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={handleDateChange}
+                minimumDate={getDateBounds().min}
+                maximumDate={getDateBounds().max}
+              />
+              {Platform.OS === "ios" && (
                 <Pressable
-                  style={[
-                    styles.addButton,
-                    !canAdd && styles.addButtonDisabled,
-                  ]}
-                  onPress={handleAdd}
-                  disabled={!canAdd}
-                  accessibilityRole="button"
-                  accessibilityLabel="Add this person"
-                  accessibilityState={{ disabled: !canAdd }}
+                  style={styles.pickerDoneButton}
+                  onPress={handlePickerDone}
                 >
-                  <Text
-                    style={[
-                      styles.addButtonText,
-                      !canAdd && styles.addButtonTextDisabled,
-                    ]}
-                  >
-                    Add
-                  </Text>
+                  <Text style={styles.pickerDoneText}>Done</Text>
                 </Pressable>
-              </View>
-              {computed && (
-                <Text
-                  style={styles.preview}
-                  accessibilityLabel="Gestational age preview"
-                >
-                  Gestational age: {computed.weeks}w {computed.days}d
-                </Text>
-              )}
-              <Pressable
-                onPress={() => setMode("weeksDays")}
-                accessibilityRole="button"
-                accessibilityLabel="Switch to gestational age input"
-              >
-                <Text style={styles.modeSwitchText}>
-                  Enter gestational age instead
-                </Text>
-              </Pressable>
-              {showPicker && (
-                <View>
-                  <DateTimePicker
-                    value={dueDate ?? new Date()}
-                    mode="date"
-                    display={Platform.OS === "ios" ? "spinner" : "default"}
-                    onChange={handleDateChange}
-                    minimumDate={dateBounds.min}
-                    maximumDate={dateBounds.max}
-                  />
-                  {Platform.OS === "ios" && (
-                    <Pressable
-                      style={styles.pickerDoneButton}
-                      onPress={handlePickerDone}
-                    >
-                      <Text style={styles.pickerDoneText}>Done</Text>
-                    </Pressable>
-                  )}
-                </View>
               )}
             </View>
           )}
-        </>
+        </View>
       )}
     </View>
   );
@@ -646,27 +451,12 @@ function createStyles(colors: ColorTokens) {
       fontWeight: "600",
       color: colors.primary,
     },
-    modeSwitchText: {
-      fontSize: 14,
-      color: colors.primary,
-      marginTop: 10,
-      textDecorationLine: "underline",
-    },
     ageRow: {
       flexDirection: "row",
       gap: 10,
     },
     inputWithHint: {
       flex: 1,
-    },
-    numberInput: {
-      borderWidth: 1,
-      borderColor: colors.inputBorder,
-      borderRadius: 8,
-      padding: 12,
-      fontSize: 16,
-      backgroundColor: colors.inputBackground,
-      color: colors.textPrimary,
     },
     dateInputRow: {
       flexDirection: "row",
@@ -699,6 +489,10 @@ function createStyles(colors: ColorTokens) {
       fontSize: 13,
       marginTop: 4,
       marginBottom: 8,
+    },
+    previewLabel: {
+      fontSize: 12,
+      color: colors.textTertiary,
     },
     preview: {
       marginTop: 8,

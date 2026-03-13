@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Entry } from "@/storage";
-import { useTheme } from "@/theme";
 import {
   formatDueDate,
   gestationalAgeFromDueDate,
@@ -22,7 +21,6 @@ const EntryCard = React.memo(function EntryCard({
   entry,
   onLongPress,
 }: EntryCardProps) {
-  const { colors } = useTheme();
   const { weeks, days } = gestationalAgeFromDueDate(entry.dueDate);
   const dueDateMonth = new Date(entry.dueDate + "T00:00:00").getMonth() + 1;
   const birthstone = entry.birthstone ?? getBirthstone(dueDateMonth);
@@ -47,11 +45,11 @@ const EntryCard = React.memo(function EntryCard({
           <Text style={styles.name} numberOfLines={1}>
             {entry.name}
           </Text>
-          <Text style={styles.age}>
-            {weeks}w {days}d
-          </Text>
-          <Text style={[styles.dueDate, { color: colors.white }]}>
+          <Text style={styles.detail}>
+            <Text style={styles.detailLabel}>Calculated: </Text>
             {formatDueDate(entry.dueDate)}
+            {"  \u2013  "}
+            {weeks}w {days}d
           </Text>
         </View>
       </View>
@@ -96,15 +94,14 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     textAlign: "center",
   },
-  age: {
-    fontSize: 14,
+  detailLabel: {
+    fontSize: 10,
+    color: "rgba(255,255,255,0.6)",
+  },
+  detail: {
+    fontSize: 12,
     fontWeight: "600",
     color: "rgba(255,255,255,0.9)",
-    textAlign: "center",
-  },
-  dueDate: {
-    fontSize: 12,
-    color: "rgba(255,255,255,0.75)",
     textAlign: "center",
   },
 });

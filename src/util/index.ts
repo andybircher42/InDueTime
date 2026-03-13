@@ -1,5 +1,9 @@
-export type { BatchEntryError, BatchEntryResult } from "./batchParse";
-export { parseBatchInput } from "./batchParse";
+export type {
+  BatchEntryError,
+  BatchEntryResult,
+  ParsedDateOrAge,
+} from "./batchParse";
+export { parseBatchInput, parseDateOrAge } from "./batchParse";
 export type { Birthstone } from "./birthstones";
 export {
   getBirthstone,

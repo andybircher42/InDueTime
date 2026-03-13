@@ -52,9 +52,10 @@ async function renderHomeWithTheme(
 async function addEntry(name: string, weeks: string, days: string) {
   fireEvent.press(screen.getByLabelText("Add someone new"));
   fireEvent.changeText(screen.getByLabelText("Name"), name);
-  fireEvent.press(screen.getByText("Enter gestational age instead"));
-  fireEvent.changeText(screen.getByLabelText("Weeks"), weeks);
-  fireEvent.changeText(screen.getByLabelText("Days"), days);
+  fireEvent.changeText(
+    screen.getByLabelText("Due date or gestational age"),
+    `${weeks}w${days}d`,
+  );
   fireEvent.press(screen.getByLabelText("Add this person"));
   await waitFor(() => {
     expect(screen.getByText(name)).toBeTruthy();
