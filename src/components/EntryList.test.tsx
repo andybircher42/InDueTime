@@ -69,6 +69,7 @@ const sameNameEntries = [
 ];
 
 const SORT_LABELS = [
+  "No sort",
   "Due date (newest first)",
   "Due date (oldest first)",
   "Name (A\u2013Z)",

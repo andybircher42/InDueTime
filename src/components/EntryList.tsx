@@ -42,12 +42,13 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-type SortBy = "dueDate" | "name";
+type SortBy = "dueDate" | "name" | "none";
 type SortDir = "asc" | "desc";
 
 const DEFAULT_DIR: Record<SortBy, SortDir> = {
   dueDate: "desc",
   name: "asc",
+  none: "desc",
 };
 
 type EntryStyles = ReturnType<typeof createStyles>;
@@ -233,6 +234,7 @@ export default function EntryList({
   }, [entries]);
 
   const SORT_OPTIONS: { field: SortBy; dir: SortDir; label: string }[] = [
+    { field: "none", dir: "desc", label: "No sort" },
     { field: "dueDate", dir: "desc", label: "Due date (newest first)" },
     { field: "dueDate", dir: "asc", label: "Due date (oldest first)" },
     { field: "name", dir: "asc", label: "Name (A–Z)" },
@@ -266,6 +268,11 @@ export default function EntryList({
   }, []);
 
   const sorted = useMemo(() => {
+    if (sortBy === "none") {
+      const copy = [...entries];
+      copy.sort((a, b) => b.createdAt - a.createdAt);
+      return copy;
+    }
     const copy = [...entries];
     const dir = sortDir === "asc" ? 1 : -1;
     if (sortBy === "dueDate") {
@@ -375,7 +382,7 @@ export default function EntryList({
           <Pressable
             onPress={openSortPicker}
             accessibilityRole="button"
-            accessibilityLabel={`Sort: ${sortBy === "dueDate" ? "due date" : "name"}, ${sortDir === "asc" ? "ascending" : "descending"}`}
+            accessibilityLabel={`Sort: ${sortBy === "none" ? "insertion order" : sortBy === "dueDate" ? "due date" : "name"}, ${sortDir === "asc" ? "ascending" : "descending"}`}
             hitSlop={8}
             style={styles.sortIconButton}
           >

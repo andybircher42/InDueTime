@@ -1,8 +1,10 @@
 import React, { useCallback, useMemo, useState } from "react";
 import {
+  ActionSheetIOS,
   Alert,
   FlatList,
   LayoutAnimation,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -25,7 +27,18 @@ interface EntryGridProps {
   onAdd: (entry: { name: string; dueDate: string }) => void;
 }
 
+type SortBy = "dueDate" | "name" | "none";
+type SortDir = "asc" | "desc";
+
 type GridItem = Entry | "add";
+
+const SORT_OPTIONS: { field: SortBy; dir: SortDir; label: string }[] = [
+  { field: "none", dir: "desc", label: "No sort" },
+  { field: "dueDate", dir: "desc", label: "Due date (newest first)" },
+  { field: "dueDate", dir: "asc", label: "Due date (oldest first)" },
+  { field: "name", dir: "asc", label: "Name (A\u2013Z)" },
+  { field: "name", dir: "desc", label: "Name (Z\u2013A)" },
+];
 
 /** Cozy 2-column card grid layout for entries. */
 export default function EntryGrid({
@@ -38,6 +51,8 @@ export default function EntryGrid({
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [showForm, setShowForm] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
+  const [sortBy, setSortBy] = useState<SortBy>("none");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
   const formKeyRef = React.useRef(0);
 
   const toggleForm = useCallback(() => {
@@ -55,6 +70,62 @@ export default function EntryGrid({
     setBatchMode((prev) => !prev);
   }, []);
 
+  const openSortPicker = useCallback(() => {
+    const labels = SORT_OPTIONS.map((o) => o.label);
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { options: [...labels, "Cancel"], cancelButtonIndex: labels.length },
+        (index) => {
+          if (index < SORT_OPTIONS.length) {
+            setSortBy(SORT_OPTIONS[index].field);
+            setSortDir(SORT_OPTIONS[index].dir);
+          }
+        },
+      );
+    } else {
+      Alert.alert("Sort by", undefined, [
+        ...SORT_OPTIONS.map((o) => ({
+          text: o.label,
+          onPress: () => {
+            setSortBy(o.field);
+            setSortDir(o.dir);
+          },
+        })),
+        { text: "Cancel", style: "cancel" as const },
+      ]);
+    }
+  }, []);
+
+  const sorted = useMemo(() => {
+    if (sortBy === "none") {
+      const copy = [...entries];
+      copy.sort((a, b) => b.createdAt - a.createdAt);
+      return copy;
+    }
+    const copy = [...entries];
+    const dir = sortDir === "asc" ? 1 : -1;
+    if (sortBy === "dueDate") {
+      copy.sort((a, b) => {
+        const dateDiff = b.dueDate.localeCompare(a.dueDate);
+        if (dateDiff !== 0) {
+          return dir * dateDiff;
+        }
+        return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      });
+    } else {
+      copy.sort((a, b) => {
+        const nameDiff = a.name.localeCompare(b.name, undefined, {
+          sensitivity: "base",
+        });
+        if (nameDiff !== 0) {
+          return dir * nameDiff;
+        }
+        return a.dueDate.localeCompare(b.dueDate);
+      });
+    }
+    return copy;
+  }, [entries, sortBy, sortDir]);
+
   const handleLongPress = useCallback(
     (entry: Entry) => {
       Alert.alert("Remove", `Remove ${entry.name}?`, [
@@ -70,8 +141,8 @@ export default function EntryGrid({
   );
 
   const gridData: GridItem[] = useMemo(
-    () => [...entries, "add" as const],
-    [entries],
+    () => [...sorted, "add" as const],
+    [sorted],
   );
 
   const renderItem = useCallback(
@@ -181,6 +252,19 @@ export default function EntryGrid({
       ) : null}
       {entries.length > 0 && (
         <View style={styles.toolbarRow}>
+          <Pressable
+            onPress={openSortPicker}
+            accessibilityRole="button"
+            accessibilityLabel={`Sort: ${sortBy === "none" ? "insertion order" : sortBy === "dueDate" ? "due date" : "name"}, ${sortDir === "asc" ? "ascending" : "descending"}`}
+            hitSlop={8}
+            style={styles.sortIconButton}
+          >
+            <Ionicons
+              name="swap-vertical-outline"
+              size={20}
+              color={colors.textTertiary}
+            />
+          </Pressable>
           <View style={styles.toolbarSpacer} />
           <Pressable
             style={styles.deleteAllButton}
@@ -287,6 +371,13 @@ function createStyles(colors: ColorTokens) {
       marginHorizontal: 16,
       marginTop: 12,
       gap: 10,
+    },
+    sortIconButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      justifyContent: "center",
+      alignItems: "center",
     },
     toolbarSpacer: {
       flex: 1,
