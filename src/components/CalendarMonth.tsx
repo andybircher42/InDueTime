@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
@@ -19,6 +19,7 @@ interface CalendarMonthProps {
   year: number;
   month: number; // 0-indexed (JS Date style)
   dayCells: DayCell[];
+  onDayPress?: (date: string, dueEntries: Entry[]) => void;
 }
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -42,6 +43,7 @@ export default function CalendarMonth({
   year,
   month,
   dayCells,
+  onDayPress,
 }: CalendarMonthProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -102,48 +104,58 @@ export default function CalendarMonth({
       </View>
       {grid.map((row, rowIndex) => (
         <View key={rowIndex} style={styles.weekRow}>
-          {row.map((cell, cellIndex) => (
-            <View
-              key={cellIndex}
-              style={[
-                styles.dayCell,
-                { backgroundColor: cell ? cell.color : "transparent" },
-              ]}
-            >
-              {cell && (
-                <>
-                  <Text style={styles.dayText}>{cell.day}</Text>
-                  {cell.dueEntries.length > 0 && (
-                    <View style={styles.iconsRow}>
-                      {cell.dueEntries.length <= 3 ? (
-                        cell.dueEntries.map((e) => (
-                          <BirthstoneIcon
-                            key={e.id}
-                            image={getBirthstoneImage(
-                              e.birthstone?.name ?? "Garnet",
-                            )}
-                            size={14}
-                          />
-                        ))
-                      ) : (
-                        <>
-                          <BirthstoneIcon
-                            image={getBirthstoneImage(
-                              cell.dueEntries[0].birthstone?.name ?? "Garnet",
-                            )}
-                            size={14}
-                          />
-                          <Text style={styles.overflowText}>
-                            +{cell.dueEntries.length - 1}
-                          </Text>
-                        </>
-                      )}
-                    </View>
-                  )}
-                </>
-              )}
-            </View>
-          ))}
+          {row.map((cell, cellIndex) => {
+            const hasDueEntries = cell != null && cell.dueEntries.length > 0;
+            const CellWrapper = hasDueEntries ? Pressable : View;
+            return (
+              <CellWrapper
+                key={cellIndex}
+                style={[
+                  styles.dayCell,
+                  { backgroundColor: cell ? cell.color : "transparent" },
+                  hasDueEntries && styles.dayCellTappable,
+                ]}
+                {...(hasDueEntries && {
+                  onPress: () => onDayPress?.(cell.date, cell.dueEntries),
+                  accessibilityRole: "button" as const,
+                  accessibilityLabel: `${cell.dueEntries.length} due on day ${cell.day}`,
+                })}
+              >
+                {cell && (
+                  <>
+                    <Text style={styles.dayText}>{cell.day}</Text>
+                    {cell.dueEntries.length > 0 && (
+                      <View style={styles.iconsRow}>
+                        {cell.dueEntries.length <= 3 ? (
+                          cell.dueEntries.map((e) => (
+                            <BirthstoneIcon
+                              key={e.id}
+                              image={getBirthstoneImage(
+                                e.birthstone?.name ?? "Garnet",
+                              )}
+                              size={14}
+                            />
+                          ))
+                        ) : (
+                          <>
+                            <BirthstoneIcon
+                              image={getBirthstoneImage(
+                                cell.dueEntries[0].birthstone?.name ?? "Garnet",
+                              )}
+                              size={14}
+                            />
+                            <Text style={styles.overflowText}>
+                              +{cell.dueEntries.length - 1}
+                            </Text>
+                          </>
+                        )}
+                      </View>
+                    )}
+                  </>
+                )}
+              </CellWrapper>
+            );
+          })}
         </View>
       ))}
     </View>
@@ -187,6 +199,11 @@ function createStyles(colors: ColorTokens) {
       margin: 1,
       borderRadius: 4,
       padding: 3,
+    },
+    dayCellTappable: {
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+      padding: 1.5,
     },
     dayText: {
       fontSize: 12,

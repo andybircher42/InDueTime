@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Image, ImageBackground, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { HipaaAgreementModal, OnboardingOverlay } from "@/components";
@@ -228,7 +228,15 @@ function RootGate({ loadThemePreference }: RootGateProps) {
   }
 
   // Ready: render the matched route (home screen)
-  return <Slot />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen
+        name="date-detail"
+        options={{ animation: "slide_from_right" }}
+      />
+    </Stack>
+  );
 }
 
 const styles = StyleSheet.create({

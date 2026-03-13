@@ -9,9 +9,18 @@ import {
 
 jest.mock("expo-router", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Text } = require("react-native");
+  const { Text, View } = require("react-native");
+  const Screen = () => null;
+  const StackComponent = ({ children }: { children: React.ReactNode }) => (
+    <View>
+      <Text testID="slot-content">Slot</Text>
+      {children}
+    </View>
+  );
+  StackComponent.Screen = Screen;
   return {
     Slot: () => <Text testID="slot-content">Slot</Text>,
+    Stack: StackComponent,
   };
 });
 

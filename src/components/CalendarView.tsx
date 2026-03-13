@@ -11,10 +11,14 @@ import CalendarMonth, { DayCell } from "./CalendarMonth";
 
 interface CalendarViewProps {
   entries: Entry[];
+  onDayPress?: (date: string, dueEntries: Entry[]) => void;
 }
 
 /** Displays an 11-month calendar heat map showing delivery probability across all entries. */
-export default function CalendarView({ entries }: CalendarViewProps) {
+export default function CalendarView({
+  entries,
+  onDayPress,
+}: CalendarViewProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const today = useMemo(() => new Date(), []);
@@ -99,6 +103,7 @@ export default function CalendarView({ entries }: CalendarViewProps) {
           year={year}
           month={month}
           dayCells={cells}
+          onDayPress={onDayPress}
         />
       ))}
     </ScrollView>
