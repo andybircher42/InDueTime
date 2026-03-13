@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start --port 8083",
+    "start": "expo start --port 8083 --scheme induetime",
     "android": "expo start --android --port 8083",
     "ios": "expo start --ios --port 8083",
     "web": "expo start --web --port 8083",
