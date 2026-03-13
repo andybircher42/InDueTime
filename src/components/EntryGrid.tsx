@@ -75,7 +75,11 @@ export default function EntryGrid({
   }, []);
 
   const openSortPicker = useCallback(() => {
-    const labels = SORT_OPTIONS.map((o) => o.label);
+    const labels = SORT_OPTIONS.map((o) =>
+      o.field === sortBy && o.dir === sortDir
+        ? `✓ ${o.label}`
+        : `   ${o.label}`,
+    );
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         { options: [...labels, "Cancel"], cancelButtonIndex: labels.length },
@@ -88,8 +92,8 @@ export default function EntryGrid({
       );
     } else {
       Alert.alert("Sort by", undefined, [
-        ...SORT_OPTIONS.map((o) => ({
-          text: o.label,
+        ...SORT_OPTIONS.map((o, i) => ({
+          text: labels[i],
           onPress: () => {
             setSortBy(o.field);
             setSortDir(o.dir);
@@ -98,7 +102,7 @@ export default function EntryGrid({
         { text: "Cancel", style: "cancel" as const },
       ]);
     }
-  }, []);
+  }, [sortBy, sortDir]);
 
   const activeEntries = useMemo(
     () => entries.filter((e) => !e.deliveredAt),
@@ -155,7 +159,9 @@ export default function EntryGrid({
 
   const gridData: GridItem[] = useMemo(() => {
     const data: GridItem[] = [...sorted, "add" as const];
-    if (data.length % 2 !== 0) {data.push("spacer" as const);}
+    if (data.length % 2 !== 0) {
+      data.push("spacer" as const);
+    }
     return data;
   }, [sorted]);
 

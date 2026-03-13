@@ -209,6 +209,24 @@ describe("EntryList", () => {
     );
   });
 
+  it("highlights current sort option with a checkmark", () => {
+    const spy = jest
+      .spyOn(ActionSheetIOS, "showActionSheetWithOptions")
+      .mockImplementation(() => {});
+    renderList([makeEntry({ id: "1", name: "Baby", dueDate: "2026-09-28" })]);
+
+    // Default sort is "Due date (newest first)"
+    fireEvent.press(screen.getByLabelText(/Sort:/));
+
+    const options = spy.mock.calls[0][0].options as string[];
+    expect(options[1]).toMatch(/^✓.*Due date \(newest first\)/);
+    // Other options should not have checkmark
+    expect(options[0]).not.toMatch(/✓/);
+    expect(options[2]).not.toMatch(/✓/);
+    expect(options[3]).not.toMatch(/✓/);
+    expect(options[4]).not.toMatch(/✓/);
+  });
+
   it("sort icon has accessible label reflecting current sort", () => {
     renderList([makeEntry({ id: "1", name: "Baby", dueDate: "2026-09-28" })]);
 

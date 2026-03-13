@@ -253,7 +253,11 @@ export default function EntryList({
   ];
 
   const openSortPicker = useCallback(() => {
-    const labels = SORT_OPTIONS.map((o) => o.label);
+    const labels = SORT_OPTIONS.map((o) =>
+      o.field === sortBy && o.dir === sortDir
+        ? `✓ ${o.label}`
+        : `   ${o.label}`,
+    );
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         { options: [...labels, "Cancel"], cancelButtonIndex: labels.length },
@@ -266,8 +270,8 @@ export default function EntryList({
       );
     } else {
       Alert.alert("Sort by", undefined, [
-        ...SORT_OPTIONS.map((o) => ({
-          text: o.label,
+        ...SORT_OPTIONS.map((o, i) => ({
+          text: labels[i],
           onPress: () => {
             setSortBy(o.field);
             setSortDir(o.dir);
@@ -276,7 +280,7 @@ export default function EntryList({
         { text: "Cancel", style: "cancel" as const },
       ]);
     }
-  }, []);
+  }, [sortBy, sortDir]);
 
   const activeEntries = useMemo(
     () => entries.filter((e) => !e.deliveredAt),
