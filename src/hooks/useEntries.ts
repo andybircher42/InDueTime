@@ -1,6 +1,13 @@
 import { useCallback, useState } from "react";
 
-import { Entry, loadEntries, saveEntries } from "@/storage";
+import {
+  DEFAULT_DELIVERED_TTL_DAYS,
+  Entry,
+  loadDeliveredTTL,
+  loadEntries,
+  saveDeliveredTTL,
+  saveEntries,
+} from "@/storage";
 import { reportError } from "@/util";
 import { getBirthstoneForDate } from "@/util/birthstones";
 
@@ -21,6 +28,13 @@ export default function useEntries() {
     entry: Entry;
     previousEntries: Entry[];
   } | null>(null);
+  const [deliveredEntry, setDeliveredEntry] = useState<{
+    entry: Entry;
+    previousEntries: Entry[];
+  } | null>(null);
+  const [deliveredTTLDays, setDeliveredTTLDays] = useState(
+    DEFAULT_DELIVERED_TTL_DAYS,
+  );
   const [discardedCount, setDiscardedCount] = useState(0);
   const [saveError, setSaveError] = useState(false);
 
@@ -37,7 +51,9 @@ export default function useEntries() {
 
   /** Hydrates entries from AsyncStorage. Call once during app initialization. */
   const load = useCallback(async () => {
-    const result = await loadEntries();
+    const ttl = await loadDeliveredTTL();
+    setDeliveredTTLDays(ttl);
+    const result = await loadEntries(ttl);
     setEntries(result.entries);
     setDiscardedCount(result.discardedCount);
   }, []);
@@ -63,10 +79,14 @@ export default function useEntries() {
   const deliver = useCallback(
     (id: string) => {
       setEntries((prev) => {
+        const entry = prev.find((e) => e.id === id);
         const updated = prev.map((e) =>
           e.id === id ? { ...e, deliveredAt: Date.now() } : e,
         );
         persistEntries(updated);
+        if (entry) {
+          setDeliveredEntry({ entry, previousEntries: prev });
+        }
         return updated;
       });
     },
@@ -117,6 +137,42 @@ export default function useEntries() {
     setDeletedEntry(null);
   }, []);
 
+  const undoDeliver = useCallback(() => {
+    if (deliveredEntry) {
+      setEntries(deliveredEntry.previousEntries);
+      persistEntries(deliveredEntry.previousEntries);
+      setDeliveredEntry(null);
+    }
+  }, [deliveredEntry, persistEntries]);
+
+  const dismissDelivered = useCallback(() => {
+    setDeliveredEntry(null);
+  }, []);
+
+  const updateDeliveredTTL = useCallback(
+    (days: number) => {
+      setDeliveredTTLDays(days);
+      saveDeliveredTTL(days).catch((e) =>
+        reportError("Failed to save TTL preference", e),
+      );
+      // Re-purge entries with new TTL
+      if (days > 0) {
+        const ttlMs = days * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        setEntries((prev) => {
+          const filtered = prev.filter(
+            (e) => !e.deliveredAt || now - e.deliveredAt < ttlMs,
+          );
+          if (filtered.length !== prev.length) {
+            persistEntries(filtered);
+          }
+          return filtered;
+        });
+      }
+    },
+    [persistEntries],
+  );
+
   /** Clears the discarded-entry notification. */
   const dismissDiscarded = useCallback(() => {
     setDiscardedCount(0);
@@ -130,6 +186,8 @@ export default function useEntries() {
   return {
     entries,
     deletedEntry,
+    deliveredEntry,
+    deliveredTTLDays,
     discardedCount,
     saveError,
     load,
@@ -140,6 +198,9 @@ export default function useEntries() {
     seed,
     undo,
     dismissUndo,
+    undoDeliver,
+    dismissDelivered,
+    updateDeliveredTTL,
     dismissDiscarded,
     dismissSaveError,
   };

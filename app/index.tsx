@@ -73,6 +73,8 @@ export default function HomeScreen() {
   const {
     entries,
     deletedEntry,
+    deliveredEntry,
+    deliveredTTLDays,
     discardedCount,
     saveError,
     load,
@@ -83,6 +85,9 @@ export default function HomeScreen() {
     seed,
     undo,
     dismissUndo,
+    undoDeliver,
+    dismissDelivered,
+    updateDeliveredTTL,
     dismissDiscarded,
     dismissSaveError,
   } = useEntries();
@@ -202,9 +207,11 @@ export default function HomeScreen() {
           currentPersonality={personality}
           currentBrightness={brightness}
           currentLayout={layout}
+          currentDeliveredTTL={deliveredTTLDays}
           onSelectPersonality={setPersonality}
           onSelectBrightness={setBrightness}
           onSelectLayout={setLayout}
+          onSelectDeliveredTTL={updateDeliveredTTL}
           onClose={() => setShowThemePicker(false)}
           onAppInfo={() => setShowAppInfo(true)}
           anchor={pickerAnchor}
@@ -222,7 +229,16 @@ export default function HomeScreen() {
           />
         )}
 
-        {discardedCount > 0 && !deletedEntry && (
+        {deliveredEntry && !deletedEntry && (
+          <UndoToast
+            entry={deliveredEntry.entry}
+            action="Delivered"
+            onUndo={undoDeliver}
+            onDismiss={dismissDelivered}
+          />
+        )}
+
+        {discardedCount > 0 && !deletedEntry && !deliveredEntry && (
           <InfoToast
             message={
               discardedCount === 1
@@ -233,12 +249,15 @@ export default function HomeScreen() {
           />
         )}
 
-        {saveError && !deletedEntry && discardedCount === 0 && (
-          <InfoToast
-            message="Your changes might not be saved. Try again or restart the app."
-            onDismiss={dismissSaveError}
-          />
-        )}
+        {saveError &&
+          !deletedEntry &&
+          !deliveredEntry &&
+          discardedCount === 0 && (
+            <InfoToast
+              message="Your changes might not be saved. Try again or restart the app."
+              onDismiss={dismissSaveError}
+            />
+          )}
 
         <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
       </KeyboardAvoidingView>

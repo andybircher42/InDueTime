@@ -9,6 +9,7 @@ import { gestationalAgeFromDueDate } from "@/util";
 
 interface UndoToastProps {
   entry: Entry;
+  action?: string;
   onUndo: () => void;
   onDismiss: () => void;
 }
@@ -18,6 +19,7 @@ const TOAST_DURATION_MS = 5000;
 /** Toast shown after deleting an entry, allowing the user to undo the deletion. */
 export default function UndoToast({
   entry,
+  action = "Removed",
   onUndo,
   onDismiss,
 }: UndoToastProps) {
@@ -50,12 +52,12 @@ export default function UndoToast({
       ]}
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
-      accessibilityLabel={`Removed ${entry.name}, ${weeks} weeks ${days} days`}
+      accessibilityLabel={`${action} ${entry.name}, ${weeks} weeks ${days} days`}
       testID="undo-toast"
       {...panHandlers}
     >
       <Text style={styles.message}>
-        Removed {entry.name} ({weeks}w {days}d)
+        {action} {entry.name} ({weeks}w {days}d)
       </Text>
       <Pressable
         onPress={onUndo}
