@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import {
@@ -25,7 +26,7 @@ import {
   UndoToast,
 } from "@/components";
 import { useEntries } from "@/hooks";
-import { resetAgreement, resetOnboarding } from "@/storage";
+import { Entry, resetAgreement, resetOnboarding } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
 import { reportError } from "@/util";
 
@@ -47,6 +48,7 @@ export default function HomeScreen() {
     setBrightness,
   } = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const [view, setView] = useState<"list" | "calendar">("list");
   const [showThemePicker, setShowThemePicker] = useState(false);
@@ -86,6 +88,16 @@ export default function HomeScreen() {
   useEffect(() => {
     load().catch((e) => reportError("Failed to load entries", e));
   }, [load]);
+
+  const handleDayPress = useCallback(
+    (date: string, dueEntries: Entry[]) => {
+      router.push({
+        pathname: "/date-detail",
+        params: { date, entries: JSON.stringify(dueEntries) },
+      });
+    },
+    [router],
+  );
 
   const handleResetAgreement = () => {
     Promise.all([resetAgreement(), resetOnboarding()])
@@ -168,7 +180,7 @@ export default function HomeScreen() {
             onAdd={add}
           />
         ) : (
-          <CalendarView entries={entries} />
+          <CalendarView entries={entries} onDayPress={handleDayPress} />
         )}
         <ThemePickerModal
           visible={showThemePicker}
