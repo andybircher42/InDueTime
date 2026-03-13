@@ -13,12 +13,14 @@ import BirthstoneIcon from "./BirthstoneIcon";
 
 interface EntryCardProps {
   entry: Entry;
+  onPress?: (entry: Entry) => void;
   onLongPress?: (entry: Entry) => void;
 }
 
 /** Cozy card tile for an entry, showing birthstone icon, name, and gestational age. */
 const EntryCard = React.memo(function EntryCard({
   entry,
+  onPress,
   onLongPress,
 }: EntryCardProps) {
   const { weeks, days } = gestationalAgeFromDueDate(entry.dueDate);
@@ -34,6 +36,7 @@ const EntryCard = React.memo(function EntryCard({
   return (
     <Pressable
       style={cardStyle}
+      onPress={() => onPress?.(entry)}
       onLongPress={() => onLongPress?.(entry)}
       accessibilityRole="button"
       accessibilityLabel={`${entry.name}, ${weeks} weeks ${days} days, due ${formatDueDate(entry.dueDate)}`}

@@ -33,6 +33,7 @@ import {
 } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
+import EntryDetailModal from "./EntryDetailModal";
 import EntryForm from "./EntryForm";
 
 if (
@@ -58,6 +59,7 @@ interface EntryRowProps {
   backgroundColor: string;
   textColor: string;
   onDelete: (id: string) => void;
+  onPress: (entry: Entry) => void;
   nameWidth?: number;
   onNameLayout?: (id: string, width: number) => void;
   styles: EntryStyles;
@@ -78,6 +80,7 @@ const EntryRow = React.memo(function EntryRow({
   backgroundColor,
   textColor,
   onDelete,
+  onPress,
   nameWidth,
   onNameLayout,
   styles,
@@ -126,32 +129,39 @@ const EntryRow = React.memo(function EntryRow({
         ]}
         {...panHandlers}
       >
-        <Text
-          style={[
-            styles.entryName,
-            { color: textColor },
-            (nameWidth ?? 0) > 0 && { minWidth: nameWidth },
-          ]}
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          onLayout={(e: LayoutChangeEvent) =>
-            onNameLayout?.(item.id, e.nativeEvent.layout.width)
-          }
+        <Pressable
+          style={styles.entryContent}
+          onPress={() => onPress(item)}
+          accessibilityRole="button"
+          accessibilityLabel={`View details for ${item.name}`}
         >
-          {item.name}
-        </Text>
-        <Text style={[styles.entryAge, { color: textColor }]}>
-          {weeks}w {days}d
-        </Text>
-        <Text style={[styles.entryDueDate, { color: textColor }]}>
-          {formatDueDate(item.dueDate)}
-        </Text>
-        {item.birthstone && (
-          <BirthstoneIcon
-            image={getBirthstoneImage(item.birthstone.name)}
-            size={24}
-          />
-        )}
+          <Text
+            style={[
+              styles.entryName,
+              { color: textColor },
+              (nameWidth ?? 0) > 0 && { minWidth: nameWidth },
+            ]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            onLayout={(e: LayoutChangeEvent) =>
+              onNameLayout?.(item.id, e.nativeEvent.layout.width)
+            }
+          >
+            {item.name}
+          </Text>
+          <Text style={[styles.entryAge, { color: textColor }]}>
+            {weeks}w {days}d
+          </Text>
+          <Text style={[styles.entryDueDate, { color: textColor }]}>
+            {formatDueDate(item.dueDate)}
+          </Text>
+          {item.birthstone && (
+            <BirthstoneIcon
+              image={getBirthstoneImage(item.birthstone.name)}
+              size={24}
+            />
+          )}
+        </Pressable>
         <Pressable
           onPress={() => onDelete(item.id)}
           style={styles.deleteButton}
@@ -178,6 +188,7 @@ export default function EntryList({
 
   const [sortBy, setSortBy] = useState<SortBy>("dueDate");
   const [sortDir, setSortDir] = useState<SortDir>(DEFAULT_DIR.dueDate);
+  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const nameWidths = useRef(new Map<string, number>());
   const [maxNameWidth, setMaxNameWidth] = useState(0);
   const [showForm, setShowForm] = useState(false);
@@ -304,6 +315,7 @@ export default function EntryList({
         backgroundColor={rowColors[index % rowColors.length]}
         textColor={colors.textEntryRow}
         onDelete={onDelete}
+        onPress={setSelectedEntry}
         nameWidth={maxNameWidth}
         onNameLayout={handleNameLayout}
         styles={styles}
@@ -449,6 +461,10 @@ export default function EntryList({
           </Pressable>
         }
       />
+      <EntryDetailModal
+        entry={selectedEntry}
+        onClose={() => setSelectedEntry(null)}
+      />
     </View>
   );
 }
@@ -561,6 +577,12 @@ function createStyles(colors: ColorTokens) {
       alignItems: "center",
       paddingVertical: 10,
       paddingHorizontal: 16,
+      gap: 6,
+    },
+    entryContent: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
       gap: 6,
     },
     entryName: {

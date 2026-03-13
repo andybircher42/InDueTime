@@ -3,6 +3,7 @@ export { default as BirthstoneIcon } from "./BirthstoneIcon";
 export { default as CalendarView } from "./CalendarView";
 export { default as DevToolbar } from "./DevToolbar";
 export { default as EntryCard } from "./EntryCard";
+export { default as EntryDetailModal } from "./EntryDetailModal";
 export { default as EntryForm } from "./EntryForm";
 export { default as EntryGrid } from "./EntryGrid";
 export { default as EntryList } from "./EntryList";

@@ -18,6 +18,7 @@ import { getBirthstone, getBirthstoneImage } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
 import EntryCard from "./EntryCard";
+import EntryDetailModal from "./EntryDetailModal";
 import EntryForm from "./EntryForm";
 
 interface EntryGridProps {
@@ -51,6 +52,7 @@ export default function EntryGrid({
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [showForm, setShowForm] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("none");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const formKeyRef = React.useRef(0);
@@ -166,7 +168,13 @@ export default function EntryGrid({
           </Pressable>
         );
       }
-      return <EntryCard entry={item} onLongPress={handleLongPress} />;
+      return (
+        <EntryCard
+          entry={item}
+          onPress={setSelectedEntry}
+          onLongPress={handleLongPress}
+        />
+      );
     },
     [styles, toggleForm, handleLongPress],
   );
@@ -301,6 +309,10 @@ export default function EntryGrid({
         numColumns={2}
         contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.gridRow}
+      />
+      <EntryDetailModal
+        entry={selectedEntry}
+        onClose={() => setSelectedEntry(null)}
       />
     </View>
   );
