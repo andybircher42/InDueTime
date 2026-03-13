@@ -195,16 +195,21 @@ export default function EntryGrid({
             image={getBirthstoneImage(
               getBirthstone(new Date().getMonth() + 1).name,
             )}
-            size={28}
+            size={20}
           />
-          <Text style={[styles.addButtonFullText, { color: colors.primary }]}>
+          <Text
+            style={[
+              styles.addButtonFullText,
+              { color: colors.primary, marginHorizontal: 8 },
+            ]}
+          >
             Add someone
           </Text>
           <BirthstoneIcon
             image={getBirthstoneImage(
               getBirthstone(new Date().getMonth() + 1).name,
             )}
-            size={28}
+            size={20}
           />
         </Pressable>
         <View style={styles.emptyContent}>
