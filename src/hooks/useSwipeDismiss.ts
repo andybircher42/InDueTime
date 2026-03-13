@@ -81,9 +81,13 @@ export default function useSwipeDismiss({
         pastThreshold.current = false;
         const d = delta(gs);
         const v = velocity(gs);
+        // Cancel if user is actively pulling back (velocity opposes displacement)
+        const REVERSAL_VELOCITY = 0.3;
+        const pullingBack =
+          Math.abs(v) > REVERSAL_VELOCITY && Math.sign(v) !== Math.sign(d);
         const distanceDismiss = positiveOnly
-          ? d > threshold
-          : Math.abs(d) > threshold;
+          ? d > threshold && !pullingBack
+          : Math.abs(d) > threshold && !pullingBack;
         // Fast flick: at least 30px movement + high velocity in the same direction
         const minFlickDistance = 30;
         const velocityDismiss =

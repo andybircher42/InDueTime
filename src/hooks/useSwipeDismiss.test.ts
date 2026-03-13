@@ -259,6 +259,35 @@ describe("useSwipeDismiss", () => {
       expect(onDismiss).not.toHaveBeenCalled();
     });
 
+    it("cancels when past threshold but pulling back", () => {
+      const onDismiss = jest.fn();
+      renderHook(() =>
+        useSwipeDismiss({ axis: "x", threshold: 100, onDismiss }),
+      );
+
+      act(() => {
+        // 120px past threshold, but velocity is reversed (pulling back)
+        captured.onPanResponderRelease!(event, gs(120, 0, -0.5, 0));
+        jest.advanceTimersByTime(300);
+      });
+
+      expect(onDismiss).not.toHaveBeenCalled();
+    });
+
+    it("cancels left swipe when pulling back right", () => {
+      const onDismiss = jest.fn();
+      renderHook(() =>
+        useSwipeDismiss({ axis: "x", threshold: 100, onDismiss }),
+      );
+
+      act(() => {
+        captured.onPanResponderRelease!(event, gs(-120, 0, 0.5, 0));
+        jest.advanceTimersByTime(300);
+      });
+
+      expect(onDismiss).not.toHaveBeenCalled();
+    });
+
     it("dismisses on fast flick even below distance threshold", () => {
       const onDismiss = jest.fn();
       renderHook(() =>

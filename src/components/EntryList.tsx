@@ -107,25 +107,35 @@ const EntryRow = React.memo(function EntryRow({
     }).start();
   }, [fadeIn]);
 
-  // Deliver side (swipe right): opacity and scale ramp up from 0→threshold
-  const deliverOpacity = translateX.interpolate({
+  // Show deliver background when swiping right, delete when swiping left
+  const deliverBgOpacity = translateX.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+  const deleteBgOpacity = translateX.interpolate({
+    inputRange: [-1, 0],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
+  // Icon opacity and scale ramp up as swipe approaches threshold
+  const deliverIconOpacity = translateX.interpolate({
     inputRange: [0, SWIPE_THRESHOLD * 0.3, SWIPE_THRESHOLD],
     outputRange: [0, 0.5, 1],
     extrapolate: "clamp",
   });
-  const deliverScale = translateX.interpolate({
+  const deliverIconScale = translateX.interpolate({
     inputRange: [0, SWIPE_THRESHOLD * 0.5, SWIPE_THRESHOLD],
     outputRange: [0.6, 0.8, 1],
     extrapolate: "clamp",
   });
-
-  // Delete side (swipe left): same but inverted
-  const deleteOpacity = translateX.interpolate({
+  const deleteIconOpacity = translateX.interpolate({
     inputRange: [-SWIPE_THRESHOLD, -SWIPE_THRESHOLD * 0.3, 0],
     outputRange: [1, 0.5, 0],
     extrapolate: "clamp",
   });
-  const deleteScale = translateX.interpolate({
+  const deleteIconScale = translateX.interpolate({
     inputRange: [-SWIPE_THRESHOLD, -SWIPE_THRESHOLD * 0.5, 0],
     outputRange: [1, 0.8, 0.6],
     extrapolate: "clamp",
@@ -134,11 +144,28 @@ const EntryRow = React.memo(function EntryRow({
   return (
     <Animated.View style={[styles.entryWrapper, { opacity: fadeIn }]}>
       <View style={styles.swipeBackground} testID="delete-background">
+        <Animated.View
+          style={[
+            styles.swipeBgLayer,
+            styles.swipeDeliverBg,
+            { opacity: deliverBgOpacity },
+          ]}
+        />
+        <Animated.View
+          style={[
+            styles.swipeBgLayer,
+            styles.swipeDeleteBg,
+            { opacity: deleteBgOpacity },
+          ]}
+        />
         <View style={styles.swipeDeliverSide}>
           <Animated.View
             style={[
               styles.swipeIconGroup,
-              { opacity: deliverOpacity, transform: [{ scale: deliverScale }] },
+              {
+                opacity: deliverIconOpacity,
+                transform: [{ scale: deliverIconScale }],
+              },
             ]}
           >
             <Ionicons
@@ -154,7 +181,10 @@ const EntryRow = React.memo(function EntryRow({
           <Animated.View
             style={[
               styles.swipeIconGroup,
-              { opacity: deleteOpacity, transform: [{ scale: deleteScale }] },
+              {
+                opacity: deleteIconOpacity,
+                transform: [{ scale: deleteIconScale }],
+              },
             ]}
           >
             <Text style={styles.swipeLabel}>Delete</Text>
@@ -599,16 +629,23 @@ function createStyles(colors: ColorTokens) {
       ...StyleSheet.absoluteFillObject,
       flexDirection: "row",
     },
+    swipeBgLayer: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    swipeDeliverBg: {
+      backgroundColor: colors.primary,
+    },
+    swipeDeleteBg: {
+      backgroundColor: colors.destructive,
+    },
     swipeDeliverSide: {
       flex: 1,
-      backgroundColor: colors.primary,
       flexDirection: "row",
       alignItems: "center",
       paddingLeft: 20,
     },
     swipeDeleteSide: {
       flex: 1,
-      backgroundColor: colors.destructive,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "flex-end",
