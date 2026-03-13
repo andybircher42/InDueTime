@@ -254,6 +254,50 @@ describe("useSwipeDismiss", () => {
     });
   });
 
+  describe("onPanResponderTerminate", () => {
+    it("springs back to zero when gesture is terminated by iOS", () => {
+      const springSpy = jest.spyOn(Animated, "spring");
+      renderHook(() =>
+        useSwipeDismiss({ axis: "x", threshold: 100, onDismiss: jest.fn() }),
+      );
+
+      act(() => {
+        captured.onPanResponderMove!(event, gs(60, 0));
+        captured.onPanResponderTerminate!(event, gs(60, 0));
+      });
+
+      expect(springSpy).toHaveBeenCalledWith(
+        expect.any(Animated.Value),
+        expect.objectContaining({ toValue: 0 }),
+      );
+    });
+
+    it("does not call onDismiss when terminated", () => {
+      const onDismiss = jest.fn();
+      renderHook(() =>
+        useSwipeDismiss({ axis: "x", threshold: 100, onDismiss }),
+      );
+
+      act(() => {
+        captured.onPanResponderMove!(event, gs(150, 0));
+        captured.onPanResponderTerminate!(event, gs(150, 0));
+        jest.advanceTimersByTime(300);
+      });
+
+      expect(onDismiss).not.toHaveBeenCalled();
+    });
+  });
+
+  it("rejects termination requests (onPanResponderTerminationRequest)", () => {
+    renderHook(() =>
+      useSwipeDismiss({ axis: "x", threshold: 100, onDismiss: jest.fn() }),
+    );
+
+    expect(captured.onPanResponderTerminationRequest!(event, gs(50, 0))).toBe(
+      false,
+    );
+  });
+
   it("uses latest onDismiss callback via ref", () => {
     const onDismiss1 = jest.fn();
     const onDismiss2 = jest.fn();

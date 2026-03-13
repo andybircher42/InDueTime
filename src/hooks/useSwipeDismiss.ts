@@ -52,6 +52,13 @@ export default function useSwipeDismiss({
         }
         animatedValue.setValue(d);
       },
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderTerminate: () => {
+        Animated.spring(animatedValue, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      },
       onPanResponderRelease: (_, gs) => {
         const d = delta(gs);
         const dismissed = positiveOnly
