@@ -5,7 +5,11 @@ import Constants from "expo-constants";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
-import { HipaaAgreementModal, OnboardingOverlay } from "@/components";
+import {
+  ErrorBoundary,
+  HipaaAgreementModal,
+  OnboardingOverlay,
+} from "@/components";
 import { useThemePreference } from "@/hooks";
 import {
   acceptAgreement,
@@ -52,18 +56,20 @@ export default function RootLayout() {
   } = useThemePreference();
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider
-        personality={personality}
-        brightness={brightness}
-        layout={layout}
-        setPersonality={setPersonality}
-        setBrightness={setBrightness}
-        setLayout={setLayout}
-      >
-        <RootGate loadThemePreference={loadThemePreference} />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <ThemeProvider
+          personality={personality}
+          brightness={brightness}
+          layout={layout}
+          setPersonality={setPersonality}
+          setBrightness={setBrightness}
+          setLayout={setLayout}
+        >
+          <RootGate loadThemePreference={loadThemePreference} />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 
