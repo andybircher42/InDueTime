@@ -21,7 +21,6 @@ function markdownToHtml(src) {
   const out = [];
   let inList = false;
   let inCode = false;
-  let inTable = false;
   let tableRows = [];
 
   function inline(text) {
@@ -34,7 +33,9 @@ function markdownToHtml(src) {
   }
 
   function flushTable() {
-    if (tableRows.length === 0) return;
+    if (tableRows.length === 0) {
+      return;
+    }
     out.push("<table>");
     tableRows.forEach((row, i) => {
       const tag = i === 0 ? "th" : "td";
@@ -47,7 +48,6 @@ function markdownToHtml(src) {
     });
     out.push("</table>");
     tableRows = [];
-    inTable = false;
   }
 
   for (let i = 0; i < lines.length; i++) {
@@ -91,7 +91,6 @@ function markdownToHtml(src) {
       if (/^\|[\s-|]+\|$/.test(line.trim())) {
         continue;
       }
-      inTable = true;
       tableRows.push(line);
       continue;
     } else {
@@ -122,7 +121,9 @@ function markdownToHtml(src) {
     out.push(`<p>${inline(line)}</p>`);
   }
 
-  if (inList) out.push("</ul>");
+  if (inList) {
+    out.push("</ul>");
+  }
   flushTable();
 
   return out.join("\n");
