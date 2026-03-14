@@ -29,8 +29,11 @@ jest.mock("vexo-analytics", () => ({
   identifyDevice: jest.fn().mockResolvedValue(undefined),
 }));
 
+/** Mutable insets object — tests can modify fields (e.g. mockInsets.bottom = 34). */
+export const mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
+
 jest.mock("react-native-safe-area-context", () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  useSafeAreaInsets: () => mockInsets,
   SafeAreaView: ({ children }: { children: React.ReactNode }) => children,
   SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
 }));

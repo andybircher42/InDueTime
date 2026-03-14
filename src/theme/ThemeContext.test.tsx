@@ -2,6 +2,7 @@ import { Text } from "react-native";
 import * as RN from "react-native";
 import { render, screen } from "@testing-library/react-native";
 
+import { Brightness, Personality } from "./colors";
 import { palettes } from "./colors";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 
@@ -19,20 +20,25 @@ function TestConsumer() {
 
 const noopSet = jest.fn();
 
+/** Renders TestConsumer in a ThemeProvider with given personality + brightness. */
+function renderTheme(personality: Personality, brightness: Brightness) {
+  return render(
+    <ThemeProvider
+      personality={personality}
+      brightness={brightness}
+      layout="compact"
+      setPersonality={noopSet}
+      setBrightness={noopSet}
+      setLayout={noopSet}
+    >
+      <TestConsumer />
+    </ThemeProvider>,
+  );
+}
+
 describe("ThemeContext", () => {
   it("provides classic light colors when classic+light", () => {
-    render(
-      <ThemeProvider
-        personality="classic"
-        brightness="light"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <TestConsumer />
-      </ThemeProvider>,
-    );
+    renderTheme("classic", "light");
 
     expect(screen.getByTestId("bg").props.children).toBe(
       palettes.classic.light.colors.background,
@@ -42,18 +48,7 @@ describe("ThemeContext", () => {
   });
 
   it("provides classic dark colors when classic+dark", () => {
-    render(
-      <ThemeProvider
-        personality="classic"
-        brightness="dark"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <TestConsumer />
-      </ThemeProvider>,
-    );
+    renderTheme("classic", "dark");
 
     expect(screen.getByTestId("bg").props.children).toBe(
       palettes.classic.dark.colors.background,
@@ -62,18 +57,7 @@ describe("ThemeContext", () => {
   });
 
   it("provides warm light colors when warm+light", () => {
-    render(
-      <ThemeProvider
-        personality="warm"
-        brightness="light"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <TestConsumer />
-      </ThemeProvider>,
-    );
+    renderTheme("warm", "light");
 
     expect(screen.getByTestId("bg").props.children).toBe(
       palettes.warm.light.colors.background,
@@ -82,18 +66,7 @@ describe("ThemeContext", () => {
   });
 
   it("provides warm dark colors when warm+dark", () => {
-    render(
-      <ThemeProvider
-        personality="warm"
-        brightness="dark"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <TestConsumer />
-      </ThemeProvider>,
-    );
+    renderTheme("warm", "dark");
 
     expect(screen.getByTestId("bg").props.children).toBe(
       palettes.warm.dark.colors.background,
@@ -101,18 +74,7 @@ describe("ThemeContext", () => {
   });
 
   it("provides elegant light colors when elegant+light", () => {
-    render(
-      <ThemeProvider
-        personality="elegant"
-        brightness="light"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <TestConsumer />
-      </ThemeProvider>,
-    );
+    renderTheme("elegant", "light");
 
     expect(screen.getByTestId("bg").props.children).toBe(
       palettes.elegant.light.colors.background,
@@ -121,18 +83,7 @@ describe("ThemeContext", () => {
   });
 
   it("provides playful dark colors when playful+dark", () => {
-    render(
-      <ThemeProvider
-        personality="playful"
-        brightness="dark"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <TestConsumer />
-      </ThemeProvider>,
-    );
+    renderTheme("playful", "dark");
 
     expect(screen.getByTestId("bg").props.children).toBe(
       palettes.playful.dark.colors.background,
@@ -141,18 +92,7 @@ describe("ThemeContext", () => {
   });
 
   it("provides modern light colors when modern+light", () => {
-    render(
-      <ThemeProvider
-        personality="modern"
-        brightness="light"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <TestConsumer />
-      </ThemeProvider>,
-    );
+    renderTheme("modern", "light");
 
     expect(screen.getByTestId("bg").props.children).toBe(
       palettes.modern.light.colors.background,
@@ -161,18 +101,7 @@ describe("ThemeContext", () => {
   });
 
   it("provides mono colors when mono+light", () => {
-    render(
-      <ThemeProvider
-        personality="mono"
-        brightness="light"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <TestConsumer />
-      </ThemeProvider>,
-    );
+    renderTheme("mono", "light");
 
     expect(screen.getByTestId("bg").props.children).toBe(
       palettes.mono.light.colors.background,
@@ -182,18 +111,7 @@ describe("ThemeContext", () => {
   it("resolves system brightness using useColorScheme", () => {
     jest.spyOn(RN, "useColorScheme").mockReturnValue("dark");
 
-    render(
-      <ThemeProvider
-        personality="classic"
-        brightness="system"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <TestConsumer />
-      </ThemeProvider>,
-    );
+    renderTheme("classic", "system");
 
     expect(screen.getByTestId("theme").props.children).toBe("dark");
 
@@ -203,18 +121,7 @@ describe("ThemeContext", () => {
   it("defaults to light when system returns null", () => {
     jest.spyOn(RN, "useColorScheme").mockReturnValue(null);
 
-    render(
-      <ThemeProvider
-        personality="classic"
-        brightness="system"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <TestConsumer />
-      </ThemeProvider>,
-    );
+    renderTheme("classic", "system");
 
     expect(screen.getByTestId("theme").props.children).toBe("light");
 

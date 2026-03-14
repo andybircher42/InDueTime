@@ -1,23 +1,11 @@
 import { act, fireEvent, screen } from "@testing-library/react-native";
 
-import { Entry } from "@/storage";
+import { setupFakeTimers, teardownFakeTimers } from "@/test/fakeTimers";
+import { mockEntry } from "@/test/mockData";
 import renderWithTheme from "@/test/renderWithTheme";
 
+import { mockInsets } from "../../jest.setup";
 import UndoToast from "./UndoToast";
-
-const mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
-
-jest.mock("react-native-safe-area-context", () => ({
-  useSafeAreaInsets: () => mockInsets,
-}));
-
-// dueDate 2026-09-11 → 12w3d when today is 2026-03-02
-const mockEntry: Entry = {
-  id: "1",
-  name: "Sam",
-  dueDate: "2026-09-11",
-  createdAt: 1000,
-};
 
 /** Renders UndoToast with defaults for onUndo/onDismiss. Returns the mocks. */
 function renderToast(
@@ -33,11 +21,12 @@ function renderToast(
 
 describe("UndoToast", () => {
   beforeEach(() => {
-    jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+    setupFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    teardownFakeTimers();
+    mockInsets.bottom = 0;
   });
 
   it("displays the deleted entry details", () => {
@@ -96,6 +85,5 @@ describe("UndoToast", () => {
       : toast.props.style;
     // max(34, 16) + 16 = 50
     expect(flatStyle.bottom).toBe(50);
-    mockInsets.bottom = 0;
   });
 });

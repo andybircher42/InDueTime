@@ -1,17 +1,17 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 
+import { setupFakeTimers, teardownFakeTimers } from "@/test/fakeTimers";
 import renderWithTheme from "@/test/renderWithTheme";
 import { computeDueDate, toDisplayDateString } from "@/util";
 
 import EntryForm from "./EntryForm";
 
 beforeEach(() => {
-  jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+  setupFakeTimers();
 });
 
 afterEach(() => {
-  jest.useRealTimers();
-  jest.restoreAllMocks();
+  teardownFakeTimers();
 });
 
 const INPUT_LABEL = "Due date or gestational age";

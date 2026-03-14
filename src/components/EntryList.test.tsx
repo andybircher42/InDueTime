@@ -1,21 +1,12 @@
 import { Alert } from "react-native";
 import { fireEvent, screen } from "@testing-library/react-native";
 
-import { Entry } from "@/storage";
+import { setupFakeTimers, teardownFakeTimers } from "@/test/fakeTimers";
+import { makeEntry } from "@/test/mockData";
 import renderWithTheme from "@/test/renderWithTheme";
 import { lightRowColors } from "@/theme";
 
 import EntryList from "./EntryList";
-
-/** Creates a test entry with a default dueDate. */
-function makeEntry(
-  fields: Omit<Entry, "dueDate" | "createdAt"> & {
-    dueDate?: string;
-    createdAt?: number;
-  },
-): Entry {
-  return { dueDate: "2026-06-15", createdAt: 1000, ...fields };
-}
 
 /** Renders EntryList with defaults for onDelete/onDeleteAll/onAdd. Returns the mocks. */
 function renderList(
@@ -79,12 +70,11 @@ function selectSort(label: string) {
 
 // Fixed "today" for all tests so gestationalAgeFromDueDate produces predictable values.
 beforeEach(() => {
-  jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+  setupFakeTimers();
 });
 
 afterEach(() => {
-  jest.useRealTimers();
-  jest.restoreAllMocks();
+  teardownFakeTimers();
 });
 
 describe("EntryList", () => {

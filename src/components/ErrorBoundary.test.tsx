@@ -14,7 +14,7 @@ function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {
   return <Text>OK</Text>;
 }
 
-/** Wraps children with ThemeProvider for testing. */
+/** Wrapper component for ErrorBoundary tests — rerender needs a persistent wrapper. */
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider

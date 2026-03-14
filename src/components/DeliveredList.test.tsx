@@ -1,11 +1,10 @@
 import { render, screen } from "@testing-library/react-native";
 
 import { Entry } from "@/storage";
-import { ThemeProvider } from "@/theme";
+import renderWithTheme from "@/test/renderWithTheme";
+import { Layout, ThemeProvider } from "@/theme";
 
 import DeliveredList from "./DeliveredList";
-
-const noopSet = jest.fn();
 
 const DELIVERED_ENTRY: Entry = {
   id: "d1",
@@ -16,26 +15,57 @@ const DELIVERED_ENTRY: Entry = {
   birthstone: { name: "pearl", color: "#F0EDE8" },
 };
 
+const defaultListProps = {
+  onDelete: jest.fn(),
+  onDeleteAll: jest.fn(),
+  deliveredTTLDays: 3,
+  onChangeDeliveredTTL: jest.fn(),
+};
+
 function renderWithLayout(
-  layout: "compact" | "cozy",
+  layout: Layout,
   entries: Entry[] = [DELIVERED_ENTRY],
 ) {
-  return render(
+  return renderWithTheme(
+    <DeliveredList entries={entries} {...defaultListProps} />,
+    { layout },
+  );
+}
+
+/** For rerender tests that need to change layout, we need a wrapper approach. */
+function renderForLayoutSwitch(
+  initialLayout: Layout,
+  entries: Entry[] = [DELIVERED_ENTRY],
+) {
+  let currentLayout = initialLayout;
+
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <ThemeProvider
       personality="classic"
       brightness="light"
-      layout={layout}
-      setPersonality={noopSet}
-      setBrightness={noopSet}
-      setLayout={noopSet}
+      layout={currentLayout}
+      setPersonality={jest.fn()}
+      setBrightness={jest.fn()}
+      setLayout={jest.fn()}
     >
-      <DeliveredList
-        entries={entries}
-        onDelete={jest.fn()}
-        onDeleteAll={jest.fn()}
-      />
-    </ThemeProvider>,
+      {children}
+    </ThemeProvider>
   );
+
+  const result = render(
+    <DeliveredList entries={entries} {...defaultListProps} />,
+    { wrapper: Wrapper },
+  );
+
+  return {
+    ...result,
+    switchLayout: (newLayout: Layout) => {
+      currentLayout = newLayout;
+      result.rerender(
+        <DeliveredList entries={entries} {...defaultListProps} />,
+      );
+    },
+  };
 }
 
 describe("DeliveredList", () => {
@@ -50,50 +80,14 @@ describe("DeliveredList", () => {
   });
 
   it("switches from cozy to compact without crashing (regression: FlatList numColumns)", () => {
-    const { rerender } = renderWithLayout("cozy");
-
-    // Switch to compact — this previously crashed with
-    // "Changing numColumns on the fly is not supported"
-    rerender(
-      <ThemeProvider
-        personality="classic"
-        brightness="light"
-        layout="compact"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <DeliveredList
-          entries={[DELIVERED_ENTRY]}
-          onDelete={jest.fn()}
-          onDeleteAll={jest.fn()}
-        />
-      </ThemeProvider>,
-    );
-
+    const { switchLayout } = renderForLayoutSwitch("cozy");
+    switchLayout("compact");
     expect(screen.getByText("Jane Doe")).toBeTruthy();
   });
 
   it("switches from compact to cozy without crashing", () => {
-    const { rerender } = renderWithLayout("compact");
-
-    rerender(
-      <ThemeProvider
-        personality="classic"
-        brightness="light"
-        layout="cozy"
-        setPersonality={noopSet}
-        setBrightness={noopSet}
-        setLayout={noopSet}
-      >
-        <DeliveredList
-          entries={[DELIVERED_ENTRY]}
-          onDelete={jest.fn()}
-          onDeleteAll={jest.fn()}
-        />
-      </ThemeProvider>,
-    );
-
+    const { switchLayout } = renderForLayoutSwitch("compact");
+    switchLayout("cozy");
     expect(screen.getByText("Jane Doe")).toBeTruthy();
   });
 

@@ -1,10 +1,11 @@
 import { act, fireEvent, screen } from "@testing-library/react-native";
 
+import { setupFakeTimers } from "@/test/fakeTimers";
 import renderWithTheme from "@/test/renderWithTheme";
 
 import OnboardingOverlay from "./OnboardingOverlay";
 
-jest.useFakeTimers();
+setupFakeTimers();
 
 describe("OnboardingOverlay", () => {
   it("renders all lines of text when visible", () => {

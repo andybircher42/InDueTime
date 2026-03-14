@@ -1,34 +1,23 @@
 import { Text } from "react-native";
 import { screen } from "@testing-library/react-native";
 
-import { Entry } from "@/storage";
+import { setupFakeTimers, teardownFakeTimers } from "@/test/fakeTimers";
+import { mockEntry } from "@/test/mockData";
 import renderWithTheme from "@/test/renderWithTheme";
 
+import { mockInsets } from "../../jest.setup";
 import InfoToast from "./InfoToast";
 import ToastStack from "./ToastStack";
 import UndoToast from "./UndoToast";
 
-const mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
-
-jest.mock("react-native-safe-area-context", () => ({
-  useSafeAreaInsets: () => mockInsets,
-}));
-
-const mockEntry: Entry = {
-  id: "1",
-  name: "Sam",
-  dueDate: "2026-09-11",
-  createdAt: 1000,
-};
-
 describe("ToastStack", () => {
   beforeEach(() => {
-    jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+    setupFakeTimers();
     mockInsets.bottom = 0;
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    teardownFakeTimers();
   });
 
   it("renders children", () => {
