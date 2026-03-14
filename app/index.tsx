@@ -106,6 +106,14 @@ export default function HomeScreen() {
   } = useEntries();
 
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const expectingCount = useMemo(
+    () => entries.filter((e) => !e.deliveredAt).length,
+    [entries],
+  );
+  const deliveredCount = useMemo(
+    () => entries.filter((e) => !!e.deliveredAt).length,
+    [entries],
+  );
 
   useEffect(() => {
     load().catch((e) => reportError("Failed to load entries", e));
@@ -191,9 +199,9 @@ export default function HomeScreen() {
           {(["expecting", "delivered", "calendar"] as const).map((tab) => {
             const count =
               tab === "expecting"
-                ? entries.filter((e) => !e.deliveredAt).length
+                ? expectingCount
                 : tab === "delivered"
-                  ? entries.filter((e) => !!e.deliveredAt).length
+                  ? deliveredCount
                   : 0;
             return (
               <Pressable

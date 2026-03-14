@@ -319,6 +319,11 @@ export default function EntryList({
     setSortDir(dir);
   }, []);
 
+  const currentMonthGem = useMemo(
+    () => getBirthstoneImage(getBirthstone(new Date().getMonth() + 1).name),
+    [],
+  );
+
   const activeEntries = useMemo(
     () => entries.filter((e) => !e.deliveredAt),
     [entries],
@@ -426,12 +431,7 @@ export default function EntryList({
           accessibilityRole="button"
           accessibilityLabel="Add someone new"
         >
-          <BirthstoneIcon
-            image={getBirthstoneImage(
-              getBirthstone(new Date().getMonth() + 1).name,
-            )}
-            size={20}
-          />
+          <BirthstoneIcon image={currentMonthGem} size={20} />
           <Text
             style={[
               styles.addButtonText,
@@ -440,12 +440,7 @@ export default function EntryList({
           >
             Add someone
           </Text>
-          <BirthstoneIcon
-            image={getBirthstoneImage(
-              getBirthstone(new Date().getMonth() + 1).name,
-            )}
-            size={20}
-          />
+          <BirthstoneIcon image={currentMonthGem} size={20} />
         </Pressable>
       )}
       {entries.length > 0 && (

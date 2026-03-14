@@ -71,6 +71,11 @@ export default function EntryGrid({
     setSortDir(dir);
   }, []);
 
+  const currentMonthGem = useMemo(
+    () => getBirthstoneImage(getBirthstone(new Date().getMonth() + 1).name),
+    [],
+  );
+
   const activeEntries = useMemo(
     () => entries.filter((e) => !e.deliveredAt),
     [entries],
@@ -146,12 +151,7 @@ export default function EntryGrid({
             accessibilityLabel="Add someone new"
             testID="add-card"
           >
-            <BirthstoneIcon
-              image={getBirthstoneImage(
-                getBirthstone(new Date().getMonth() + 1).name,
-              )}
-              size={40}
-            />
+            <BirthstoneIcon image={currentMonthGem} size={40} />
             <Text style={styles.addText}>Add someone</Text>
           </Pressable>
         );
@@ -164,7 +164,7 @@ export default function EntryGrid({
         />
       );
     },
-    [styles, toggleForm, handleLongPress],
+    [styles, toggleForm, handleLongPress, currentMonthGem],
   );
 
   const keyExtractor = useCallback(
@@ -188,12 +188,7 @@ export default function EntryGrid({
           accessibilityRole="button"
           accessibilityLabel="Add someone new"
         >
-          <BirthstoneIcon
-            image={getBirthstoneImage(
-              getBirthstone(new Date().getMonth() + 1).name,
-            )}
-            size={20}
-          />
+          <BirthstoneIcon image={currentMonthGem} size={20} />
           <Text
             style={[
               styles.addButtonFullText,
@@ -202,12 +197,7 @@ export default function EntryGrid({
           >
             Add someone
           </Text>
-          <BirthstoneIcon
-            image={getBirthstoneImage(
-              getBirthstone(new Date().getMonth() + 1).name,
-            )}
-            size={20}
-          />
+          <BirthstoneIcon image={currentMonthGem} size={20} />
         </Pressable>
         <View style={styles.emptyContent}>
           <Ionicons

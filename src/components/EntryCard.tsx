@@ -26,7 +26,10 @@ const EntryCard = React.memo(function EntryCard({
 }: EntryCardProps) {
   const { colors } = useTheme();
   const { weeks, days } = gestationalAgeFromDueDate(entry.dueDate);
-  const dueDateMonth = new Date(entry.dueDate + "T00:00:00").getMonth() + 1;
+  const dueDateMonth = useMemo(
+    () => new Date(entry.dueDate + "T00:00:00").getMonth() + 1,
+    [entry.dueDate],
+  );
   const birthstone = entry.birthstone ?? getBirthstone(dueDateMonth);
   const birthstoneImage = getBirthstoneImage(birthstone.name);
 
