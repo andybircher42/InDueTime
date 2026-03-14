@@ -70,8 +70,6 @@ On any entry (expecting or delivered), swipe left to delete. A red background ap
 
 On the Expecting tab, swipe right to mark someone as delivered. A green background appears. You'll get an **undo toast** in case you swiped by accident.
 
-You can also **shake your phone** to undo the last deliver or delete action.
-
 ### Tips
 
 - A quick flick triggers the action faster — you don't need to swipe all the way across.
@@ -156,9 +154,7 @@ Each entry shows a **birthstone** based on the due date month — garnet for Jan
 
 ### How do I undo a delete or deliver?
 
-Two ways:
-1. Tap the **Undo** button on the toast that appears at the bottom of the screen.
-2. **Shake your phone** to undo the last action.
+Tap the **Undo** button on the toast that appears at the bottom of the screen.
 
 ### The app crashed. What do I do?
 

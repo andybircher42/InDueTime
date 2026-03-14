@@ -70,6 +70,23 @@ function buildBugReportUrl(): string {
 }
 const FEATURE_REQUEST_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSeLS03h_8s3t0-IYXM04UjVv2fAhH37i2n56fPHB83OuHaQhw/viewform";
+const USER_GUIDE_URL = "https://andybircher42.github.io/InDueTime/guide/";
+const USER_GUIDE_FALLBACK_URL =
+  "https://github.com/andybircher42/InDueTime/blob/main/docs/user-guide.md";
+
+/** Opens the hosted user guide, falling back to GitHub if it 404s. */
+async function openUserGuide(): Promise<void> {
+  try {
+    const res = await fetch(USER_GUIDE_URL, { method: "HEAD" });
+    if (res.ok) {
+      await Linking.openURL(USER_GUIDE_URL);
+      return;
+    }
+  } catch {
+    // Network error — fall through to fallback
+  }
+  await Linking.openURL(USER_GUIDE_FALLBACK_URL);
+}
 
 const THEME_OPTIONS: {
   value: Personality;
@@ -418,6 +435,23 @@ export default function ThemePickerModal({
                 />
               </Pressable>
               <View style={styles.separator} />
+              <Pressable
+                style={styles.row}
+                onPress={() => {
+                  openUserGuide();
+                  onClose();
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Help and FAQ"
+              >
+                <Ionicons
+                  name="help-circle-outline"
+                  size={20}
+                  color={colors.textPrimary}
+                  style={styles.rowIcon}
+                />
+                <Text style={styles.rowLabel}>Help & FAQ</Text>
+              </Pressable>
               <Pressable
                 style={styles.row}
                 onPress={() => {

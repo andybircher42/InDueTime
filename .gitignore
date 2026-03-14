@@ -7,6 +7,9 @@ node_modules/
 .expo/
 dist/
 web-build/
+
+# GitHub Pages build output
+_site/
 expo-env.d.ts
 
 # Native

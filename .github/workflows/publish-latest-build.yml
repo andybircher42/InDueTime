@@ -60,6 +60,9 @@ jobs:
 
           cat "$GITHUB_WORKSPACE/_site/latest-build.json"
 
+      - name: Build user guide
+        run: node scripts/build-user-guide.js
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

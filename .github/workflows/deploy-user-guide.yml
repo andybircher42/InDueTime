@@ -1,0 +1,26 @@
+name: Deploy User Guide
+
+on:
+  push:
+    branches: [main]
+    paths: [docs/user-guide.md, scripts/build-user-guide.js]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build user guide
+        run: node scripts/build-user-guide.js
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          keep_files: true
