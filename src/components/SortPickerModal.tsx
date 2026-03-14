@@ -49,7 +49,11 @@ export default function SortPickerModal({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
+      <Pressable
+        style={styles.overlay}
+        onPress={onClose}
+        accessibilityViewIsModal
+      >
         <View style={styles.sheet}>
           <Text style={styles.title}>Sort by</Text>
           {SORT_OPTIONS.map((o) => {

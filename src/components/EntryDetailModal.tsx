@@ -64,6 +64,7 @@ export default function EntryDetailModal({
         onPress={onClose}
         accessibilityRole="button"
         accessibilityLabel="Close details"
+        accessibilityViewIsModal
       >
         <Pressable
           style={[

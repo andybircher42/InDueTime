@@ -3,6 +3,7 @@ import {
   Alert,
   Animated,
   FlatList,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -246,6 +247,7 @@ export default function DeliveredList({
           contentContainerStyle={styles.grid}
           columnWrapperStyle={styles.gridRow}
           ListHeaderComponent={listHeader}
+          removeClippedSubviews={Platform.OS === "android"}
         />
         <EntryDetailModal
           entry={selectedEntry}
@@ -264,6 +266,7 @@ export default function DeliveredList({
         contentContainerStyle={styles.listContent}
         renderItem={renderCompactItem}
         ListHeaderComponent={listHeader}
+        removeClippedSubviews={Platform.OS === "android"}
       />
       <EntryDetailModal
         entry={selectedEntry}

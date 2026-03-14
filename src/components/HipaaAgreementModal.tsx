@@ -32,7 +32,7 @@ export default function HipaaAgreementModal({
       animationType="fade"
       onRequestClose={() => {}}
     >
-      <View style={styles.modalOverlay}>
+      <View style={styles.modalOverlay} accessibilityViewIsModal>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Important Notice</Text>
           <ScrollView style={styles.modalScroll}>

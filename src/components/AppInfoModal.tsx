@@ -68,7 +68,7 @@ export default function AppInfoModal({ visible, onClose }: AppInfoModalProps) {
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
+      <View style={styles.modalOverlay} accessibilityViewIsModal>
         <View style={styles.modalContent}>
           <Pressable
             onLongPress={handleToggleTester}

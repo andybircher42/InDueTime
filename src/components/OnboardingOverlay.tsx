@@ -89,7 +89,7 @@ export default function OnboardingOverlay({
       animationType="fade"
       onRequestClose={() => {}}
     >
-      <View style={styles.container}>
+      <View style={styles.container} accessibilityViewIsModal>
         <View style={styles.textContainer}>
           {LINES.map((line, index) => (
             <Animated.Text
