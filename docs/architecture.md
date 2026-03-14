@@ -155,7 +155,7 @@ The app has 12+ locations with iOS/Android branching. A custom ESLint rule (`pla
 - **28 test files** covering components, hooks, utilities, and engine
 - **Jest + jest-expo** with SWC transformer for speed
 - **Pre-commit**: lint-staged → expo-doctor → full test suite
-- **Pre-push**: blocks `DO NOT SUBMIT` markers
+- **Pre-push**: blocks `DO NOT` + `SUBMIT` markers
 - **No E2E tests** yet (Maestro is the planned tool)
 
 Components are tested with `@testing-library/react-native` wrapped in `ThemeProvider`.

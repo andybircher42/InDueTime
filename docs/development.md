@@ -61,7 +61,7 @@ Husky runs automatically on every commit:
 3. **Jest** — Full test suite
 4. **Version sync check** — `version` and `runtimeVersion` in `app.json` must match
 
-On push, a hook blocks any file containing `DO NOT SUBMIT`.
+On push, a hook blocks any file containing `DO NOT` + `SUBMIT`.
 
 ## Dev Tools
 
