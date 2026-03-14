@@ -38,11 +38,7 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <ErrorFallback
-          error={this.state.error}
-          onRetry={this.handleRetry}
-          colors={this.props.colors}
-        />
+        <ErrorFallback onRetry={this.handleRetry} colors={this.props.colors} />
       );
     }
 
@@ -52,11 +48,9 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
 
 /** Themed fallback UI shown when an error is caught. */
 function ErrorFallback({
-  error,
   onRetry,
   colors,
 }: {
-  error: Error | null;
   onRetry: () => void;
   colors: ColorTokens;
 }) {
@@ -67,7 +61,8 @@ function ErrorFallback({
       <Ionicons name="warning-outline" size={56} color={colors.destructive} />
       <Text style={styles.title}>Something went wrong</Text>
       <Text style={styles.message}>
-        {error?.message ?? "An unexpected error occurred"}
+        Your data is safe. Tap below to reload, or restart the app if the
+        problem continues.
       </Text>
       <Pressable
         style={styles.button}

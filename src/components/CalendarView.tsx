@@ -46,7 +46,9 @@ export default function CalendarView({
   const deliveredDateMap = useMemo(() => {
     const map = new Map<string, Entry[]>();
     for (const e of entries) {
-      if (!e.deliveredAt) {continue;}
+      if (!e.deliveredAt) {
+        continue;
+      }
       const d = new Date(e.deliveredAt);
       const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       const existing = map.get(iso);
@@ -109,7 +111,7 @@ export default function CalendarView({
         />
         <Text style={styles.emptyTitle}>No one to show yet</Text>
         <Text style={styles.emptySubtitle}>
-          Switch to the list view to add someone
+          Add someone in the Expecting tab to see when they're due
         </Text>
       </View>
     );

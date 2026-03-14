@@ -309,8 +309,8 @@ export default function HomeScreen() {
             <InfoToast
               message={
                 discardedCount === 1
-                  ? "We removed someone whose data was unreadable"
-                  : `We removed ${discardedCount} people whose data was unreadable`
+                  ? "One entry had corrupted data and was removed"
+                  : `${discardedCount} entries had corrupted data and were removed`
               }
               onDismiss={dismissDiscarded}
               embedded

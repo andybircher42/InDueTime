@@ -196,9 +196,9 @@ describe("EntryList", () => {
       expect.objectContaining({ selected: true }),
     );
     // Other options should not be selected
-    expect(screen.getByLabelText("No sort").props.accessibilityState).toEqual(
-      expect.objectContaining({ selected: false }),
-    );
+    expect(
+      screen.getByLabelText("Recently added").props.accessibilityState,
+    ).toEqual(expect.objectContaining({ selected: false }));
   });
 
   it("sort icon has accessible label reflecting current sort", () => {

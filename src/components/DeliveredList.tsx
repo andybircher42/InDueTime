@@ -229,7 +229,7 @@ export default function DeliveredList({
         <Text style={styles.emptyEmoji}>👶</Text>
         <Text style={styles.emptyTitle}>No deliveries yet</Text>
         <Text style={styles.emptySubtitle}>
-          Swipe right on a patient to mark them as delivered
+          Swipe right on someone in the Expecting tab to mark them as delivered
         </Text>
       </View>
     );

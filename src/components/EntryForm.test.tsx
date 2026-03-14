@@ -531,7 +531,9 @@ describe("EntryForm — batch mode", () => {
 
     // Error shown for "Alex"
     expect(screen.getByText(/Alex/)).toBeTruthy();
-    expect(screen.getByText(/No date or gestational age found/)).toBeTruthy();
+    expect(
+      screen.getByText(/Couldn\u2019t find a date or gestational age/),
+    ).toBeTruthy();
   });
 
   it("keeps errored entries in input when some succeed", () => {

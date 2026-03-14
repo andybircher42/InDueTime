@@ -319,7 +319,7 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
         <View>
           <View style={styles.ageRow}>
             <View style={styles.inputWithHint}>
-              <Text style={styles.label}>Due Date or Gestational Age</Text>
+              <Text style={styles.label}>Due date or gestational age</Text>
               <View style={styles.dateInputRow}>
                 <Pressable
                   style={styles.calendarButton}

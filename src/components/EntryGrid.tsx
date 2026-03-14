@@ -264,7 +264,7 @@ export default function EntryGrid({
             onPress={() =>
               Alert.alert(
                 "Remove everyone?",
-                `This will remove all ${entries.length} people you're tracking. You can't undo this.`,
+                `This will remove all ${entries.length} people from your list. This can\u2019t be undone.`,
                 [
                   { text: "Cancel", style: "cancel" },
                   {

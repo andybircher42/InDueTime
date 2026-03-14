@@ -60,7 +60,7 @@ describe("ErrorBoundary", () => {
 
     expect(screen.getByTestId("error-boundary")).toBeTruthy();
     expect(screen.getByText("Something went wrong")).toBeTruthy();
-    expect(screen.getByText("Test crash")).toBeTruthy();
+    expect(screen.getByText(/Your data is safe/)).toBeTruthy();
   });
 
   it("recovers when 'Try again' is pressed", () => {
