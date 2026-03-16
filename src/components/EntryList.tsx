@@ -9,18 +9,16 @@ import {
   Animated,
   Easing,
   FlatList,
-  LayoutAnimation,
   LayoutChangeEvent,
   Platform,
   Pressable,
   StyleSheet,
   Text,
-  UIManager,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { useSort, useSwipeDismiss } from "@/hooks";
+import { useFormToggle, useSort, useSwipeDismiss } from "@/hooks";
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
 import {
@@ -32,15 +30,8 @@ import {
 
 import BirthstoneIcon from "./BirthstoneIcon";
 import EntryDetailModal from "./EntryDetailModal";
-import EntryForm from "./EntryForm";
+import InlineFormWrapper from "./InlineFormWrapper";
 import SortToolbar from "./SortToolbar";
-
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 type EntryStyles = ReturnType<typeof createStyles>;
 
@@ -252,31 +243,8 @@ export default function EntryList({
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const nameWidths = useRef(new Map<string, number>());
   const [maxNameWidth, setMaxNameWidth] = useState(0);
-  const [showForm, setShowForm] = useState(false);
-  const [batchMode, setBatchMode] = useState(false);
-  const formKey = useRef(0);
-
-  const toggleForm = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setShowForm((prev) => {
-      if (!prev) {
-        formKey.current += 1;
-      }
-      return !prev;
-    });
-  }, []);
-
-  const toggleBatchMode = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setBatchMode((prev) => !prev);
-  }, []);
-
-  const handleAdd = useCallback(
-    (entry: { name: string; dueDate: string }) => {
-      onAdd(entry);
-    },
-    [onAdd],
-  );
+  const { showForm, batchMode, formKey, toggleForm, toggleBatchMode } =
+    useFormToggle();
 
   const handleNameLayout = useCallback((id: string, width: number) => {
     nameWidths.current.set(id, width);
@@ -341,34 +309,13 @@ export default function EntryList({
   return (
     <View style={styles.listContainer}>
       {showForm ? (
-        <View style={styles.inlineFormContainer}>
-          <View style={styles.formToolbar}>
-            <Pressable
-              onPress={toggleBatchMode}
-              accessibilityRole="button"
-              accessibilityLabel={
-                batchMode ? "Switch to single entry" : "Switch to batch entry"
-              }
-            >
-              <Text style={styles.batchToggleText}>
-                {batchMode ? "Add one at a time" : "Add multiple"}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={toggleForm}
-              accessibilityRole="button"
-              accessibilityLabel="Close form"
-              hitSlop={8}
-            >
-              <Ionicons name="close" size={20} color={colors.textTertiary} />
-            </Pressable>
-          </View>
-          <EntryForm
-            key={formKey.current}
-            onAdd={handleAdd}
-            batch={batchMode}
-          />
-        </View>
+        <InlineFormWrapper
+          formKey={formKey.current}
+          batchMode={batchMode}
+          onAdd={onAdd}
+          onToggleBatchMode={toggleBatchMode}
+          onClose={toggleForm}
+        />
       ) : (
         <Pressable
           style={[
@@ -463,28 +410,6 @@ function createStyles(colors: ColorTokens) {
     addButtonText: {
       fontSize: 16,
       fontWeight: "600",
-    },
-    inlineFormContainer: {
-      marginHorizontal: 16,
-      marginTop: 12,
-      borderRadius: 12,
-      backgroundColor: colors.contentBackground,
-      borderWidth: 1,
-      borderColor: colors.border,
-      overflow: "hidden",
-    },
-    formToolbar: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingHorizontal: 12,
-      paddingTop: 6,
-      paddingBottom: 2,
-    },
-    batchToggleText: {
-      fontSize: 12,
-      color: colors.primary,
-      textDecorationLine: "underline",
     },
     list: {
       flex: 1,

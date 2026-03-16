@@ -2,16 +2,14 @@ import React, { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
-  LayoutAnimation,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
-import { useSort } from "@/hooks";
+import { useFormToggle, useSort } from "@/hooks";
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
 import { getBirthstone, getBirthstoneImage } from "@/util";
@@ -19,7 +17,7 @@ import { getBirthstone, getBirthstoneImage } from "@/util";
 import BirthstoneIcon from "./BirthstoneIcon";
 import EntryCard from "./EntryCard";
 import EntryDetailModal from "./EntryDetailModal";
-import EntryForm from "./EntryForm";
+import InlineFormWrapper from "./InlineFormWrapper";
 import SortToolbar from "./SortToolbar";
 
 interface EntryGridProps {
@@ -42,29 +40,13 @@ export default function EntryGrid({
 }: EntryGridProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [showForm, setShowForm] = useState(false);
-  const [batchMode, setBatchMode] = useState(false);
+  const { showForm, batchMode, formKey, toggleForm, toggleBatchMode } =
+    useFormToggle();
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const { sortBy, sortDir, sorted, cycleSortField, toggleSortDir } = useSort(
     entries,
     { defaultField: "none" },
   );
-  const formKeyRef = React.useRef(0);
-
-  const toggleForm = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setShowForm((prev) => {
-      if (!prev) {
-        formKeyRef.current += 1;
-      }
-      return !prev;
-    });
-  }, []);
-
-  const toggleBatchMode = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setBatchMode((prev) => !prev);
-  }, []);
 
   const currentMonthGem = useMemo(
     () => getBirthstoneImage(getBirthstone(new Date().getMonth() + 1).name),
@@ -155,30 +137,13 @@ export default function EntryGrid({
   return (
     <View style={styles.container}>
       {showForm ? (
-        <View style={styles.inlineFormContainer}>
-          <View style={styles.formToolbar}>
-            <Pressable
-              onPress={toggleBatchMode}
-              accessibilityRole="button"
-              accessibilityLabel={
-                batchMode ? "Switch to single entry" : "Switch to batch entry"
-              }
-            >
-              <Text style={styles.batchToggleText}>
-                {batchMode ? "Add one at a time" : "Add multiple"}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={toggleForm}
-              accessibilityRole="button"
-              accessibilityLabel="Close form"
-              hitSlop={8}
-            >
-              <Ionicons name="close" size={20} color={colors.textTertiary} />
-            </Pressable>
-          </View>
-          <EntryForm key={formKeyRef.current} onAdd={onAdd} batch={batchMode} />
-        </View>
+        <InlineFormWrapper
+          formKey={formKey.current}
+          batchMode={batchMode}
+          onAdd={onAdd}
+          onToggleBatchMode={toggleBatchMode}
+          onClose={toggleForm}
+        />
       ) : null}
       {sorted.length > 0 && (
         <SortToolbar
@@ -240,28 +205,6 @@ function createStyles(colors: ColorTokens) {
       fontSize: 14,
       fontWeight: "600",
       color: colors.primary,
-    },
-    inlineFormContainer: {
-      marginHorizontal: 16,
-      marginTop: 12,
-      borderRadius: 12,
-      backgroundColor: colors.contentBackground,
-      borderWidth: 1,
-      borderColor: colors.border,
-      overflow: "hidden",
-    },
-    formToolbar: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingHorizontal: 12,
-      paddingTop: 6,
-      paddingBottom: 2,
-    },
-    batchToggleText: {
-      fontSize: 12,
-      color: colors.primary,
-      textDecorationLine: "underline",
     },
     emptyCard: {
       marginHorizontal: 32,
