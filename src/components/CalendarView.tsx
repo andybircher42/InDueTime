@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { calendarHeatMap } from "@/engine/probabilityEngine";
 import { Entry } from "@/storage";
@@ -8,7 +9,6 @@ import { ColorTokens, useTheme } from "@/theme";
 import { lineHeight } from "@/util";
 
 import CalendarMonth, { DayCell } from "./CalendarMonth";
-import HelpButton from "./HelpButton";
 
 interface CalendarViewProps {
   entries: Entry[];
@@ -118,18 +118,27 @@ export default function CalendarView({
     );
   }
 
+  const primaryHex = colors.primary;
+  const gradientStart = "transparent";
+  const gradientEnd = `${primaryHex}66`; // ~40% opacity
+
   return (
     <ScrollView
       style={styles.scrollView}
       contentContainerStyle={styles.content}
     >
-      <View style={styles.helpRow}>
-        <HelpButton
-          title="Calendar colors"
-          message="Darker colors mean a higher chance of delivery on that day — even if it's not the due date. The shading is based on how likely each day is across all the pregnancies you're tracking."
-          size={18}
+      <View
+        style={styles.legend}
+        accessibilityLabel="Heat map legend: color intensity shows how many are due"
+      >
+        <Text style={styles.legendLabel}>fewer</Text>
+        <LinearGradient
+          colors={[gradientStart, gradientEnd]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={styles.legendBar}
         />
-        <Text style={styles.helpText}>What do the colors mean?</Text>
+        <Text style={styles.legendLabel}>more due</Text>
       </View>
       {months.map(({ year, month, cells }) => (
         <CalendarMonth
@@ -154,14 +163,20 @@ function createStyles(colors: ColorTokens) {
       paddingVertical: 16,
       paddingHorizontal: 16,
     },
-    helpRow: {
+    legend: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 6,
-      marginBottom: 8,
+      justifyContent: "center",
+      gap: 8,
+      marginBottom: 12,
     },
-    helpText: {
-      fontSize: 13,
+    legendBar: {
+      height: 8,
+      width: 80,
+      borderRadius: 4,
+    },
+    legendLabel: {
+      fontSize: 11,
       color: colors.textTertiary,
     },
     emptyContainer: {
