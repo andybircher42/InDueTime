@@ -6,7 +6,6 @@ import React, {
   useState,
 } from "react";
 import {
-  Alert,
   Animated,
   Easing,
   FlatList,
@@ -21,7 +20,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { useSwipeDismiss } from "@/hooks";
+import { useSort, useSwipeDismiss } from "@/hooks";
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
 import {
@@ -34,12 +33,7 @@ import {
 import BirthstoneIcon from "./BirthstoneIcon";
 import EntryDetailModal from "./EntryDetailModal";
 import EntryForm from "./EntryForm";
-import {
-  DEFAULT_DIR,
-  SORT_FIELDS,
-  type SortBy,
-  type SortDir,
-} from "./SortPickerModal";
+import SortToolbar from "./SortToolbar";
 
 if (
   Platform.OS === "android" &&
@@ -251,8 +245,10 @@ export default function EntryList({
   const { colors, rowColors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const [sortBy, setSortBy] = useState<SortBy>("dueDate");
-  const [sortDir, setSortDir] = useState<SortDir>(DEFAULT_DIR.dueDate);
+  const { sortBy, sortDir, sorted, cycleSortField, toggleSortDir } = useSort(
+    entries,
+    { defaultField: "dueDate" },
+  );
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const nameWidths = useRef(new Map<string, number>());
   const [maxNameWidth, setMaxNameWidth] = useState(0);
@@ -309,58 +305,10 @@ export default function EntryList({
     }
   }, [entries]);
 
-  const cycleSortField = useCallback(() => {
-    setSortBy((prev) => {
-      const idx = SORT_FIELDS.findIndex((f) => f.field === prev);
-      const next = SORT_FIELDS[(idx + 1) % SORT_FIELDS.length];
-      setSortDir(DEFAULT_DIR[next.field]);
-      return next.field;
-    });
-  }, []);
-
-  const toggleSortDir = useCallback(() => {
-    setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
-  }, []);
-
   const currentMonthGem = useMemo(
     () => getBirthstoneImage(getBirthstone(new Date().getMonth() + 1).name),
     [],
   );
-
-  const activeEntries = useMemo(
-    () => entries.filter((e) => !e.deliveredAt),
-    [entries],
-  );
-
-  const sorted = useMemo(() => {
-    if (sortBy === "none") {
-      const copy = [...activeEntries];
-      copy.sort((a, b) => b.createdAt - a.createdAt);
-      return copy;
-    }
-    const copy = [...activeEntries];
-    const dir = sortDir === "asc" ? 1 : -1;
-    if (sortBy === "dueDate") {
-      copy.sort((a, b) => {
-        const dateDiff = b.dueDate.localeCompare(a.dueDate);
-        if (dateDiff !== 0) {
-          return dir * dateDiff;
-        }
-        return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
-      });
-    } else {
-      copy.sort((a, b) => {
-        const nameDiff = a.name.localeCompare(b.name, undefined, {
-          sensitivity: "base",
-        });
-        if (nameDiff !== 0) {
-          return dir * nameDiff;
-        }
-        return a.dueDate.localeCompare(b.dueDate);
-      });
-    }
-    return copy;
-  }, [activeEntries, sortBy, sortDir]);
 
   const renderItem = useCallback(
     ({ item, index }: { item: Entry; index: number }) => (
@@ -447,63 +395,14 @@ export default function EntryList({
         </Pressable>
       )}
       {sorted.length > 0 && (
-        <View style={styles.toolbarRow}>
-          {sortBy !== "none" ? (
-            <Pressable
-              onPress={toggleSortDir}
-              accessibilityRole="button"
-              accessibilityLabel={`Direction: ${sortDir === "asc" ? "ascending" : "descending"}. Tap to flip.`}
-              hitSlop={8}
-              style={styles.sortDirButton}
-            >
-              <Ionicons
-                name={sortDir === "asc" ? "arrow-up" : "arrow-down"}
-                size={16}
-                color={colors.textTertiary}
-              />
-            </Pressable>
-          ) : (
-            <View style={styles.sortDirPlaceholder} />
-          )}
-          <Pressable
-            onPress={cycleSortField}
-            accessibilityRole="button"
-            accessibilityLabel={`Sort by: ${SORT_FIELDS.find((f) => f.field === sortBy)?.label}. Tap to change.`}
-            hitSlop={8}
-            style={styles.sortButton}
-          >
-            <Text style={styles.sortLabel}>
-              {SORT_FIELDS.find((f) => f.field === sortBy)?.label}
-            </Text>
-          </Pressable>
-          <View style={styles.toolbarSpacer} />
-          <Pressable
-            style={styles.overflowButton}
-            onPress={() =>
-              Alert.alert(
-                "Remove everyone?",
-                `This will remove all ${sorted.length} people from your list. This can\u2019t be undone.`,
-                [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Remove all",
-                    style: "destructive",
-                    onPress: onDeleteAll,
-                  },
-                ],
-              )
-            }
-            accessibilityRole="button"
-            accessibilityLabel="More options"
-            hitSlop={8}
-          >
-            <Ionicons
-              name="ellipsis-horizontal"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </Pressable>
-        </View>
+        <SortToolbar
+          sortBy={sortBy}
+          sortDir={sortDir}
+          itemCount={sorted.length}
+          onCycleField={cycleSortField}
+          onToggleDir={toggleSortDir}
+          onDeleteAll={onDeleteAll}
+        />
       )}
       <FlatList
         data={sorted}
@@ -549,46 +448,6 @@ function createStyles(colors: ColorTokens) {
   return StyleSheet.create({
     listContainer: {
       flex: 1,
-    },
-    toolbarRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginHorizontal: 16,
-      marginTop: 12,
-      gap: 10,
-    },
-    sortButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      height: 44,
-      paddingHorizontal: 4,
-    },
-    sortLabel: {
-      fontSize: 13,
-      fontWeight: "600",
-      color: colors.textTertiary,
-      textDecorationLine: "underline",
-    },
-    sortDirButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    sortDirPlaceholder: {
-      width: 36,
-      height: 36,
-    },
-    toolbarSpacer: {
-      flex: 1,
-    },
-    overflowButton: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      justifyContent: "center",
-      alignItems: "center",
     },
     addButton: {
       flexDirection: "row",
