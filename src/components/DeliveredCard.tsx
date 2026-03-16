@@ -54,10 +54,7 @@ const DeliveredCard = React.memo(function DeliveredCard({
           <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
             {entry.name}
           </Text>
-          <Text style={styles.detail}>
-            <Text style={styles.detailLabel}>Delivered: </Text>
-            {timing}
-          </Text>
+          <Text style={styles.detail}>{timing}</Text>
         </View>
       </View>
     </Pressable>
@@ -101,10 +98,6 @@ function createStyles(colors: ColorTokens) {
       fontWeight: "700",
       color: colors.textOnColor,
       textAlign: "center",
-    },
-    detailLabel: {
-      fontSize: 10,
-      color: colors.textOnColorMuted,
     },
     detail: {
       fontSize: 12,
