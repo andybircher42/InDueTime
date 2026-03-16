@@ -9,6 +9,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Privacy policy** — published `docs/privacy-policy.md` covering data collection, analytics opt-out, and Google Play compliance
+
 ### Changed
 
 - **Sort controls split** — sort field (Date / Name / No sort) and direction (up/down arrow) are now separate inline controls; direction toggle hidden when "No sort" is active
