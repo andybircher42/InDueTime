@@ -1,0 +1,42 @@
+# E2E Test: Calendar navigation — view heat map, tap date detail
+appId: com.andybircher42.gestation
+---
+
+# Start on Expecting tab
+- tapOn: "Expecting"
+
+# Add someone so calendar has data
+- tapOn: "Add someone.*"
+- tapOn:
+    id: "Name"
+- inputText: "Sam"
+- tapOn: "Due date or gestational age"
+- inputText: "6/15"
+- tapOn: "Add"
+
+# Close the form
+- tapOn:
+    id: "Close form"
+
+# Navigate to Calendar tab
+- tapOn: "Calendar"
+
+# Calendar should show current and future months
+- assertVisible: "June 2026"
+
+# Scroll to June
+- scrollUntilVisible:
+    element:
+      text: "June 2026"
+    direction: "DOWN"
+    timeout: 5000
+
+# Tap on day 15 (where Sam is due)
+- tapOn: "1 due on day 15"
+
+# Date detail screen should show Sam
+- assertVisible: "Sam"
+- assertVisible: "Jun 15"
+
+# Go back
+- tapOn: "Back"
