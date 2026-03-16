@@ -2,6 +2,7 @@ export type { Entry, LoadResult } from "./storage";
 export {
   acceptAgreement,
   checkAgreement,
+  checkAnalyticsOptOut,
   checkOnboardingComplete,
   checkTesterMode,
   DEFAULT_DELIVERED_TTL_DAYS,
@@ -14,6 +15,7 @@ export {
   resetOnboarding,
   saveDeliveredTTL,
   saveEntries,
+  setAnalyticsOptOut,
   setOnboardingComplete,
   toggleTesterMode,
 } from "./storage";

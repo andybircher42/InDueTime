@@ -29,7 +29,13 @@ import {
   UndoToast,
 } from "@/components";
 import { useEntries, useShakeUndo } from "@/hooks";
-import { Entry, resetAgreement, resetOnboarding } from "@/storage";
+import {
+  checkAnalyticsOptOut,
+  Entry,
+  resetAgreement,
+  resetOnboarding,
+  setAnalyticsOptOut,
+} from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
 import { reportError } from "@/util";
 
@@ -62,6 +68,7 @@ export default function HomeScreen() {
   const [showAppInfo, setShowAppInfo] = useState(false);
   const [pickerAnchor, setPickerAnchor] = useState({ top: 0, right: 0 });
   const [devAnchor, setDevAnchor] = useState({ top: 0, right: 0 });
+  const [analyticsOptOut, setAnalyticsOptOutState] = useState(false);
   const settingsRef = useRef<View>(null);
   const devRef = useRef<View>(null);
 
@@ -125,7 +132,18 @@ export default function HomeScreen() {
 
   useEffect(() => {
     load().catch((e) => reportError("Failed to load entries", e));
+    checkAnalyticsOptOut()
+      .then(setAnalyticsOptOutState)
+      .catch(() => {});
   }, [load]);
+
+  const handleToggleAnalytics = useCallback(() => {
+    const next = !analyticsOptOut;
+    setAnalyticsOptOutState(next);
+    setAnalyticsOptOut(next).catch((e) =>
+      reportError("Failed to save analytics preference", e),
+    );
+  }, [analyticsOptOut]);
 
   const handleDayPress = useCallback(
     (date: string, dueEntries: Entry[]) => {
@@ -277,10 +295,12 @@ export default function HomeScreen() {
           currentBrightness={brightness}
           currentLayout={layout}
           currentDeliveredTTL={deliveredTTLDays}
+          analyticsOptOut={analyticsOptOut}
           onSelectPersonality={setPersonality}
           onSelectBrightness={setBrightness}
           onSelectLayout={setLayout}
           onSelectDeliveredTTL={updateDeliveredTTL}
+          onToggleAnalytics={handleToggleAnalytics}
           onClose={() => setShowThemePicker(false)}
           onAppInfo={() => setShowAppInfo(true)}
           anchor={pickerAnchor}

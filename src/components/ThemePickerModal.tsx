@@ -37,10 +37,12 @@ interface ThemePickerModalProps {
   currentBrightness: Brightness;
   currentLayout: Layout;
   currentDeliveredTTL: number;
+  analyticsOptOut: boolean;
   onSelectPersonality: (p: Personality) => void;
   onSelectBrightness: (b: Brightness) => void;
   onSelectLayout: (l: Layout) => void;
   onSelectDeliveredTTL: (days: number) => void;
+  onToggleAnalytics: () => void;
   onClose: () => void;
   onAppInfo?: () => void;
   anchor?: { top: number; right: number };
@@ -143,10 +145,12 @@ export default function ThemePickerModal({
   currentBrightness,
   currentLayout,
   currentDeliveredTTL,
+  analyticsOptOut,
   onSelectPersonality,
   onSelectBrightness,
   onSelectLayout,
   onSelectDeliveredTTL,
+  onToggleAnalytics,
   onClose,
   onAppInfo,
   anchor,
@@ -356,6 +360,27 @@ export default function ThemePickerModal({
                   size={18}
                   color={colors.textTertiary}
                 />
+              </Pressable>
+              <Pressable
+                style={styles.row}
+                onPress={onToggleAnalytics}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  analyticsOptOut
+                    ? "Analytics disabled. Tap to enable."
+                    : "Analytics enabled. Tap to disable."
+                }
+              >
+                <Ionicons
+                  name={analyticsOptOut ? "analytics-outline" : "analytics"}
+                  size={20}
+                  color={colors.textPrimary}
+                  style={styles.rowIcon}
+                />
+                <Text style={styles.rowLabel}>Analytics</Text>
+                <Text style={styles.rowValue}>
+                  {analyticsOptOut ? "Off" : "On"}
+                </Text>
               </Pressable>
               <View style={styles.separator} />
               <Pressable
