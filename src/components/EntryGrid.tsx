@@ -419,20 +419,5 @@ function createStyles(colors: ColorTokens) {
       color: colors.textTertiary,
       fontSize: 14,
     },
-    emptyContent: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      gap: 8,
-    },
-    emptyTitle: {
-      color: colors.textPrimary,
-      fontSize: 16,
-      fontWeight: "600",
-    },
-    emptySubtitle: {
-      color: colors.textTertiary,
-      fontSize: 14,
-    },
   });
 }

@@ -183,7 +183,7 @@ const EntryRow = React.memo(function EntryRow({
               },
             ]}
           >
-            <Text style={styles.swipeLabel}>Delete</Text>
+            <Text style={styles.swipeLabel}>Remove</Text>
             <Ionicons
               name="trash-outline"
               size={22}
@@ -517,7 +517,7 @@ export default function EntryList({
             style={styles.emptyContent}
             onPress={toggleForm}
             accessibilityRole="button"
-            accessibilityLabel="Add your first client"
+            accessibilityLabel="Track your first pregnancy"
           >
             <Ionicons
               name="calendar-outline"

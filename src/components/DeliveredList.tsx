@@ -97,7 +97,7 @@ const DeliveredRow = React.memo(function DeliveredRow({
             ]}
           >
             <Ionicons name="trash-outline" size={22} color={colors.white} />
-            <Text style={styles.swipeLabel}>Delete</Text>
+            <Text style={styles.swipeLabel}>Remove</Text>
           </Animated.View>
         </View>
         <View style={styles.swipeDeleteSide}>
@@ -110,7 +110,7 @@ const DeliveredRow = React.memo(function DeliveredRow({
               },
             ]}
           >
-            <Text style={styles.swipeLabel}>Delete</Text>
+            <Text style={styles.swipeLabel}>Remove</Text>
             <Ionicons name="trash-outline" size={22} color={colors.white} />
           </Animated.View>
         </View>
@@ -435,7 +435,7 @@ function createStyles(colors: ColorTokens) {
     ttlRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 5,
+      gap: 6,
       marginBottom: 12,
     },
     ttlText: {
