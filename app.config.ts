@@ -9,6 +9,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...appJson.expo,
   ...config,
   name: IS_DEV ? "in due time (Dev)" : appJson.expo.name,
+  icon: IS_DEV ? "./assets/icon-dark.png" : undefined,
   ios: {
     ...appJson.expo.ios,
     bundleIdentifier: IS_DEV
