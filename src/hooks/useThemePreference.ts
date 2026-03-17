@@ -4,9 +4,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Brightness, Layout, Personality } from "@/theme";
 import { reportError } from "@/util";
 
+import type { CelebrationStyle } from "@/components/CelebrationOverlay";
+
 const PERSONALITY_KEY = "@theme_personality";
 const BRIGHTNESS_KEY = "@theme_brightness";
 const LAYOUT_KEY = "@theme_layout";
+const CELEBRATION_KEY = "@celebration_style";
 /** Legacy key from the single-axis theme system. */
 const LEGACY_MODE_KEY = "@theme_mode";
 
@@ -20,6 +23,12 @@ const VALID_PERSONALITIES: Personality[] = [
 ];
 const VALID_BRIGHTNESSES: Brightness[] = ["system", "light", "dark"];
 const VALID_LAYOUTS: Layout[] = ["compact", "cozy"];
+const VALID_CELEBRATIONS: CelebrationStyle[] = [
+  "confetti",
+  "gentle",
+  "random",
+  "none",
+];
 
 /**
  * Manages theme preference persistence via AsyncStorage.
@@ -32,20 +41,34 @@ export default function useThemePreference() {
   const [personality, setPersonalityState] = useState<Personality>("classic");
   const [brightness, setBrightnessState] = useState<Brightness>("system");
   const [layout, setLayoutState] = useState<Layout>("compact");
+  const [celebrationStyle, setCelebrationStyleState] =
+    useState<CelebrationStyle>("random");
 
   /** Hydrates theme preferences from AsyncStorage. Call once during app initialization. */
   const loadThemePreference = useCallback(async () => {
-    const [storedPersonality, storedBrightness, storedLayout, legacyMode] =
-      await Promise.all([
-        AsyncStorage.getItem(PERSONALITY_KEY),
-        AsyncStorage.getItem(BRIGHTNESS_KEY),
-        AsyncStorage.getItem(LAYOUT_KEY),
-        AsyncStorage.getItem(LEGACY_MODE_KEY),
-      ]);
+    const [
+      storedPersonality,
+      storedBrightness,
+      storedLayout,
+      storedCelebration,
+      legacyMode,
+    ] = await Promise.all([
+      AsyncStorage.getItem(PERSONALITY_KEY),
+      AsyncStorage.getItem(BRIGHTNESS_KEY),
+      AsyncStorage.getItem(LAYOUT_KEY),
+      AsyncStorage.getItem(CELEBRATION_KEY),
+      AsyncStorage.getItem(LEGACY_MODE_KEY),
+    ]);
 
-    // Layout is independent of personality/brightness migration
+    // Layout and celebration are independent of personality/brightness migration
     if (storedLayout && VALID_LAYOUTS.includes(storedLayout as Layout)) {
       setLayoutState(storedLayout as Layout);
+    }
+    if (
+      storedCelebration &&
+      VALID_CELEBRATIONS.includes(storedCelebration as CelebrationStyle)
+    ) {
+      setCelebrationStyleState(storedCelebration as CelebrationStyle);
     }
 
     // Already migrated — use new keys
@@ -116,13 +139,23 @@ export default function useThemePreference() {
     );
   }, []);
 
+  /** Updates celebration style in state and persists to AsyncStorage. */
+  const setCelebrationStyle = useCallback((s: CelebrationStyle) => {
+    setCelebrationStyleState(s);
+    AsyncStorage.setItem(CELEBRATION_KEY, s).catch((e) =>
+      reportError("Failed to save celebration style", e),
+    );
+  }, []);
+
   return {
     personality,
     brightness,
     layout,
+    celebrationStyle,
     setPersonality,
     setBrightness,
     setLayout,
+    setCelebrationStyle,
     loadThemePreference,
   };
 }

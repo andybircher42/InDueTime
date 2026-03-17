@@ -11,6 +11,12 @@ export type ColorTokens = {
   textLabel: string;
   textModal: string;
   textEntryRow: string;
+  /** Solid text color for use on colored backgrounds (cards, detail modal). */
+  textOnColor: string;
+  /** Muted text color for use on colored backgrounds (labels, secondary info). */
+  textOnColorMuted: string;
+  /** Semi-transparent overlay for buttons on colored backgrounds. */
+  overlayOnColor: string;
   white: string;
   background: string;
   splashBackground: string;
@@ -46,6 +52,26 @@ export type Brightness = "system" | "light" | "dark";
 /** Available layout modes. */
 export type Layout = "compact" | "cozy";
 
+/** Border radius tokens that vary per personality. */
+export interface RadiiTokens {
+  /** Small elements: buttons, pills, form inputs, toasts. */
+  sm: number;
+  /** Medium elements: entry rows, delivered rows. */
+  md: number;
+  /** Large elements: cards, modals, add button, form wrapper. */
+  lg: number;
+}
+
+/** Border radii per personality — shape language varies by theme. */
+export const radii: Record<Personality, RadiiTokens> = {
+  classic: { sm: 8, md: 10, lg: 12 },
+  warm: { sm: 10, md: 12, lg: 14 },
+  elegant: { sm: 6, md: 8, lg: 10 },
+  playful: { sm: 12, md: 16, lg: 20 },
+  modern: { sm: 4, md: 6, lg: 8 },
+  mono: { sm: 4, md: 6, lg: 8 },
+};
+
 // ---------------------------------------------------------------------------
 // Classic (the original blue theme)
 // ---------------------------------------------------------------------------
@@ -62,6 +88,9 @@ const classicLightColors: ColorTokens = {
   textLabel: "#555",
   textModal: "#444",
   textEntryRow: "#333",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#f5f5f5",
   splashBackground: "#f3f3f1",
@@ -88,6 +117,9 @@ const classicDarkColors: ColorTokens = {
   textLabel: "#c0c0c0",
   textModal: "#d0d0d0",
   textEntryRow: "#e0e0e0",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#121212",
   splashBackground: "#121212",
@@ -138,6 +170,9 @@ const warmLightColors: ColorTokens = {
   textLabel: "#5A4A3A",
   textModal: "#4A3A2A",
   textEntryRow: "#3D2E22",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#FAF5EF",
   splashBackground: "#FAF5EF",
@@ -164,6 +199,9 @@ const warmDarkColors: ColorTokens = {
   textLabel: "#C8B8A6",
   textModal: "#D5C8B8",
   textEntryRow: "#E8DDD1",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#1A1410",
   splashBackground: "#1A1410",
@@ -214,6 +252,9 @@ const elegantLightColors: ColorTokens = {
   textLabel: "#4A3D4E",
   textModal: "#3A2D3E",
   textEntryRow: "#2A1F2D",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#F8F5F7",
   splashBackground: "#F8F5F7",
@@ -240,6 +281,9 @@ const elegantDarkColors: ColorTokens = {
   textLabel: "#C8BCC5",
   textModal: "#D5CAD2",
   textEntryRow: "#E8E0E5",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#1A141A",
   splashBackground: "#1A141A",
@@ -290,6 +334,9 @@ const playfulLightColors: ColorTokens = {
   textLabel: "#4A4558",
   textModal: "#3A3548",
   textEntryRow: "#2D2A3A",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#FFF8F5",
   splashBackground: "#FFF8F5",
@@ -316,6 +363,9 @@ const playfulDarkColors: ColorTokens = {
   textLabel: "#D0C5C0",
   textModal: "#E0D5D0",
   textEntryRow: "#F0E8E5",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#1C1618",
   splashBackground: "#1C1618",
@@ -366,6 +416,9 @@ const modernLightColors: ColorTokens = {
   textLabel: "#3A3E48",
   textModal: "#2A2E38",
   textEntryRow: "#1A1D24",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#F4F5F7",
   splashBackground: "#F4F5F7",
@@ -392,6 +445,9 @@ const modernDarkColors: ColorTokens = {
   textLabel: "#B8BCC5",
   textModal: "#C8CCD5",
   textEntryRow: "#E2E4E8",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#12141A",
   splashBackground: "#12141A",
@@ -430,7 +486,7 @@ const modernDarkRowColors = [
 // Mono (B&W — same palette for light and dark)
 // ---------------------------------------------------------------------------
 
-const monoColors: ColorTokens = {
+const monoLightColors: ColorTokens = {
   primary: "#555",
   primaryDisabled: "#aaa",
   primaryLightBg: "#e8e8e8",
@@ -442,6 +498,9 @@ const monoColors: ColorTokens = {
   textLabel: "#333",
   textModal: "#222",
   textEntryRow: "#111",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
   white: "#fff",
   background: "#f0f0f0",
   splashBackground: "#f0f0f0",
@@ -456,7 +515,43 @@ const monoColors: ColorTokens = {
   toastText: "#eee",
 };
 
-const monoRowColors = ["#f5f5f5", "#e0e0e0", "#cccccc", "#b8b8b8"] as const;
+const monoDarkColors: ColorTokens = {
+  primary: "#aaa",
+  primaryDisabled: "#666",
+  primaryLightBg: "#2a2a2a",
+  destructive: "#ccc",
+  devButton: "#888",
+  textPrimary: "#e8e8e8",
+  textSecondary: "#b0b0b0",
+  textTertiary: "#808080",
+  textLabel: "#c0c0c0",
+  textModal: "#d0d0d0",
+  textEntryRow: "#e8e8e8",
+  textOnColor: "#ffffff",
+  textOnColorMuted: "rgba(255,255,255,0.7)",
+  overlayOnColor: "rgba(255,255,255,0.2)",
+  white: "#fff",
+  background: "#121212",
+  splashBackground: "#121212",
+  inputBackground: "#2a2a2a",
+  border: "#333",
+  inputBorder: "#444",
+  deleteButtonBg: "#333",
+  modalOverlay: "rgba(0, 0, 0, 0.7)",
+  contentBackground: "#1e1e1e",
+  shadow: "#000",
+  toastBackground: "#e0e0e0",
+  toastText: "#1a1a1a",
+};
+
+const monoLightRowColors = [
+  "#f5f5f5",
+  "#e0e0e0",
+  "#cccccc",
+  "#b8b8b8",
+] as const;
+
+const monoDarkRowColors = ["#2a2a2a", "#333333", "#3d3d3d", "#484848"] as const;
 
 // ---------------------------------------------------------------------------
 // Palettes record
@@ -485,8 +580,8 @@ export const palettes: Record<Personality, PersonalityPalette> = {
     dark: { colors: modernDarkColors, rowColors: modernDarkRowColors },
   },
   mono: {
-    light: { colors: monoColors, rowColors: monoRowColors },
-    dark: { colors: monoColors, rowColors: monoRowColors },
+    light: { colors: monoLightColors, rowColors: monoLightRowColors },
+    dark: { colors: monoDarkColors, rowColors: monoDarkRowColors },
   },
 };
 
@@ -499,6 +594,6 @@ export {
   classicDarkRowColors as darkRowColors,
   classicLightColors as lightColors,
   classicLightRowColors as lightRowColors,
-  monoColors,
-  monoRowColors,
+  monoLightColors as monoColors,
+  monoLightRowColors as monoRowColors,
 };

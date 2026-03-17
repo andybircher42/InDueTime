@@ -1,0 +1,62 @@
+# E2E Test: Swipe gestures — delete and deliver with undo
+appId: com.andybircher.induetime
+---
+
+# Start on Expecting tab
+- tapOn: "Expecting"
+
+# Add two people
+- tapOn: "Add someone.*"
+- tapOn:
+    id: "Name"
+- inputText: "Alice"
+- tapOn: "Due date or gestational age"
+- inputText: "30w0d"
+- tapOn: "Add"
+
+- tapOn:
+    id: "Name"
+- inputText: "Bob"
+- tapOn: "Due date or gestational age"
+- inputText: "25w0d"
+- tapOn: "Add"
+
+# Verify both appear
+- assertVisible: "Alice"
+- assertVisible: "Bob"
+
+# Swipe left to delete Alice
+- swipe:
+    direction: "LEFT"
+    from:
+      text: "Alice"
+    duration: 300
+
+# Undo toast appears
+- assertVisible: "Undo"
+
+# Alice should be gone
+- assertNotVisible: "Alice"
+
+# Tap undo to restore
+- tapOn: "Undo"
+
+# Alice should be back
+- assertVisible: "Alice"
+
+# Swipe right to deliver Bob
+- swipe:
+    direction: "RIGHT"
+    from:
+      text: "Bob"
+    duration: 300
+
+# Undo toast for delivery
+- assertVisible: "Undo"
+
+# Bob gone from expecting
+- assertNotVisible: "Bob"
+
+# Navigate to Delivered tab
+- tapOn: "Delivered"
+- assertVisible: "Bob"

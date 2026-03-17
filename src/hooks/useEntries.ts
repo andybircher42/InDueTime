@@ -108,11 +108,22 @@ export default function useEntries() {
     [persistEntries],
   );
 
-  const removeAll = useCallback(() => {
-    setEntries([]);
-    persistEntries([]);
-    setDeletedEntry(null);
-  }, [persistEntries]);
+  const removeAll = useCallback(
+    (filter?: "expecting" | "delivered") => {
+      setEntries((prev) => {
+        const updated =
+          filter === "expecting"
+            ? prev.filter((e) => !!e.deliveredAt)
+            : filter === "delivered"
+              ? prev.filter((e) => !e.deliveredAt)
+              : [];
+        persistEntries(updated);
+        return updated;
+      });
+      setDeletedEntry(null);
+    },
+    [persistEntries],
+  );
 
   const seed = useCallback(
     (seeded: Entry[]) => {
@@ -149,29 +160,14 @@ export default function useEntries() {
     setDeliveredEntry(null);
   }, []);
 
-  const updateDeliveredTTL = useCallback(
-    (days: number) => {
-      setDeliveredTTLDays(days);
-      saveDeliveredTTL(days).catch((e) =>
-        reportError("Failed to save TTL preference", e),
-      );
-      // Re-purge entries with new TTL
-      if (days > 0) {
-        const ttlMs = days * 24 * 60 * 60 * 1000;
-        const now = Date.now();
-        setEntries((prev) => {
-          const filtered = prev.filter(
-            (e) => !e.deliveredAt || now - e.deliveredAt < ttlMs,
-          );
-          if (filtered.length !== prev.length) {
-            persistEntries(filtered);
-          }
-          return filtered;
-        });
-      }
-    },
-    [persistEntries],
-  );
+  const updateDeliveredTTL = useCallback((days: number) => {
+    setDeliveredTTLDays(days);
+    saveDeliveredTTL(days).catch((e) =>
+      reportError("Failed to save TTL preference", e),
+    );
+    // Cleanup applies on next app launch (in loadEntries), not immediately,
+    // so users can scroll through options without accidentally losing entries.
+  }, []);
 
   /** Clears the discarded-entry notification. */
   const dismissDiscarded = useCallback(() => {

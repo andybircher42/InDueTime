@@ -10,8 +10,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import { toISODateString } from "@/util";
+import { getBirthstoneForDate } from "@/util/birthstones";
 
 interface DevToolbarProps {
   visible: boolean;
@@ -71,11 +72,13 @@ export function generateSeedEntries(): Entry[] {
       today.getMonth(),
       today.getDate() + i * 12 + jitter,
     );
+    const dueDateStr = toISODateString(dueDate);
     return {
       id: `${Date.now()}-seed-${i}`,
       name,
-      dueDate: toISODateString(dueDate),
+      dueDate: dueDateStr,
       createdAt: Date.now() + i,
+      birthstone: getBirthstoneForDate(dueDateStr),
     };
   });
 }
@@ -100,12 +103,14 @@ export function generateSeedDeliveries(): Entry[] {
       dueDate.getMonth(),
       dueDate.getDate() + deliveryOffset,
     );
+    const dueDateStr = toISODateString(dueDate);
     return {
       id: `${now}-seed-del-${i}`,
       name,
-      dueDate: toISODateString(dueDate),
+      dueDate: dueDateStr,
       createdAt: now + i,
       deliveredAt: deliveredDate.getTime(),
+      birthstone: getBirthstoneForDate(dueDateStr),
     };
   });
 }
@@ -118,13 +123,13 @@ export default function DevToolbar({
   onClose,
   anchor,
 }: DevToolbarProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const dropdownPosition = anchor ?? { top: 100, right: 12 };
 
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.container}>
+      <View style={styles.container} accessibilityViewIsModal>
         <Pressable
           style={StyleSheet.absoluteFill}
           onPress={onClose}
@@ -191,7 +196,7 @@ export default function DevToolbar({
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -199,7 +204,7 @@ function createStyles(colors: ColorTokens) {
     dropdown: {
       position: "absolute",
       backgroundColor: colors.contentBackground,
-      borderRadius: 12,
+      borderRadius: radii.lg,
       paddingVertical: 8,
       paddingHorizontal: 16,
       minWidth: 180,

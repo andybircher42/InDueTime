@@ -1,25 +1,24 @@
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  ActionSheetIOS,
   Alert,
   FlatList,
-  LayoutAnimation,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
+import { useFormToggle, useSort } from "@/hooks";
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import { getBirthstone, getBirthstoneImage } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
 import EntryCard from "./EntryCard";
 import EntryDetailModal from "./EntryDetailModal";
-import EntryForm from "./EntryForm";
+import InlineFormWrapper from "./InlineFormWrapper";
+import SortToolbar from "./SortToolbar";
 
 interface EntryGridProps {
   entries: Entry[];
@@ -29,18 +28,7 @@ interface EntryGridProps {
   onAdd: (entry: { name: string; dueDate: string }) => void;
 }
 
-type SortBy = "dueDate" | "name" | "none";
-type SortDir = "asc" | "desc";
-
 type GridItem = Entry | "add" | "spacer";
-
-const SORT_OPTIONS: { field: SortBy; dir: SortDir; label: string }[] = [
-  { field: "none", dir: "desc", label: "No sort" },
-  { field: "dueDate", dir: "desc", label: "Due date (newest first)" },
-  { field: "dueDate", dir: "asc", label: "Due date (oldest first)" },
-  { field: "name", dir: "asc", label: "Name (A\u2013Z)" },
-  { field: "name", dir: "desc", label: "Name (Z\u2013A)" },
-];
 
 /** Cozy 2-column card grid layout for entries. */
 export default function EntryGrid({
@@ -50,90 +38,20 @@ export default function EntryGrid({
   onDeleteAll,
   onAdd,
 }: EntryGridProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
-  const [showForm, setShowForm] = useState(false);
-  const [batchMode, setBatchMode] = useState(false);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
+  const { showForm, batchMode, formKey, toggleForm, toggleBatchMode } =
+    useFormToggle();
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
-  const [sortBy, setSortBy] = useState<SortBy>("none");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const formKeyRef = React.useRef(0);
-
-  const toggleForm = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setShowForm((prev) => {
-      if (!prev) {
-        formKeyRef.current += 1;
-      }
-      return !prev;
-    });
-  }, []);
-
-  const toggleBatchMode = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setBatchMode((prev) => !prev);
-  }, []);
-
-  const openSortPicker = useCallback(() => {
-    const labels = SORT_OPTIONS.map((o) => o.label);
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        { options: [...labels, "Cancel"], cancelButtonIndex: labels.length },
-        (index) => {
-          if (index < SORT_OPTIONS.length) {
-            setSortBy(SORT_OPTIONS[index].field);
-            setSortDir(SORT_OPTIONS[index].dir);
-          }
-        },
-      );
-    } else {
-      Alert.alert("Sort by", undefined, [
-        ...SORT_OPTIONS.map((o) => ({
-          text: o.label,
-          onPress: () => {
-            setSortBy(o.field);
-            setSortDir(o.dir);
-          },
-        })),
-        { text: "Cancel", style: "cancel" as const },
-      ]);
-    }
-  }, []);
-
-  const activeEntries = useMemo(
-    () => entries.filter((e) => !e.deliveredAt),
-    [entries],
+  const { sortBy, sortDir, sorted, cycleSortField, toggleSortDir } = useSort(
+    entries,
+    { defaultField: "none" },
   );
 
-  const sorted = useMemo(() => {
-    if (sortBy === "none") {
-      const copy = [...activeEntries];
-      copy.sort((a, b) => b.createdAt - a.createdAt);
-      return copy;
-    }
-    const copy = [...activeEntries];
-    const dir = sortDir === "asc" ? 1 : -1;
-    if (sortBy === "dueDate") {
-      copy.sort((a, b) => {
-        const dateDiff = b.dueDate.localeCompare(a.dueDate);
-        if (dateDiff !== 0) {
-          return dir * dateDiff;
-        }
-        return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
-      });
-    } else {
-      copy.sort((a, b) => {
-        const nameDiff = a.name.localeCompare(b.name, undefined, {
-          sensitivity: "base",
-        });
-        if (nameDiff !== 0) {
-          return dir * nameDiff;
-        }
-        return a.dueDate.localeCompare(b.dueDate);
-      });
-    }
-    return copy;
-  }, [activeEntries, sortBy, sortDir]);
+  const currentMonthGem = useMemo(
+    () => getBirthstoneImage(getBirthstone(new Date().getMonth() + 1).name),
+    [],
+  );
 
   const handleLongPress = useCallback(
     (entry: Entry) => {
@@ -155,7 +73,9 @@ export default function EntryGrid({
 
   const gridData: GridItem[] = useMemo(() => {
     const data: GridItem[] = [...sorted, "add" as const];
-    if (data.length % 2 !== 0) {data.push("spacer" as const);}
+    if (data.length % 2 !== 0) {
+      data.push("spacer" as const);
+    }
     return data;
   }, [sorted]);
 
@@ -173,12 +93,7 @@ export default function EntryGrid({
             accessibilityLabel="Add someone new"
             testID="add-card"
           >
-            <BirthstoneIcon
-              image={getBirthstoneImage(
-                getBirthstone(new Date().getMonth() + 1).name,
-              )}
-              size={40}
-            />
+            <BirthstoneIcon image={currentMonthGem} size={40} />
             <Text style={styles.addText}>Add someone</Text>
           </Pressable>
         );
@@ -191,7 +106,7 @@ export default function EntryGrid({
         />
       );
     },
-    [styles, toggleForm, handleLongPress],
+    [styles, toggleForm, handleLongPress, currentMonthGem],
   );
 
   const keyExtractor = useCallback(
@@ -204,49 +119,17 @@ export default function EntryGrid({
     return (
       <View style={styles.container}>
         <Pressable
-          style={[
-            styles.addButtonFull,
-            {
-              borderColor: colors.primary,
-              backgroundColor: colors.primaryLightBg,
-            },
-          ]}
+          style={styles.emptyCard}
           onPress={toggleForm}
           accessibilityRole="button"
           accessibilityLabel="Add someone new"
         >
-          <BirthstoneIcon
-            image={getBirthstoneImage(
-              getBirthstone(new Date().getMonth() + 1).name,
-            )}
-            size={20}
-          />
-          <Text
-            style={[
-              styles.addButtonFullText,
-              { color: colors.primary, marginHorizontal: 8 },
-            ]}
-          >
-            Add someone
+          <BirthstoneIcon image={currentMonthGem} size={64} />
+          <Text style={styles.emptyCardTitle}>Track your first pregnancy</Text>
+          <Text style={styles.emptyCardSubtitle}>
+            Enter a name and due date to start
           </Text>
-          <BirthstoneIcon
-            image={getBirthstoneImage(
-              getBirthstone(new Date().getMonth() + 1).name,
-            )}
-            size={20}
-          />
         </Pressable>
-        <View style={styles.emptyContent}>
-          <Ionicons
-            name="calendar-outline"
-            size={48}
-            color={colors.textTertiary}
-          />
-          <Text style={styles.emptyTitle}>Ready when you are</Text>
-          <Text style={styles.emptySubtitle}>
-            Tap Add someone to get started
-          </Text>
-        </View>
       </View>
     );
   }
@@ -254,69 +137,23 @@ export default function EntryGrid({
   return (
     <View style={styles.container}>
       {showForm ? (
-        <View style={styles.inlineFormContainer}>
-          <View style={styles.formToolbar}>
-            <Pressable
-              onPress={toggleBatchMode}
-              accessibilityRole="button"
-              accessibilityLabel={
-                batchMode ? "Switch to single entry" : "Switch to batch entry"
-              }
-            >
-              <Text style={styles.batchToggleText}>
-                {batchMode ? "Add one at a time" : "Add multiple"}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={toggleForm}
-              accessibilityRole="button"
-              accessibilityLabel="Close form"
-              hitSlop={8}
-            >
-              <Ionicons name="close" size={24} color={colors.textTertiary} />
-            </Pressable>
-          </View>
-          <EntryForm key={formKeyRef.current} onAdd={onAdd} batch={batchMode} />
-        </View>
+        <InlineFormWrapper
+          formKey={formKey.current}
+          batchMode={batchMode}
+          onAdd={onAdd}
+          onToggleBatchMode={toggleBatchMode}
+          onClose={toggleForm}
+        />
       ) : null}
-      {entries.length > 0 && (
-        <View style={styles.toolbarRow}>
-          <Pressable
-            onPress={openSortPicker}
-            accessibilityRole="button"
-            accessibilityLabel={`Sort: ${sortBy === "none" ? "insertion order" : sortBy === "dueDate" ? "due date" : "name"}, ${sortDir === "asc" ? "ascending" : "descending"}`}
-            hitSlop={8}
-            style={styles.sortIconButton}
-          >
-            <Ionicons
-              name="swap-vertical-outline"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </Pressable>
-          <View style={styles.toolbarSpacer} />
-          <Pressable
-            style={styles.deleteAllButton}
-            onPress={() =>
-              Alert.alert(
-                "Remove everyone?",
-                `This will remove all ${entries.length} people you're tracking. You can't undo this.`,
-                [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Remove all",
-                    style: "destructive",
-                    onPress: onDeleteAll,
-                  },
-                ],
-              )
-            }
-            accessibilityRole="button"
-            accessibilityLabel="Remove all"
-          >
-            <Text style={styles.deleteAllText}>Remove all</Text>
-          </Pressable>
-        </View>
+      {sorted.length > 0 && (
+        <SortToolbar
+          sortBy={sortBy}
+          sortDir={sortDir}
+          itemCount={sorted.length}
+          onCycleField={cycleSortField}
+          onToggleDir={toggleSortDir}
+          onDeleteAll={onDeleteAll}
+        />
       )}
       <FlatList
         data={gridData}
@@ -325,6 +162,10 @@ export default function EntryGrid({
         numColumns={2}
         contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.gridRow}
+        removeClippedSubviews={Platform.OS === "android"}
+        initialNumToRender={10}
+        maxToRenderPerBatch={8}
+        windowSize={7}
       />
       <EntryDetailModal
         entry={selectedEntry}
@@ -334,7 +175,7 @@ export default function EntryGrid({
   );
 }
 
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -352,7 +193,7 @@ function createStyles(colors: ColorTokens) {
     addCard: {
       flex: 1,
       aspectRatio: 1,
-      borderRadius: 12,
+      borderRadius: radii.lg,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.contentBackground,
@@ -365,80 +206,23 @@ function createStyles(colors: ColorTokens) {
       fontWeight: "600",
       color: colors.primary,
     },
-    addButtonFull: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      marginHorizontal: 16,
-      marginTop: 12,
-      paddingVertical: 12,
-      borderRadius: 12,
-      borderWidth: 2,
-      gap: 10,
-    },
-    addButtonFullText: {
-      fontSize: 16,
-      fontWeight: "600",
-    },
-    inlineFormContainer: {
-      marginHorizontal: 16,
-      marginTop: 12,
-      borderRadius: 12,
-      backgroundColor: colors.contentBackground,
+    emptyCard: {
+      marginHorizontal: 32,
+      marginTop: 32,
+      paddingVertical: 40,
+      borderRadius: radii.lg,
       borderWidth: 1,
       borderColor: colors.border,
-      overflow: "hidden",
-    },
-    formToolbar: {
-      flexDirection: "row",
-      justifyContent: "space-between",
+      backgroundColor: colors.contentBackground,
       alignItems: "center",
-      paddingHorizontal: 16,
-      paddingTop: 12,
+      gap: 12,
     },
-    batchToggleText: {
-      fontSize: 14,
-      color: colors.primary,
-      textDecorationLine: "underline",
-    },
-    toolbarRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginHorizontal: 16,
-      marginTop: 12,
-      gap: 10,
-    },
-    sortIconButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    toolbarSpacer: {
-      flex: 1,
-    },
-    deleteAllButton: {
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-    },
-    deleteAllText: {
-      color: colors.textTertiary,
-      fontSize: 14,
-      fontWeight: "600",
-    },
-    emptyContent: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      gap: 8,
-    },
-    emptyTitle: {
+    emptyCardTitle: {
       color: colors.textPrimary,
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: "600",
     },
-    emptySubtitle: {
+    emptyCardSubtitle: {
       color: colors.textTertiary,
       fontSize: 14,
     },

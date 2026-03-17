@@ -1,22 +1,19 @@
 import { act, screen } from "@testing-library/react-native";
 
+import { setupFakeTimers, teardownFakeTimers } from "@/test/fakeTimers";
 import renderWithTheme from "@/test/renderWithTheme";
 
+import { mockInsets } from "../../jest.setup";
 import InfoToast from "./InfoToast";
-
-const mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
-
-jest.mock("react-native-safe-area-context", () => ({
-  useSafeAreaInsets: () => mockInsets,
-}));
 
 describe("InfoToast", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    setupFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    teardownFakeTimers();
+    mockInsets.bottom = 0;
   });
 
   it("renders the message", () => {
@@ -75,6 +72,5 @@ describe("InfoToast", () => {
       : toast.props.style;
     // max(34, 16) + 16 = 50
     expect(flatStyle.bottom).toBe(50);
-    mockInsets.bottom = 0;
   });
 });

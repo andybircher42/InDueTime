@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useSwipeDismiss } from "@/hooks";
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import { gestationalAgeFromDueDate } from "@/util";
 
 interface UndoToastProps {
@@ -12,6 +12,8 @@ interface UndoToastProps {
   action?: string;
   onUndo: () => void;
   onDismiss: () => void;
+  /** When true, skip absolute positioning (parent handles layout). */
+  embedded?: boolean;
 }
 
 const TOAST_DURATION_MS = 5000;
@@ -22,10 +24,11 @@ export default function UndoToast({
   action = "Removed",
   onUndo,
   onDismiss,
+  embedded = false,
 }: UndoToastProps) {
-  const { colors } = useTheme();
+  const { colors, radii } = useTheme();
   const insets = useSafeAreaInsets();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const { weeks, days } = gestationalAgeFromDueDate(entry.dueDate);
   const { animatedValue: translateY, panHandlers } = useSwipeDismiss({
     axis: "y",
@@ -45,10 +48,13 @@ export default function UndoToast({
     <Animated.View
       style={[
         styles.container,
-        {
+        !embedded && {
+          position: "absolute",
           bottom: Math.max(insets.bottom, 16) + 16,
-          transform: [{ translateY }],
+          left: 16,
+          right: 16,
         },
+        { transform: [{ translateY }] },
       ]}
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
@@ -72,15 +78,11 @@ export default function UndoToast({
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
-      position: "absolute",
-      // bottom is applied dynamically via useSafeAreaInsets
-      left: 16,
-      right: 16,
       backgroundColor: colors.toastBackground,
-      borderRadius: 10,
+      borderRadius: radii.md,
       flexDirection: "row",
       alignItems: "center",
       paddingVertical: 12,
@@ -96,7 +98,7 @@ function createStyles(colors: ColorTokens) {
       paddingHorizontal: 12,
       paddingVertical: 6,
       backgroundColor: colors.primary,
-      borderRadius: 6,
+      borderRadius: radii.sm,
     },
     undoText: {
       color: colors.white,

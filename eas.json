@@ -6,8 +6,11 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "store",
-      "channel": "development"
+      "distribution": "internal",
+      "channel": "development",
+      "env": {
+        "APP_VARIANT": "development"
+      }
     },
     "preview": {
       "distribution": "internal",

@@ -1,17 +1,17 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 
+import { setupFakeTimers, teardownFakeTimers } from "@/test/fakeTimers";
 import renderWithTheme from "@/test/renderWithTheme";
 import { computeDueDate, toDisplayDateString } from "@/util";
 
 import EntryForm from "./EntryForm";
 
 beforeEach(() => {
-  jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+  setupFakeTimers();
 });
 
 afterEach(() => {
-  jest.useRealTimers();
-  jest.restoreAllMocks();
+  teardownFakeTimers();
 });
 
 const INPUT_LABEL = "Due date or gestational age";
@@ -473,21 +473,10 @@ describe("EntryForm — batch mode", () => {
     expect(screen.queryByLabelText("Batch entries")).toBeNull();
   });
 
-  it("shows help tooltip when help button is pressed", () => {
+  it("renders help button for batch format info", () => {
     renderBatchForm();
 
-    fireEvent.press(screen.getByLabelText("Show format help"));
-
-    expect(screen.getByLabelText("Format help")).toBeTruthy();
-  });
-
-  it("hides help tooltip when pressed again", () => {
-    renderBatchForm();
-
-    fireEvent.press(screen.getByLabelText("Show format help"));
-    fireEvent.press(screen.getByLabelText("Show format help"));
-
-    expect(screen.queryByLabelText("Format help")).toBeNull();
+    expect(screen.getByLabelText("Batch format info")).toBeTruthy();
   });
 
   it("calls onAdd for each valid entry and shows confirmation", () => {
@@ -531,7 +520,9 @@ describe("EntryForm — batch mode", () => {
 
     // Error shown for "Alex"
     expect(screen.getByText(/Alex/)).toBeTruthy();
-    expect(screen.getByText(/No date or gestational age found/)).toBeTruthy();
+    expect(
+      screen.getByText(/Couldn\u2019t find a date or gestational age/),
+    ).toBeTruthy();
   });
 
   it("keeps errored entries in input when some succeed", () => {

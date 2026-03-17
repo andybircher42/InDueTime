@@ -1,0 +1,38 @@
+# E2E Test: Add a person, view detail, deliver, verify delivered tab
+# Assumes: onboarding already completed (run 01 first or use dev build)
+appId: com.andybircher.induetime
+---
+
+# Add someone
+- tapOn: "Add someone.*"
+- tapOn:
+    id: "Name"
+- inputText: "Jordan"
+- tapOn: "Due date or gestational age"
+- inputText: "35w2d"
+- tapOn: "Add"
+
+# Verify the person appears
+- assertVisible: "Jordan"
+
+# Tap to view detail
+- tapOn: "Jordan"
+- assertVisible: "Due date"
+- assertVisible: "Gestational age"
+- tapOn: "Done"
+
+# Swipe right to deliver
+- swipe:
+    direction: "RIGHT"
+    from:
+      text: "Jordan"
+    duration: 300
+
+# Undo toast should appear
+- assertVisible: "Undo"
+
+# Navigate to Delivered tab
+- tapOn: "Delivered"
+
+# Jordan should appear in delivered list
+- assertVisible: "Jordan"

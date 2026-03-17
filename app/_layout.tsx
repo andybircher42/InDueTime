@@ -5,11 +5,16 @@ import Constants from "expo-constants";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
-import { HipaaAgreementModal, OnboardingOverlay } from "@/components";
+import {
+  ErrorBoundary,
+  HipaaAgreementModal,
+  OnboardingOverlay,
+} from "@/components";
 import { useThemePreference } from "@/hooks";
 import {
   acceptAgreement,
   checkAgreement,
+  checkAnalyticsOptOut,
   checkOnboardingComplete,
   checkTesterMode,
   getOrCreateDeviceId,
@@ -27,13 +32,19 @@ const IS_INTERNAL_BUILD =
   ((Constants.expoConfig?.extra?.appLabel as string) ?? "") !== "";
 
 let identifyDevice: ((id: string) => void) | undefined;
+let vexoInitialized = false;
 
-if (!__DEV__ && !IS_INTERNAL_BUILD) {
+/** Initializes Vexo analytics if not already initialized and not opted out. */
+function initVexo() {
+  if (__DEV__ || IS_INTERNAL_BUILD || vexoInitialized) {
+    return;
+  }
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const vexoModule = require("vexo-analytics");
     vexoModule.vexo("0c9372e4-1c7e-4051-a9aa-48801f7cef4b");
     identifyDevice = vexoModule.identifyDevice;
+    vexoInitialized = true;
   } catch {
     // vexo-analytics not available (e.g. Expo Go)
   }
@@ -45,25 +56,31 @@ export default function RootLayout() {
     personality,
     brightness,
     layout,
+    celebrationStyle,
     setPersonality,
     setBrightness,
     setLayout,
+    setCelebrationStyle,
     loadThemePreference,
   } = useThemePreference();
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider
-        personality={personality}
-        brightness={brightness}
-        layout={layout}
-        setPersonality={setPersonality}
-        setBrightness={setBrightness}
-        setLayout={setLayout}
-      >
-        <RootGate loadThemePreference={loadThemePreference} />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <ThemeProvider
+          personality={personality}
+          brightness={brightness}
+          layout={layout}
+          celebrationStyle={celebrationStyle}
+          setPersonality={setPersonality}
+          setBrightness={setBrightness}
+          setLayout={setLayout}
+          setCelebrationStyle={setCelebrationStyle}
+        >
+          <RootGate loadThemePreference={loadThemePreference} />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 
@@ -94,27 +111,35 @@ function RootGate({ loadThemePreference }: RootGateProps) {
     let mounted = true;
 
     async function init() {
-      const [accepted, , , deviceId, onboardingDone, isTester] =
-        await Promise.all([
-          checkAgreement().catch((e) => {
-            reportError("Failed to check agreement", e);
-            return false;
-          }),
-          loadThemePreference().catch((e) =>
-            reportError("Failed to load theme preference", e),
-          ),
-          // Placeholder for entry loading — done in home screen
-          Promise.resolve(),
-          getOrCreateDeviceId().catch((e) => {
-            reportError("Failed to get device ID", e);
-            return undefined;
-          }),
-          checkOnboardingComplete().catch((e) => {
-            reportError("Failed to check onboarding", e);
-            return false;
-          }),
-          checkTesterMode().catch(() => false),
-        ]);
+      const [
+        accepted,
+        ,
+        ,
+        deviceId,
+        onboardingDone,
+        isTester,
+        analyticsOptOut,
+      ] = await Promise.all([
+        checkAgreement().catch((e) => {
+          reportError("Failed to check agreement", e);
+          return false;
+        }),
+        loadThemePreference().catch((e) =>
+          reportError("Failed to load theme preference", e),
+        ),
+        // Placeholder for entry loading — done in home screen
+        Promise.resolve(),
+        getOrCreateDeviceId().catch((e) => {
+          reportError("Failed to get device ID", e);
+          return undefined;
+        }),
+        checkOnboardingComplete().catch((e) => {
+          reportError("Failed to check onboarding", e);
+          return false;
+        }),
+        checkTesterMode().catch(() => false),
+        checkAnalyticsOptOut().catch(() => false),
+      ]);
 
       if (!mounted) {
         return;
@@ -133,7 +158,8 @@ function RootGate({ loadThemePreference }: RootGateProps) {
         setPhase("splash");
       }
 
-      if (!__DEV__) {
+      if (!__DEV__ && !analyticsOptOut) {
+        initVexo();
         if (deviceId && !isTester) {
           identifyDevice?.(deviceId);
         }
@@ -149,9 +175,10 @@ function RootGate({ loadThemePreference }: RootGateProps) {
                 }
               }
             })
-            .catch((e: unknown) =>
-              reportError("Failed to check for updates", e),
-            );
+            .catch(() => {
+              // Silently ignore — update checks can fail in dev client
+              // or preview builds where expo-updates isn't fully configured.
+            });
         } catch {
           // expo-updates not available (e.g. Expo Go)
         }
@@ -203,6 +230,7 @@ function RootGate({ loadThemePreference }: RootGateProps) {
         resizeMode="cover"
         style={styles.splashContainer}
         testID="splash-bg"
+        accessible={false}
       >
         <HipaaAgreementModal
           visible={showAgreement}
@@ -225,11 +253,13 @@ function RootGate({ loadThemePreference }: RootGateProps) {
         resizeMode="cover"
         style={styles.splashContainer}
         testID="splash-bg"
+        accessible={false}
       >
         <Image
           source={splashLogo}
           style={styles.splashLogo}
           resizeMode="contain"
+          accessible={false}
           testID="splash-logo"
         />
         <StatusBar style="auto" />

@@ -1,0 +1,12 @@
+# Maestro E2E test configuration for In Due Time
+# Run: maestro test .maestro/
+# Requires: Maestro CLI, iOS Simulator or Android Emulator
+
+# App identifiers
+appId:
+  ios: com.andybircher.induetime
+  android: com.andybircher.induetime
+
+# Default settings
+flows:
+  - "*.yaml"

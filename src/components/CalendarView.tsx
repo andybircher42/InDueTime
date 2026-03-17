@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { calendarHeatMap } from "@/engine/probabilityEngine";
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
-import { lineHeight } from "@/util";
 
 import CalendarMonth, { DayCell } from "./CalendarMonth";
+import EmptyState from "./EmptyState";
+import HelpButton from "./HelpButton";
 
 interface CalendarViewProps {
   entries: Entry[];
@@ -46,7 +47,9 @@ export default function CalendarView({
   const deliveredDateMap = useMemo(() => {
     const map = new Map<string, Entry[]>();
     for (const e of entries) {
-      if (!e.deliveredAt) {continue;}
+      if (!e.deliveredAt) {
+        continue;
+      }
       const d = new Date(e.deliveredAt);
       const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       const existing = map.get(iso);
@@ -101,25 +104,41 @@ export default function CalendarView({
 
   if (entries.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Ionicons
-          name="calendar-outline"
-          size={48}
-          color={colors.textTertiary}
-        />
-        <Text style={styles.emptyTitle}>No one to show yet</Text>
-        <Text style={styles.emptySubtitle}>
-          Switch to the list view to add someone
-        </Text>
-      </View>
+      <EmptyState
+        icon="calendar-outline"
+        title="No one to show yet"
+        subtitle="Add someone in the Expecting tab to see when they're due"
+      />
     );
   }
+
+  const primaryHex = colors.primary;
+  const gradientStart = "transparent";
+  const gradientEnd = `${primaryHex}66`; // ~40% opacity
 
   return (
     <ScrollView
       style={styles.scrollView}
       contentContainerStyle={styles.content}
     >
+      <View
+        style={styles.legend}
+        accessibilityLabel="Heat map legend: color intensity shows how many are due"
+      >
+        <Text style={styles.legendLabel}>fewer</Text>
+        <LinearGradient
+          colors={[gradientStart, gradientEnd]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={styles.legendBar}
+        />
+        <Text style={styles.legendLabel}>more due</Text>
+        <HelpButton
+          title="Calendar colors"
+          message="Darker colors mean a higher chance of delivery on that day — even if it's not the due date. The shading is based on how likely each day is across all the pregnancies you're tracking."
+          size={16}
+        />
+      </View>
       {months.map(({ year, month, cells }) => (
         <CalendarMonth
           key={`${year}-${month}`}
@@ -143,23 +162,21 @@ function createStyles(colors: ColorTokens) {
       paddingVertical: 16,
       paddingHorizontal: 16,
     },
-    emptyContainer: {
-      flex: 1,
-      justifyContent: "center",
+    legend: {
+      flexDirection: "row",
       alignItems: "center",
-      padding: 32,
+      justifyContent: "center",
       gap: 8,
+      marginBottom: 12,
     },
-    emptyTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: colors.textPrimary,
+    legendBar: {
+      height: 8,
+      width: 80,
+      borderRadius: 4,
     },
-    emptySubtitle: {
-      fontSize: 14,
+    legendLabel: {
+      fontSize: 11,
       color: colors.textTertiary,
-      textAlign: "center",
-      lineHeight: lineHeight(20),
     },
   });
 }

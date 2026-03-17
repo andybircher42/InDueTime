@@ -19,6 +19,7 @@ const DEVICE_ID_KEY = "@device_id";
 const ONBOARDING_KEY = "@onboarding_complete";
 const DELIVERED_TTL_KEY = "@delivered_ttl_days";
 const TESTER_MODE_KEY = "@tester_mode";
+const ANALYTICS_OPT_OUT_KEY = "@analytics_opt_out";
 
 /** Persists the full entries array to AsyncStorage. */
 export const saveEntries = async (entries: Entry[]): Promise<void> => {
@@ -108,6 +109,21 @@ export const toggleTesterMode = async (): Promise<boolean> => {
     await AsyncStorage.removeItem(TESTER_MODE_KEY);
   }
   return next;
+};
+
+/** Returns whether the user has opted out of analytics. */
+export const checkAnalyticsOptOut = async (): Promise<boolean> => {
+  const value = await AsyncStorage.getItem(ANALYTICS_OPT_OUT_KEY);
+  return value === "true";
+};
+
+/** Sets the analytics opt-out preference. */
+export const setAnalyticsOptOut = async (optOut: boolean): Promise<void> => {
+  if (optOut) {
+    await AsyncStorage.setItem(ANALYTICS_OPT_OUT_KEY, "true");
+  } else {
+    await AsyncStorage.removeItem(ANALYTICS_OPT_OUT_KEY);
+  }
 };
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}/;

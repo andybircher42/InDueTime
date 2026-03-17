@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
-  Linking,
   Modal,
   Platform,
   Pressable,
@@ -8,66 +7,19 @@ import {
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import Constants from "expo-constants";
-
-let Updates: { updateId: string | null } | undefined;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  Updates = require("expo-updates");
-} catch {
-  // Not available in Expo Go
-}
 
 import {
   Brightness,
   ColorTokens,
   Layout,
   Personality,
+  RadiiTokens,
   useTheme,
 } from "@/theme";
 
-interface ThemePickerModalProps {
-  visible: boolean;
-  currentPersonality: Personality;
-  currentBrightness: Brightness;
-  currentLayout: Layout;
-  currentDeliveredTTL: number;
-  onSelectPersonality: (p: Personality) => void;
-  onSelectBrightness: (b: Brightness) => void;
-  onSelectLayout: (l: Layout) => void;
-  onSelectDeliveredTTL: (days: number) => void;
-  onClose: () => void;
-  onAppInfo?: () => void;
-  anchor?: { top: number; right: number };
-}
-
-const BUG_REPORT_BASE_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSd3VdvE17NHIR7qQD8Ams10nBgAgf1n0JQ1mvWUUFKf7C3Z-w/viewform";
-
-/** Builds the bug report URL with app version and OS version pre-filled. */
-function buildBugReportUrl(): string {
-  const version = Constants.expoConfig?.version ?? "unknown";
-  const buildId = (Constants.expoConfig?.extra?.easBuildId as string) || "";
-  const updateId = Updates?.updateId ?? null;
-
-  let appVersion =
-    buildId !== "" ? `${version} (${buildId.slice(0, 8)})` : version;
-  if (updateId != null) {
-    appVersion += ` update:${updateId.slice(0, 8)}`;
-  }
-
-  const osName = Platform.OS === "ios" ? "iOS" : "Android";
-  const osVersion = `${osName} ${Platform.Version}`;
-
-  const params = new URLSearchParams({
-    "entry.1845428880": appVersion,
-    "entry.765646897": osVersion,
-  });
-  return `${BUG_REPORT_BASE_URL}?${params.toString()}`;
-}
-const FEATURE_REQUEST_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSeLS03h_8s3t0-IYXM04UjVv2fAhH37i2n56fPHB83OuHaQhw/viewform";
+import type { CelebrationStyle } from "./CelebrationOverlay";
+import PillSelector from "./PillSelector";
+import type { Ionicons } from "@expo/vector-icons";
 
 const THEME_OPTIONS: {
   value: Personality;
@@ -101,368 +53,93 @@ const BRIGHTNESS_OPTIONS: {
   { value: "dark", label: "Dark", icon: "moon-outline" },
 ];
 
-const TTL_OPTIONS: {
-  value: number;
+const CELEBRATION_OPTIONS: {
+  value: CelebrationStyle;
   label: string;
+  icon: keyof typeof Ionicons.glyphMap;
 }[] = [
-  { value: 0, label: "Never" },
-  { value: 1, label: "1 day" },
-  { value: 3, label: "3 days" },
-  { value: 7, label: "1 week" },
-  { value: 14, label: "2 weeks" },
-  { value: 30, label: "30 days" },
+  { value: "random", label: "Random", icon: "shuffle-outline" },
+  { value: "confetti", label: "Confetti", icon: "sparkles-outline" },
+  { value: "gentle", label: "Gentle", icon: "heart-outline" },
+  { value: "none", label: "None", icon: "remove-circle-outline" },
 ];
 
-type SubPage = "main" | "theme" | "brightness" | "layout" | "ttl";
+interface ThemePickerModalProps {
+  visible: boolean;
+  currentPersonality: Personality;
+  currentBrightness: Brightness;
+  currentLayout: Layout;
+  currentCelebration: CelebrationStyle;
+  onSelectPersonality: (p: Personality) => void;
+  onSelectBrightness: (b: Brightness) => void;
+  onSelectLayout: (l: Layout) => void;
+  onSelectCelebration: (s: CelebrationStyle) => void;
+  onClose: () => void;
+  anchor?: { top: number; right: number };
+}
 
-/** Dropdown modal for selecting the app theme, anchored below the settings button. */
+/** Dropdown modal for selecting theme, brightness, layout, and celebration style. */
 export default function ThemePickerModal({
   visible,
   currentPersonality,
   currentBrightness,
   currentLayout,
-  currentDeliveredTTL,
+  currentCelebration,
   onSelectPersonality,
   onSelectBrightness,
   onSelectLayout,
-  onSelectDeliveredTTL,
+  onSelectCelebration,
   onClose,
-  onAppInfo,
   anchor,
 }: ThemePickerModalProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const dropdownPosition = anchor ?? { top: 100, right: 12 };
-  const [subPage, setSubPage] = useState<SubPage>("main");
-
-  // Reset to main when modal opens
-  useEffect(() => {
-    if (visible) {setSubPage("main");}
-  }, [visible]);
-
-  const goBack = useCallback(() => setSubPage("main"), []);
-
-  const renderBackRow = (label: string) => (
-    <Pressable
-      style={styles.backRow}
-      onPress={goBack}
-      accessibilityRole="button"
-      accessibilityLabel={`Back to settings`}
-    >
-      <Ionicons
-        name="chevron-back"
-        size={18}
-        color={colors.primary}
-        style={styles.backIcon}
-      />
-      <Text style={styles.backLabel}>{label}</Text>
-    </Pressable>
-  );
-
-  const renderSubPage = () => {
-    switch (subPage) {
-      case "theme":
-        return (
-          <>
-            {renderBackRow("Theme")}
-            {THEME_OPTIONS.map(({ value, label, icon }) => (
-              <Pressable
-                key={value}
-                style={styles.row}
-                onPress={() => onSelectPersonality(value)}
-                accessibilityRole="button"
-                accessibilityLabel={label}
-              >
-                <Ionicons
-                  name={icon}
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>{label}</Text>
-                {currentPersonality === value && (
-                  <Ionicons
-                    name="checkmark"
-                    size={20}
-                    color={colors.primary}
-                    testID={`checkmark-theme-${value}`}
-                  />
-                )}
-              </Pressable>
-            ))}
-          </>
-        );
-      case "brightness":
-        return (
-          <>
-            {renderBackRow("Brightness")}
-            {BRIGHTNESS_OPTIONS.map(({ value, label, icon }) => (
-              <Pressable
-                key={value}
-                style={styles.row}
-                onPress={() => onSelectBrightness(value)}
-                accessibilityRole="button"
-                accessibilityLabel={label}
-              >
-                <Ionicons
-                  name={icon}
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>{label}</Text>
-                {currentBrightness === value && (
-                  <Ionicons
-                    name="checkmark"
-                    size={20}
-                    color={colors.primary}
-                    testID={`checkmark-brightness-${value}`}
-                  />
-                )}
-              </Pressable>
-            ))}
-          </>
-        );
-      case "layout":
-        return (
-          <>
-            {renderBackRow("Layout")}
-            {LAYOUT_OPTIONS.map(({ value, label, icon }) => (
-              <Pressable
-                key={value}
-                style={styles.row}
-                onPress={() => onSelectLayout(value)}
-                accessibilityRole="button"
-                accessibilityLabel={label}
-              >
-                <Ionicons
-                  name={icon}
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>{label}</Text>
-                {currentLayout === value && (
-                  <Ionicons
-                    name="checkmark"
-                    size={20}
-                    color={colors.primary}
-                    testID={`checkmark-layout-${value}`}
-                  />
-                )}
-              </Pressable>
-            ))}
-          </>
-        );
-      case "ttl":
-        return (
-          <>
-            {renderBackRow("Auto-remove")}
-            {TTL_OPTIONS.map(({ value, label }) => (
-              <Pressable
-                key={value}
-                style={styles.row}
-                onPress={() => onSelectDeliveredTTL(value)}
-                accessibilityRole="button"
-                accessibilityLabel={label}
-              >
-                <Ionicons
-                  name={value === 0 ? "infinite-outline" : "timer-outline"}
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>{label}</Text>
-                {currentDeliveredTTL === value && (
-                  <Ionicons
-                    name="checkmark"
-                    size={20}
-                    color={colors.primary}
-                    testID={`checkmark-ttl-${value}`}
-                  />
-                )}
-              </Pressable>
-            ))}
-          </>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const currentThemeLabel =
-    THEME_OPTIONS.find((o) => o.value === currentPersonality)?.label ?? "";
-  const currentBrightnessLabel =
-    BRIGHTNESS_OPTIONS.find((o) => o.value === currentBrightness)?.label ?? "";
-  const currentLayoutLabel =
-    LAYOUT_OPTIONS.find((o) => o.value === currentLayout)?.label ?? "";
-  const currentTTLLabel =
-    TTL_OPTIONS.find((o) => o.value === currentDeliveredTTL)?.label ?? "";
 
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.container}>
+      <View style={styles.container} accessibilityViewIsModal>
         <Pressable
           style={StyleSheet.absoluteFill}
           onPress={onClose}
           accessibilityRole="button"
-          accessibilityLabel="Close settings"
+          accessibilityLabel="Close appearance"
         />
         <View style={[styles.dropdown, dropdownPosition]}>
-          {subPage === "main" ? (
-            <>
-              <Text style={styles.title}>Appearance</Text>
-              <Pressable
-                style={styles.row}
-                onPress={() => setSubPage("theme")}
-                accessibilityRole="button"
-                accessibilityLabel="Theme settings"
-              >
-                <Ionicons
-                  name="color-palette-outline"
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>Theme</Text>
-                <Text style={styles.rowValue}>{currentThemeLabel}</Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={colors.textTertiary}
-                />
-              </Pressable>
-              <Pressable
-                style={styles.row}
-                onPress={() => setSubPage("brightness")}
-                accessibilityRole="button"
-                accessibilityLabel="Brightness settings"
-              >
-                <Ionicons
-                  name="contrast-outline"
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>Brightness</Text>
-                <Text style={styles.rowValue}>{currentBrightnessLabel}</Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={colors.textTertiary}
-                />
-              </Pressable>
-              <Pressable
-                style={styles.row}
-                onPress={() => setSubPage("layout")}
-                accessibilityRole="button"
-                accessibilityLabel="Layout settings"
-              >
-                <Ionicons
-                  name={
-                    currentLayout === "compact"
-                      ? "list-outline"
-                      : "grid-outline"
-                  }
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>Layout</Text>
-                <Text style={styles.rowValue}>{currentLayoutLabel}</Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={colors.textTertiary}
-                />
-              </Pressable>
-              <View style={styles.separator} />
-              <Text style={styles.title}>Preferences</Text>
-              <Pressable
-                style={styles.row}
-                onPress={() => setSubPage("ttl")}
-                accessibilityRole="button"
-                accessibilityLabel="Auto-remove delivered settings"
-              >
-                <Ionicons
-                  name="timer-outline"
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>Auto-remove</Text>
-                <Text style={styles.rowValue}>{currentTTLLabel}</Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={colors.textTertiary}
-                />
-              </Pressable>
-              <View style={styles.separator} />
-              <Pressable
-                style={styles.row}
-                onPress={() => {
-                  Linking.openURL(buildBugReportUrl());
-                  onClose();
-                }}
-                accessibilityRole="button"
-                accessibilityLabel="Report a Bug"
-              >
-                <Ionicons
-                  name="bug-outline"
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>Report a Bug</Text>
-              </Pressable>
-              <Pressable
-                style={styles.row}
-                onPress={() => {
-                  Linking.openURL(FEATURE_REQUEST_URL);
-                  onClose();
-                }}
-                accessibilityRole="button"
-                accessibilityLabel="Request a Feature"
-              >
-                <Ionicons
-                  name="bulb-outline"
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>Request a Feature</Text>
-              </Pressable>
-              <View style={styles.separator} />
-              <Pressable
-                style={styles.row}
-                onPress={() => {
-                  onAppInfo?.();
-                  onClose();
-                }}
-                accessibilityRole="button"
-                accessibilityLabel="App Info"
-              >
-                <Ionicons
-                  name="information-circle-outline"
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>App Info</Text>
-              </Pressable>
-            </>
-          ) : (
-            renderSubPage()
-          )}
+          <Text style={styles.title}>Theme</Text>
+          <PillSelector
+            options={THEME_OPTIONS}
+            selected={currentPersonality}
+            onSelect={onSelectPersonality}
+          />
+          <View style={styles.separator} />
+          <Text style={styles.title}>Brightness</Text>
+          <PillSelector
+            options={BRIGHTNESS_OPTIONS}
+            selected={currentBrightness}
+            onSelect={onSelectBrightness}
+          />
+          <View style={styles.separator} />
+          <Text style={styles.title}>Layout</Text>
+          <PillSelector
+            options={LAYOUT_OPTIONS}
+            selected={currentLayout}
+            onSelect={onSelectLayout}
+          />
+          <View style={styles.separator} />
+          <Text style={styles.title}>Celebration</Text>
+          <PillSelector
+            options={CELEBRATION_OPTIONS}
+            selected={currentCelebration}
+            onSelect={onSelectCelebration}
+          />
         </View>
       </View>
     </Modal>
   );
 }
 
-/** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -470,7 +147,7 @@ function createStyles(colors: ColorTokens) {
     dropdown: {
       position: "absolute",
       backgroundColor: colors.contentBackground,
-      borderRadius: 12,
+      borderRadius: radii.lg,
       paddingVertical: 8,
       paddingHorizontal: 16,
       minWidth: 220,
@@ -495,42 +172,10 @@ function createStyles(colors: ColorTokens) {
       marginTop: 4,
       marginBottom: 4,
     },
-    row: {
-      flexDirection: "row",
-      alignItems: "center",
-      minHeight: 44,
-    },
-    rowIcon: {
-      marginRight: 12,
-    },
-    rowLabel: {
-      flex: 1,
-      fontSize: 15,
-      color: colors.textPrimary,
-    },
-    rowValue: {
-      fontSize: 13,
-      color: colors.textTertiary,
-      marginRight: 6,
-    },
     separator: {
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: colors.textTertiary,
       marginVertical: 4,
-    },
-    backRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      minHeight: 40,
-      marginBottom: 4,
-    },
-    backIcon: {
-      marginRight: 4,
-    },
-    backLabel: {
-      fontSize: 16,
-      fontWeight: "700",
-      color: colors.primary,
     },
   });
 }

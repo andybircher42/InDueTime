@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import {
   deliveryTimingLabel,
   formatDueDate,
@@ -30,8 +30,8 @@ export default function EntryDetailModal({
   entry,
   onClose,
 }: EntryDetailModalProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
 
   if (!entry) {
     return null;
@@ -59,13 +59,20 @@ export default function EntryDetailModal({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <Pressable style={styles.backdrop} onPress={onClose}>
+      <Pressable
+        style={styles.backdrop}
+        onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel="Close details"
+        accessibilityViewIsModal
+      >
         <Pressable
           style={[
             styles.card,
             entry.birthstone && { backgroundColor: entry.birthstone.color },
           ]}
           onPress={() => {}}
+          accessible={false}
         >
           {isDelivered && <Text style={styles.deliveredEmoji}>👶</Text>}
           {entry.birthstone && !isDelivered && (
@@ -74,7 +81,9 @@ export default function EntryDetailModal({
               size={48}
             />
           )}
-          <Text style={styles.name}>{entry.name}</Text>
+          <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
+            {entry.name}
+          </Text>
 
           <View style={styles.details}>
             {isDelivered && (
@@ -125,11 +134,11 @@ export default function EntryDetailModal({
   );
 }
 
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     backdrop: {
       flex: 1,
-      backgroundColor: "rgba(0,0,0,0.5)",
+      backgroundColor: colors.modalOverlay,
       justifyContent: "center",
       alignItems: "center",
       padding: 32,
@@ -137,13 +146,13 @@ function createStyles(colors: ColorTokens) {
     card: {
       width: "100%",
       backgroundColor: colors.primary,
-      borderRadius: 16,
+      borderRadius: radii.lg,
       padding: 24,
       alignItems: "center",
       gap: 12,
       ...Platform.select({
         ios: {
-          shadowColor: "#000",
+          shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.25,
           shadowRadius: 12,
@@ -159,7 +168,7 @@ function createStyles(colors: ColorTokens) {
     name: {
       fontSize: 22,
       fontWeight: "700",
-      color: "#ffffff",
+      color: colors.textOnColor,
       textAlign: "center",
     },
     details: {
@@ -174,25 +183,25 @@ function createStyles(colors: ColorTokens) {
     },
     detailLabel: {
       fontSize: 14,
-      color: "rgba(255,255,255,0.7)",
+      color: colors.textOnColorMuted,
     },
     detailValue: {
       fontSize: 14,
       fontWeight: "600",
-      color: "#ffffff",
+      color: colors.textOnColor,
       lineHeight: lineHeight(18),
     },
     closeButton: {
       marginTop: 8,
       paddingVertical: 10,
       paddingHorizontal: 32,
-      borderRadius: 8,
-      backgroundColor: "rgba(255,255,255,0.2)",
+      borderRadius: radii.sm,
+      backgroundColor: colors.overlayOnColor,
     },
     closeText: {
       fontSize: 16,
       fontWeight: "600",
-      color: "#ffffff",
+      color: colors.textOnColor,
     },
   });
 }

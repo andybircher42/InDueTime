@@ -39,7 +39,7 @@ export function parseBatchEntry(
 ): BatchEntryResult | BatchEntryError {
   const trimmed = text.trim();
   if (!trimmed) {
-    return { raw: text, error: "Empty entry" };
+    return { raw: text, error: "Nothing entered" };
   }
 
   // Try gestational age first
@@ -47,7 +47,10 @@ export function parseBatchEntry(
   if (gaMatch) {
     const name = trimmed.slice(0, gaMatch.index!).trim();
     if (!name) {
-      return { raw: trimmed, error: "Missing name" };
+      return { raw: trimmed, error: "Needs a name before the date" };
+    }
+    if (name.length > 50) {
+      return { raw: trimmed, error: "Name must be 50 characters or fewer" };
     }
     const weeks = parseInt(gaMatch[1], 10);
     const days = parseInt(gaMatch[2], 10);
@@ -87,7 +90,10 @@ export function parseBatchEntry(
     return parseDateEntry(trimmed, hyphenMatch, now);
   }
 
-  return { raw: trimmed, error: "No date or gestational age found" };
+  return {
+    raw: trimmed,
+    error: "Couldn\u2019t find a date or gestational age",
+  };
 }
 
 /** Shared logic for parsing a date match (slash or hyphen) into a BatchEntryResult. */
@@ -98,7 +104,10 @@ function parseDateEntry(
 ): BatchEntryResult | BatchEntryError {
   const name = trimmed.slice(0, match.index!).trim();
   if (!name) {
-    return { raw: trimmed, error: "Missing name" };
+    return { raw: trimmed, error: "Needs a name before the date" };
+  }
+  if (name.length > 50) {
+    return { raw: trimmed, error: "Name must be 50 characters or fewer" };
   }
 
   const month = parseInt(match[1], 10);

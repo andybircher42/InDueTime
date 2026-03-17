@@ -1,21 +1,12 @@
-import { ActionSheetIOS, Alert } from "react-native";
-import { act, fireEvent, screen } from "@testing-library/react-native";
+import { Alert } from "react-native";
+import { fireEvent, screen } from "@testing-library/react-native";
 
-import { Entry } from "@/storage";
+import { setupFakeTimers, teardownFakeTimers } from "@/test/fakeTimers";
+import { makeEntry } from "@/test/mockData";
 import renderWithTheme from "@/test/renderWithTheme";
 import { lightRowColors } from "@/theme";
 
 import EntryList from "./EntryList";
-
-/** Creates a test entry with a default dueDate. */
-function makeEntry(
-  fields: Omit<Entry, "dueDate" | "createdAt"> & {
-    dueDate?: string;
-    createdAt?: number;
-  },
-): Entry {
-  return { dueDate: "2026-06-15", createdAt: 1000, ...fields };
-}
 
 /** Renders EntryList with defaults for onDelete/onDeleteAll/onAdd. Returns the mocks. */
 function renderList(
@@ -71,44 +62,50 @@ const sameNameEntries = [
   makeEntry({ id: "3", name: "Sam", dueDate: "2026-07-20" }), // 20w0d
 ];
 
-const SORT_LABELS = [
-  "No sort",
-  "Due date (newest first)",
-  "Due date (oldest first)",
-  "Name (A\u2013Z)",
-  "Name (Z\u2013A)",
-];
-
-/** Presses the sort icon and selects an option by label via ActionSheetIOS. */
+/** Cycles the sort field button until the desired field is active, then optionally flips direction. */
 function selectSort(label: string) {
-  let capturedCallback: ((index: number) => void) | undefined;
-  jest
-    .spyOn(ActionSheetIOS, "showActionSheetWithOptions")
-    .mockImplementation((_opts, callback) => {
-      capturedCallback = callback;
-    });
-  fireEvent.press(screen.getByLabelText(/Sort:/));
-  const index = SORT_LABELS.indexOf(label);
-  act(() => {
-    capturedCallback?.(index);
-  });
+  // Map old combined labels to field + direction
+  const mapping: Record<string, { field: string; flipDir?: boolean }> = {
+    "Due date (furthest first)": { field: "Date", flipDir: true },
+    "Name (A\u2013Z)": { field: "Name" },
+    "Name (Z\u2013A)": { field: "Name", flipDir: true },
+    "Recently added": { field: "No sort" },
+  };
+  const target = mapping[label];
+  if (!target) {
+    return;
+  }
+
+  // Cycle field until we reach the right one
+  const maxPresses = 3;
+  for (let i = 0; i < maxPresses; i++) {
+    const btn = screen.getByLabelText(/Sort by:/);
+    if (btn.props.accessibilityLabel.includes(target.field)) {
+      break;
+    }
+    fireEvent.press(btn);
+  }
+
+  // Flip direction if needed
+  if (target.flipDir) {
+    fireEvent.press(screen.getByLabelText(/Direction:/));
+  }
 }
 
 // Fixed "today" for all tests so gestationalAgeFromDueDate produces predictable values.
 beforeEach(() => {
-  jest.useFakeTimers({ now: new Date(2026, 2, 2) });
+  setupFakeTimers();
 });
 
 afterEach(() => {
-  jest.useRealTimers();
-  jest.restoreAllMocks();
+  teardownFakeTimers();
 });
 
 describe("EntryList", () => {
   it("shows empty state with guidance when no entries", () => {
     renderList([]);
-    expect(screen.getByText("Ready when you are")).toBeTruthy();
-    expect(screen.getByText("Tap Add someone to get started")).toBeTruthy();
+    expect(screen.getByText("Track your first pregnancy")).toBeTruthy();
+    expect(screen.getByText("Enter a name and due date to start")).toBeTruthy();
   });
 
   it("renders entry name and formatted age", () => {
@@ -163,7 +160,7 @@ describe("EntryList", () => {
   it("sorts by due date ascending when selected from sort picker", () => {
     renderList(ageSortEntries);
 
-    selectSort("Due date (oldest first)");
+    selectSort("Due date (furthest first)");
 
     const names = screen.getAllByText(/Young|Old|Middle/);
     expect(names[0]).toHaveTextContent("Young");
@@ -193,27 +190,49 @@ describe("EntryList", () => {
     expect(names[2]).toHaveTextContent("Alex");
   });
 
-  it("opens sort picker when sort icon is pressed", () => {
-    const spy = jest
-      .spyOn(ActionSheetIOS, "showActionSheetWithOptions")
-      .mockImplementation(() => {});
+  it("cycles sort field when field button is pressed", () => {
     renderList([makeEntry({ id: "1", name: "Baby", dueDate: "2026-09-28" })]);
 
-    fireEvent.press(screen.getByLabelText(/Sort:/));
+    // Default field is "Date"
+    expect(screen.getByText("Date")).toBeTruthy();
 
-    expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        options: expect.arrayContaining(["Cancel"]),
-      }),
-      expect.any(Function),
-    );
+    // Cycle to "Name"
+    fireEvent.press(screen.getByLabelText(/Sort by:/));
+    expect(screen.getByText("Name")).toBeTruthy();
+
+    // Cycle to "No sort"
+    fireEvent.press(screen.getByLabelText(/Sort by:/));
+    expect(screen.getByText("No sort")).toBeTruthy();
   });
 
-  it("sort icon has accessible label reflecting current sort", () => {
+  it("toggles direction when direction button is pressed", () => {
     renderList([makeEntry({ id: "1", name: "Baby", dueDate: "2026-09-28" })]);
 
-    const sortButton = screen.getByLabelText(/Sort:/);
-    expect(sortButton.props.accessibilityLabel).toMatch(/due date.*descending/);
+    // Default direction is descending (arrow-down)
+    const dirBtn = screen.getByLabelText(/Direction:/);
+    expect(dirBtn.props.accessibilityLabel).toContain("descending");
+
+    // Flip to ascending
+    fireEvent.press(dirBtn);
+    const flipped = screen.getByLabelText(/Direction:/);
+    expect(flipped.props.accessibilityLabel).toContain("ascending");
+  });
+
+  it("hides direction button when sort is 'Added'", () => {
+    renderList([makeEntry({ id: "1", name: "Baby", dueDate: "2026-09-28" })]);
+
+    // Cycle to "No sort" (2 presses from "Date")
+    fireEvent.press(screen.getByLabelText(/Sort by:/));
+    fireEvent.press(screen.getByLabelText(/Sort by:/));
+
+    expect(screen.queryByLabelText(/Direction:/)).toBeNull();
+  });
+
+  it("sort field button has accessible label reflecting current field", () => {
+    renderList([makeEntry({ id: "1", name: "Baby", dueDate: "2026-09-28" })]);
+
+    const sortButton = screen.getByLabelText(/Sort by:/);
+    expect(sortButton.props.accessibilityLabel).toContain("Date");
   });
 
   it("breaks due date ties by name ascending", () => {
@@ -228,7 +247,7 @@ describe("EntryList", () => {
   it("keeps name-ascending tiebreaker when sorting due date ascending", () => {
     renderList(sameDateEntries);
 
-    selectSort("Due date (oldest first)");
+    selectSort("Due date (furthest first)");
 
     const names = screen.getAllByText(/Alex|Jamie|Quinn/);
     expect(names[0]).toHaveTextContent("Alex");
@@ -276,20 +295,20 @@ describe("EntryList", () => {
     renderList([]);
 
     expect(screen.queryByLabelText(/Sort:/)).toBeNull();
-    expect(screen.queryByText("Remove all")).toBeNull();
+    expect(screen.queryByLabelText("Remove all")).toBeNull();
   });
 
-  it("shows Remove all button when entries exist", () => {
+  it("shows overflow button when entries exist", () => {
     renderList([makeEntry({ id: "1", name: "Baby" })]);
 
-    expect(screen.getByText("Remove all")).toBeTruthy();
+    expect(screen.getByLabelText("Remove all")).toBeTruthy();
   });
 
   it("shows confirmation dialog when Remove all is pressed", () => {
     const alertSpy = jest.spyOn(Alert, "alert");
     renderList([makeEntry({ id: "1", name: "Baby" })]);
 
-    fireEvent.press(screen.getByText("Remove all"));
+    fireEvent.press(screen.getByLabelText("Remove all"));
 
     expect(alertSpy).toHaveBeenCalledWith(
       "Remove everyone?",
@@ -302,7 +321,7 @@ describe("EntryList", () => {
     const alertSpy = jest.spyOn(Alert, "alert");
     const { onDeleteAll } = renderList([makeEntry({ id: "1", name: "Baby" })]);
 
-    fireEvent.press(screen.getByText("Remove all"));
+    fireEvent.press(screen.getByLabelText("Remove all"));
 
     const buttons = alertSpy.mock.calls[0][2] as Array<{
       text: string;
@@ -317,7 +336,7 @@ describe("EntryList", () => {
     const alertSpy = jest.spyOn(Alert, "alert");
     const { onDeleteAll } = renderList([makeEntry({ id: "1", name: "Baby" })]);
 
-    fireEvent.press(screen.getByText("Remove all"));
+    fireEvent.press(screen.getByLabelText("Remove all"));
 
     const buttons = alertSpy.mock.calls[0][2] as Array<{
       text: string;

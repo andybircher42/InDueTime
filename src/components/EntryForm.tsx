@@ -17,7 +17,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import {
   BatchEntryError,
   getDateBounds,
@@ -26,6 +26,8 @@ import {
   toDisplayDateString,
   toISODateString,
 } from "@/util";
+
+import HelpButton from "./HelpButton";
 
 interface EntryFormProps {
   onAdd: (entry: { name: string; dueDate: string }) => void;
@@ -41,8 +43,8 @@ if (
 
 /** Form for adding a new gestation entry with name, weeks, and days fields. */
 export default function EntryForm({ onAdd, batch }: EntryFormProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
 
   const [name, setName] = useState("");
   const [dateAgeText, setDateAgeText] = useState("");
@@ -59,7 +61,6 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
   // Batch mode state
   const [batchText, setBatchText] = useState("");
   const [batchErrors, setBatchErrors] = useState<BatchEntryError[]>([]);
-  const [showHelp, setShowHelp] = useState(false);
 
   const hasName = name.trim().length > 0;
 
@@ -170,13 +171,10 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
 
   const handleDateChange = useCallback(
     (_event: DateTimePickerEvent, selected?: Date) => {
-      // TODO: Refactor date picker into DatePicker.ios.tsx / DatePicker.android.tsx platform files
-      // Android native dialog auto-closes on selection; iOS stays open
-      if (Platform.OS !== "ios") {
-        setShowPicker(false);
-      }
+      // Both platforms close the picker on selection
+      setShowPicker(false);
+      setTouched(true);
       if (selected) {
-        // Clamp to bounds — iOS spinner can overshoot min/max
         const bounds = getDateBounds();
         const clamped =
           selected < bounds.min
@@ -190,11 +188,6 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
     [],
   );
 
-  const handlePickerDone = () => {
-    setShowPicker(false);
-    setTouched(true);
-  };
-
   const canBatchAdd = batchText.trim().length > 0;
 
   if (batch) {
@@ -202,34 +195,13 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
       <View style={styles.form}>
         <View style={styles.batchHeader}>
           <Text style={styles.label}>Add multiple people</Text>
-          <Pressable
-            onPress={() => setShowHelp((prev) => !prev)}
-            accessibilityRole="button"
-            accessibilityLabel="Show format help"
-            hitSlop={8}
-          >
-            <Ionicons
-              name="help-circle-outline"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </Pressable>
+          <HelpButton
+            title="Batch format"
+            message={
+              "Separate entries with commas.\n\nExample:\nSam 6/14, Alex 35w5d, Jamie 6-14-26, Riley 22w 3d\n\nAll valid entries will be added right away. Any that have errors will be called out so you can fix them."
+            }
+          />
         </View>
-
-        {showHelp && (
-          <View
-            style={[
-              styles.helpBox,
-              { backgroundColor: colors.inputBackground },
-            ]}
-            accessibilityLabel="Format help"
-          >
-            <Text style={styles.helpTitle}>Separate entries with commas</Text>
-            <Text style={styles.helpCode}>
-              Sam 6/14, Alex 35w5d, Jamie 6-14-26, Riley 22w 3d
-            </Text>
-          </View>
-        )}
 
         <TextInput
           style={styles.batchInput}
@@ -327,11 +299,19 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
         <View>
           <View style={styles.ageRow}>
             <View style={styles.inputWithHint}>
-              <Text style={styles.label}>Due Date or Gestational Age</Text>
+              <Text style={styles.label}>Due date or gestational age</Text>
               <View style={styles.dateInputRow}>
                 <Pressable
                   style={styles.calendarButton}
-                  onPress={() => setShowPicker(true)}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    // Pre-fill today's date if the field is empty, so iOS
+                    // spinner "Done" works even without scrolling the picker
+                    if (!parsedResult) {
+                      setDateAgeText(toDisplayDateString(new Date()));
+                    }
+                    setShowPicker(true);
+                  }}
                   accessibilityLabel="Select due date"
                 >
                   <Ionicons
@@ -394,19 +374,11 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
               <DateTimePicker
                 value={parsedResult?.dueDate ?? new Date()}
                 mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
+                display={Platform.OS === "ios" ? "inline" : "default"}
                 onChange={handleDateChange}
                 minimumDate={getDateBounds().min}
                 maximumDate={getDateBounds().max}
               />
-              {Platform.OS === "ios" && (
-                <Pressable
-                  style={styles.pickerDoneButton}
-                  onPress={handlePickerDone}
-                >
-                  <Text style={styles.pickerDoneText}>Done</Text>
-                </Pressable>
-              )}
             </View>
           )}
         </View>
@@ -416,7 +388,7 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     form: {
       backgroundColor: colors.contentBackground,
@@ -431,7 +403,7 @@ function createStyles(colors: ColorTokens) {
     nameInput: {
       borderWidth: 1,
       borderColor: colors.inputBorder,
-      borderRadius: 10,
+      borderRadius: radii.md,
       paddingVertical: 14,
       paddingHorizontal: 16,
       fontSize: 20,
@@ -466,7 +438,7 @@ function createStyles(colors: ColorTokens) {
       flex: 1,
       borderWidth: 1,
       borderColor: colors.inputBorder,
-      borderRadius: 8,
+      borderRadius: radii.sm,
       padding: 12,
       fontSize: 16,
       backgroundColor: colors.inputBackground,
@@ -475,7 +447,7 @@ function createStyles(colors: ColorTokens) {
     calendarButton: {
       borderWidth: 1,
       borderColor: colors.inputBorder,
-      borderRadius: 8,
+      borderRadius: radii.sm,
       paddingHorizontal: 12,
       justifyContent: "center",
       alignItems: "center",
@@ -500,20 +472,9 @@ function createStyles(colors: ColorTokens) {
       color: colors.primary,
       fontWeight: "600",
     },
-    pickerDoneButton: {
-      alignSelf: "flex-end",
-      paddingVertical: 8,
-      paddingHorizontal: 16,
-      marginTop: 4,
-    },
-    pickerDoneText: {
-      color: colors.primary,
-      fontSize: 16,
-      fontWeight: "600",
-    },
     addButton: {
       backgroundColor: colors.primary,
-      borderRadius: 8,
+      borderRadius: radii.sm,
       paddingHorizontal: 24,
       paddingVertical: 12,
       justifyContent: "center",
@@ -540,7 +501,7 @@ function createStyles(colors: ColorTokens) {
     batchInput: {
       borderWidth: 1,
       borderColor: colors.inputBorder,
-      borderRadius: 8,
+      borderRadius: radii.sm,
       padding: 12,
       fontSize: 15,
       backgroundColor: colors.inputBackground,
@@ -554,24 +515,6 @@ function createStyles(colors: ColorTokens) {
     },
     batchErrorBox: {
       marginBottom: 8,
-    },
-    helpBox: {
-      borderRadius: 8,
-      padding: 12,
-      marginBottom: 8,
-    },
-    helpTitle: {
-      fontSize: 13,
-      fontWeight: "600",
-      color: colors.textPrimary,
-      marginBottom: 6,
-    },
-    helpCode: {
-      fontSize: 12,
-      color: colors.textPrimary,
-      fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-      marginTop: 2,
-      marginBottom: 2,
     },
   });
 }

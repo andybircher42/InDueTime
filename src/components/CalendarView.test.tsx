@@ -9,7 +9,9 @@ describe("CalendarView", () => {
     renderWithTheme(<CalendarView entries={[]} />);
     expect(screen.getByText("No one to show yet")).toBeTruthy();
     expect(
-      screen.getByText("Switch to the list view to add someone"),
+      screen.getByText(
+        "Add someone in the Expecting tab to see when they're due",
+      ),
     ).toBeTruthy();
   });
 

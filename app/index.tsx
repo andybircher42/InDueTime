@@ -19,16 +19,25 @@ import { StatusBar } from "expo-status-bar";
 import {
   AppInfoModal,
   CalendarView,
+  CelebrationOverlay,
   DeliveredList,
   DevToolbar,
   EntryGrid,
   EntryList,
   InfoToast,
+  SettingsModal,
   ThemePickerModal,
+  ToastStack,
   UndoToast,
 } from "@/components";
-import { useEntries } from "@/hooks";
-import { Entry, resetAgreement, resetOnboarding } from "@/storage";
+import { useEntries, useShakeUndo } from "@/hooks";
+import {
+  checkAnalyticsOptOut,
+  Entry,
+  resetAgreement,
+  resetOnboarding,
+  setAnalyticsOptOut,
+} from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
 import { reportError } from "@/util";
 
@@ -47,9 +56,11 @@ export default function HomeScreen() {
     personality,
     brightness,
     layout,
+    celebrationStyle,
     setPersonality,
     setBrightness,
     setLayout,
+    setCelebrationStyle,
   } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -57,10 +68,15 @@ export default function HomeScreen() {
   type ViewTab = "expecting" | "delivered" | "calendar";
   const [view, setView] = useState<ViewTab>("expecting");
   const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [showDevTools, setShowDevTools] = useState(false);
   const [showAppInfo, setShowAppInfo] = useState(false);
   const [pickerAnchor, setPickerAnchor] = useState({ top: 0, right: 0 });
+  const [settingsAnchor, setSettingsAnchor] = useState({ top: 0, right: 0 });
   const [devAnchor, setDevAnchor] = useState({ top: 0, right: 0 });
+  const [analyticsOptOut, setAnalyticsOptOutState] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
+  const themeRef = useRef<View>(null);
   const settingsRef = useRef<View>(null);
   const devRef = useRef<View>(null);
 
@@ -69,9 +85,16 @@ export default function HomeScreen() {
   const headerLogo = isDark ? headerLogoDark : headerLogoLight;
 
   const openThemePicker = useCallback(() => {
-    settingsRef.current?.measureInWindow((_x, y, _width, height) => {
+    themeRef.current?.measureInWindow((_x, y, _width, height) => {
       setPickerAnchor({ top: y + height + 4, right: 12 });
       setShowThemePicker(true);
+    });
+  }, []);
+
+  const openSettings = useCallback(() => {
+    settingsRef.current?.measureInWindow((_x, y, _width, height) => {
+      setSettingsAnchor({ top: y + height + 4, right: 12 });
+      setShowSettings(true);
     });
   }, []);
 
@@ -104,11 +127,51 @@ export default function HomeScreen() {
     dismissSaveError,
   } = useEntries();
 
+  // Shake phone to trigger undo when a toast is visible
+  const shakeHandler = deletedEntry
+    ? undo
+    : deliveredEntry
+      ? undoDeliver
+      : undefined;
+  useShakeUndo(shakeHandler, !!(deletedEntry || deliveredEntry));
+
+  // Trigger celebration overlay only when a new delivery happens
+  const prevDeliveredRef = useRef(deliveredEntry);
+  useEffect(() => {
+    if (
+      deliveredEntry &&
+      deliveredEntry !== prevDeliveredRef.current &&
+      celebrationStyle !== "none"
+    ) {
+      setCelebrating(true);
+    }
+    prevDeliveredRef.current = deliveredEntry;
+  }, [deliveredEntry, celebrationStyle]);
+
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const expectingCount = useMemo(
+    () => entries.filter((e) => !e.deliveredAt).length,
+    [entries],
+  );
+  const deliveredCount = useMemo(
+    () => entries.filter((e) => !!e.deliveredAt).length,
+    [entries],
+  );
 
   useEffect(() => {
     load().catch((e) => reportError("Failed to load entries", e));
+    checkAnalyticsOptOut()
+      .then(setAnalyticsOptOutState)
+      .catch(() => {});
   }, [load]);
+
+  const handleToggleAnalytics = useCallback(() => {
+    const next = !analyticsOptOut;
+    setAnalyticsOptOutState(next);
+    setAnalyticsOptOut(next).catch((e) =>
+      reportError("Failed to save analytics preference", e),
+    );
+  }, [analyticsOptOut]);
 
   const handleDayPress = useCallback(
     (date: string, dueEntries: Entry[]) => {
@@ -172,15 +235,28 @@ export default function HomeScreen() {
             </Pressable>
           )}
           <Pressable
-            ref={settingsRef}
+            ref={themeRef}
             onPress={openThemePicker}
-            accessibilityLabel="Theme settings"
+            accessibilityLabel="Appearance"
+            accessibilityRole="button"
+            hitSlop={10}
+          >
+            <Ionicons
+              name="color-palette-outline"
+              size={22}
+              color={colors.textPrimary}
+            />
+          </Pressable>
+          <Pressable
+            ref={settingsRef}
+            onPress={openSettings}
+            accessibilityLabel="Settings"
             accessibilityRole="button"
             hitSlop={10}
           >
             <Ionicons
               name="settings-outline"
-              size={24}
+              size={22}
               color={colors.textPrimary}
             />
           </Pressable>
@@ -190,9 +266,9 @@ export default function HomeScreen() {
           {(["expecting", "delivered", "calendar"] as const).map((tab) => {
             const count =
               tab === "expecting"
-                ? entries.filter((e) => !e.deliveredAt).length
+                ? expectingCount
                 : tab === "delivered"
-                  ? entries.filter((e) => !!e.deliveredAt).length
+                  ? deliveredCount
                   : 0;
             return (
               <Pressable
@@ -219,13 +295,15 @@ export default function HomeScreen() {
           })}
         </View>
 
-        {view === "expecting" ? (
-          layout === "cozy" ? (
+        <View
+          style={[styles.tabContent, view !== "expecting" && styles.hidden]}
+        >
+          {layout === "cozy" ? (
             <EntryGrid
               entries={entries}
               onDelete={remove}
               onDeliver={deliver}
-              onDeleteAll={removeAll}
+              onDeleteAll={() => removeAll("expecting")}
               onAdd={add}
             />
           ) : (
@@ -233,28 +311,47 @@ export default function HomeScreen() {
               entries={entries}
               onDelete={remove}
               onDeliver={deliver}
-              onDeleteAll={removeAll}
+              onDeleteAll={() => removeAll("expecting")}
               onAdd={add}
             />
-          )
-        ) : view === "delivered" ? (
-          <DeliveredList entries={entries} onDelete={remove} />
-        ) : (
+          )}
+        </View>
+        <View
+          style={[styles.tabContent, view !== "delivered" && styles.hidden]}
+        >
+          <DeliveredList
+            entries={entries}
+            onDelete={remove}
+            onDeleteAll={() => removeAll("delivered")}
+            deliveredTTLDays={deliveredTTLDays}
+            onChangeDeliveredTTL={updateDeliveredTTL}
+          />
+        </View>
+        <View style={[styles.tabContent, view !== "calendar" && styles.hidden]}>
           <CalendarView entries={entries} onDayPress={handleDayPress} />
-        )}
+        </View>
         <ThemePickerModal
           visible={showThemePicker}
           currentPersonality={personality}
           currentBrightness={brightness}
           currentLayout={layout}
-          currentDeliveredTTL={deliveredTTLDays}
+          currentCelebration={celebrationStyle}
           onSelectPersonality={setPersonality}
           onSelectBrightness={setBrightness}
           onSelectLayout={setLayout}
-          onSelectDeliveredTTL={updateDeliveredTTL}
+          onSelectCelebration={setCelebrationStyle}
           onClose={() => setShowThemePicker(false)}
-          onAppInfo={() => setShowAppInfo(true)}
           anchor={pickerAnchor}
+        />
+        <SettingsModal
+          visible={showSettings}
+          currentDeliveredTTL={deliveredTTLDays}
+          analyticsOptOut={analyticsOptOut}
+          onSelectDeliveredTTL={updateDeliveredTTL}
+          onToggleAnalytics={handleToggleAnalytics}
+          onClose={() => setShowSettings(false)}
+          onAppInfo={() => setShowAppInfo(true)}
+          anchor={settingsAnchor}
         />
         {__DEV__ && (
           <DevToolbar
@@ -269,44 +366,54 @@ export default function HomeScreen() {
           visible={showAppInfo}
           onClose={() => setShowAppInfo(false)}
         />
-
-        {deletedEntry && (
-          <UndoToast
-            entry={deletedEntry.entry}
-            onUndo={undo}
-            onDismiss={dismissUndo}
-          />
-        )}
-
-        {deliveredEntry && !deletedEntry && (
-          <UndoToast
+        {celebrating && deliveredEntry && (
+          <CelebrationOverlay
             entry={deliveredEntry.entry}
-            action="Delivered"
-            onUndo={undoDeliver}
-            onDismiss={dismissDelivered}
+            style={celebrationStyle}
+            onComplete={() => setCelebrating(false)}
           />
         )}
 
-        {discardedCount > 0 && !deletedEntry && !deliveredEntry && (
-          <InfoToast
-            message={
-              discardedCount === 1
-                ? "We removed someone whose data was unreadable"
-                : `We removed ${discardedCount} people whose data was unreadable`
-            }
-            onDismiss={dismissDiscarded}
-          />
-        )}
-
-        {saveError &&
-          !deletedEntry &&
-          !deliveredEntry &&
-          discardedCount === 0 && (
-            <InfoToast
-              message="Your changes might not be saved. Try again or restart the app."
-              onDismiss={dismissSaveError}
+        <ToastStack>
+          {deletedEntry && (
+            <UndoToast
+              entry={deletedEntry.entry}
+              onUndo={undo}
+              onDismiss={dismissUndo}
+              embedded
             />
           )}
+
+          {deliveredEntry && !celebrating && (
+            <UndoToast
+              entry={deliveredEntry.entry}
+              action="Delivered"
+              onUndo={undoDeliver}
+              onDismiss={dismissDelivered}
+              embedded
+            />
+          )}
+
+          {discardedCount > 0 && (
+            <InfoToast
+              message={
+                discardedCount === 1
+                  ? "An entry couldn\u2019t be loaded and was cleaned up"
+                  : `${discardedCount} entries couldn\u2019t be loaded and were cleaned up`
+              }
+              onDismiss={dismissDiscarded}
+              embedded
+            />
+          )}
+
+          {saveError && (
+            <InfoToast
+              message="Couldn\u2019t save \u2014 try again or restart the app"
+              onDismiss={dismissSaveError}
+              embedded
+            />
+          )}
+        </ToastStack>
 
         <StatusBar style={resolvedTheme === "dark" ? "light" : "dark"} />
       </KeyboardAvoidingView>
@@ -381,6 +488,12 @@ function createStyles(colors: ColorTokens) {
       paddingVertical: 4,
       borderRadius: 6,
       overflow: "hidden",
+    },
+    tabContent: {
+      flex: 1,
+    },
+    hidden: {
+      display: "none",
     },
   });
 }

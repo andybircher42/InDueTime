@@ -3,20 +3,26 @@ import { Animated, StyleSheet, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useSwipeDismiss } from "@/hooks";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 
 interface InfoToastProps {
   message: string;
   onDismiss: () => void;
+  /** When true, skip absolute positioning (parent handles layout). */
+  embedded?: boolean;
 }
 
 const TOAST_DURATION_MS = 5000;
 
 /** Simple informational toast with auto-dismiss and swipe-to-dismiss. */
-export default function InfoToast({ message, onDismiss }: InfoToastProps) {
-  const { colors } = useTheme();
+export default function InfoToast({
+  message,
+  onDismiss,
+  embedded = false,
+}: InfoToastProps) {
+  const { colors, radii } = useTheme();
   const insets = useSafeAreaInsets();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const { animatedValue: translateY, panHandlers } = useSwipeDismiss({
     axis: "y",
     threshold: 30,
@@ -35,10 +41,13 @@ export default function InfoToast({ message, onDismiss }: InfoToastProps) {
     <Animated.View
       style={[
         styles.container,
-        {
+        !embedded && {
+          position: "absolute",
           bottom: Math.max(insets.bottom, 16) + 16,
-          transform: [{ translateY }],
+          left: 16,
+          right: 16,
         },
+        { transform: [{ translateY }] },
       ]}
       accessibilityRole="alert"
       accessibilityLiveRegion="assertive"
@@ -51,15 +60,11 @@ export default function InfoToast({ message, onDismiss }: InfoToastProps) {
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
-      position: "absolute",
-      // bottom is applied dynamically via useSafeAreaInsets
-      left: 16,
-      right: 16,
       backgroundColor: colors.toastBackground,
-      borderRadius: 10,
+      borderRadius: radii.md,
       flexDirection: "row",
       alignItems: "center",
       paddingVertical: 12,
