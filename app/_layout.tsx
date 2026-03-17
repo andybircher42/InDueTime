@@ -56,9 +56,11 @@ export default function RootLayout() {
     personality,
     brightness,
     layout,
+    celebrationStyle,
     setPersonality,
     setBrightness,
     setLayout,
+    setCelebrationStyle,
     loadThemePreference,
   } = useThemePreference();
 
@@ -69,9 +71,11 @@ export default function RootLayout() {
           personality={personality}
           brightness={brightness}
           layout={layout}
+          celebrationStyle={celebrationStyle}
           setPersonality={setPersonality}
           setBrightness={setBrightness}
           setLayout={setLayout}
+          setCelebrationStyle={setCelebrationStyle}
         >
           <RootGate loadThemePreference={loadThemePreference} />
         </ThemeProvider>

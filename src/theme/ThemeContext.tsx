@@ -1,6 +1,8 @@
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import { useColorScheme } from "react-native";
 
+import type { CelebrationStyle } from "@/components/CelebrationOverlay";
+
 import {
   Brightness,
   ColorTokens,
@@ -28,9 +30,11 @@ interface ThemeContextValue {
   personality: Personality;
   brightness: Brightness;
   layout: Layout;
+  celebrationStyle: CelebrationStyle;
   setPersonality: (p: Personality) => void;
   setBrightness: (b: Brightness) => void;
   setLayout: (l: Layout) => void;
+  setCelebrationStyle: (s: CelebrationStyle) => void;
   /** @deprecated Use `brightness` + `personality` instead. */
   themeMode: Brightness;
   /** @deprecated Use `setBrightness` instead. */
@@ -43,9 +47,11 @@ interface ThemeProviderProps {
   personality: Personality;
   brightness: Brightness;
   layout: Layout;
+  celebrationStyle: CelebrationStyle;
   setPersonality: (p: Personality) => void;
   setBrightness: (b: Brightness) => void;
   setLayout: (l: Layout) => void;
+  setCelebrationStyle: (s: CelebrationStyle) => void;
   children: ReactNode;
 }
 
@@ -54,9 +60,11 @@ export function ThemeProvider({
   personality,
   brightness,
   layout,
+  celebrationStyle,
   setPersonality,
   setBrightness,
   setLayout,
+  setCelebrationStyle,
   children,
 }: ThemeProviderProps) {
   const systemScheme = useColorScheme();
@@ -79,9 +87,11 @@ export function ThemeProvider({
       personality,
       brightness,
       layout,
+      celebrationStyle,
       setPersonality,
       setBrightness,
       setLayout,
+      setCelebrationStyle,
       // Legacy aliases
       themeMode: brightness,
       setThemeMode: setBrightness,
@@ -91,9 +101,11 @@ export function ThemeProvider({
     personality,
     brightness,
     layout,
+    celebrationStyle,
     setPersonality,
     setBrightness,
     setLayout,
+    setCelebrationStyle,
   ]);
 
   return (

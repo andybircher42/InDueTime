@@ -17,6 +17,7 @@ import {
   useTheme,
 } from "@/theme";
 
+import type { CelebrationStyle } from "./CelebrationOverlay";
 import PillSelector from "./PillSelector";
 import type { Ionicons } from "@expo/vector-icons";
 
@@ -52,27 +53,41 @@ const BRIGHTNESS_OPTIONS: {
   { value: "dark", label: "Dark", icon: "moon-outline" },
 ];
 
+const CELEBRATION_OPTIONS: {
+  value: CelebrationStyle;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}[] = [
+  { value: "confetti", label: "Confetti", icon: "sparkles-outline" },
+  { value: "gentle", label: "Gentle", icon: "heart-outline" },
+  { value: "none", label: "None", icon: "remove-circle-outline" },
+];
+
 interface ThemePickerModalProps {
   visible: boolean;
   currentPersonality: Personality;
   currentBrightness: Brightness;
   currentLayout: Layout;
+  currentCelebration: CelebrationStyle;
   onSelectPersonality: (p: Personality) => void;
   onSelectBrightness: (b: Brightness) => void;
   onSelectLayout: (l: Layout) => void;
+  onSelectCelebration: (s: CelebrationStyle) => void;
   onClose: () => void;
   anchor?: { top: number; right: number };
 }
 
-/** Dropdown modal for selecting theme, brightness, and layout. */
+/** Dropdown modal for selecting theme, brightness, layout, and celebration style. */
 export default function ThemePickerModal({
   visible,
   currentPersonality,
   currentBrightness,
   currentLayout,
+  currentCelebration,
   onSelectPersonality,
   onSelectBrightness,
   onSelectLayout,
+  onSelectCelebration,
   onClose,
   anchor,
 }: ThemePickerModalProps) {
@@ -109,6 +124,13 @@ export default function ThemePickerModal({
             options={LAYOUT_OPTIONS}
             selected={currentLayout}
             onSelect={onSelectLayout}
+          />
+          <View style={styles.separator} />
+          <Text style={styles.title}>Celebration</Text>
+          <PillSelector
+            options={CELEBRATION_OPTIONS}
+            selected={currentCelebration}
+            onSelect={onSelectCelebration}
           />
         </View>
       </View>

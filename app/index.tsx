@@ -19,6 +19,7 @@ import { StatusBar } from "expo-status-bar";
 import {
   AppInfoModal,
   CalendarView,
+  CelebrationOverlay,
   DeliveredList,
   DevToolbar,
   EntryGrid,
@@ -55,9 +56,11 @@ export default function HomeScreen() {
     personality,
     brightness,
     layout,
+    celebrationStyle,
     setPersonality,
     setBrightness,
     setLayout,
+    setCelebrationStyle,
   } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -72,6 +75,7 @@ export default function HomeScreen() {
   const [settingsAnchor, setSettingsAnchor] = useState({ top: 0, right: 0 });
   const [devAnchor, setDevAnchor] = useState({ top: 0, right: 0 });
   const [analyticsOptOut, setAnalyticsOptOutState] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
   const themeRef = useRef<View>(null);
   const settingsRef = useRef<View>(null);
   const devRef = useRef<View>(null);
@@ -130,6 +134,13 @@ export default function HomeScreen() {
       ? undoDeliver
       : undefined;
   useShakeUndo(shakeHandler, !!(deletedEntry || deliveredEntry));
+
+  // Trigger celebration overlay when a delivery happens
+  useEffect(() => {
+    if (deliveredEntry && celebrationStyle !== "none") {
+      setCelebrating(true);
+    }
+  }, [deliveredEntry, celebrationStyle]);
 
   const styles = useMemo(() => createStyles(colors), [colors]);
   const expectingCount = useMemo(
@@ -318,9 +329,11 @@ export default function HomeScreen() {
           currentPersonality={personality}
           currentBrightness={brightness}
           currentLayout={layout}
+          currentCelebration={celebrationStyle}
           onSelectPersonality={setPersonality}
           onSelectBrightness={setBrightness}
           onSelectLayout={setLayout}
+          onSelectCelebration={setCelebrationStyle}
           onClose={() => setShowThemePicker(false)}
           anchor={pickerAnchor}
         />
@@ -347,6 +360,13 @@ export default function HomeScreen() {
           visible={showAppInfo}
           onClose={() => setShowAppInfo(false)}
         />
+        {celebrating && deliveredEntry && (
+          <CelebrationOverlay
+            entry={deliveredEntry.entry}
+            style={celebrationStyle}
+            onComplete={() => setCelebrating(false)}
+          />
+        )}
 
         <ToastStack>
           {deletedEntry && (
@@ -358,7 +378,7 @@ export default function HomeScreen() {
             />
           )}
 
-          {deliveredEntry && (
+          {deliveredEntry && !celebrating && (
             <UndoToast
               entry={deliveredEntry.entry}
               action="Delivered"
