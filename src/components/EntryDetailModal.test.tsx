@@ -63,8 +63,7 @@ describe("EntryDetailModal", () => {
     renderWithTheme(
       <EntryDetailModal entry={entryWithBirthstone} onClose={onClose} />,
     );
-    expect(screen.getByText("Birthstone")).toBeTruthy();
-    expect(screen.getByText("Pearl")).toBeTruthy();
+    expect(screen.getByText(/Birthstone.*Pearl/)).toBeTruthy();
   });
 
   it("close button calls onClose", () => {

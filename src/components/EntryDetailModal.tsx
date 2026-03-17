@@ -88,6 +88,20 @@ export default function EntryDetailModal({
           onPress={() => {}}
           accessible={false}
         >
+          {entry.symbolType && (
+            <Text
+              style={[
+                styles.symbolBadge,
+                { color: mutedTextColor, borderColor: mutedTextColor },
+              ]}
+            >
+              {entry.symbolType === "zodiac"
+                ? `Zodiac \u2013 ${entry.zodiacSign?.name ?? ""}`
+                : entry.symbolType === "flower"
+                  ? `Flower \u2013 ${entry.birthFlower?.name ?? ""}`
+                  : `Birthstone \u2013 ${entry.birthstone?.name ?? ""}`}
+            </Text>
+          )}
           {isDelivered && <Text style={styles.deliveredEmoji}>👶</Text>}
           {!isDelivered &&
             (entry.symbolType === "zodiac"
@@ -157,44 +171,6 @@ export default function EntryDetailModal({
                 </Text>
               </View>
             )}
-            {entry.symbolType === "zodiac"
-              ? entry.zodiacSign && (
-                  <View style={styles.detailRow}>
-                    <Text
-                      style={[styles.detailLabel, { color: mutedTextColor }]}
-                    >
-                      Zodiac sign
-                    </Text>
-                    <Text style={[styles.detailValue, { color: textColor }]}>
-                      {entry.zodiacSign.name}
-                    </Text>
-                  </View>
-                )
-              : entry.symbolType === "flower"
-                ? entry.birthFlower && (
-                    <View style={styles.detailRow}>
-                      <Text
-                        style={[styles.detailLabel, { color: mutedTextColor }]}
-                      >
-                        Birth flower
-                      </Text>
-                      <Text style={[styles.detailValue, { color: textColor }]}>
-                        {entry.birthFlower.name}
-                      </Text>
-                    </View>
-                  )
-                : entry.birthstone && (
-                    <View style={styles.detailRow}>
-                      <Text
-                        style={[styles.detailLabel, { color: mutedTextColor }]}
-                      >
-                        Birthstone
-                      </Text>
-                      <Text style={[styles.detailValue, { color: textColor }]}>
-                        {entry.birthstone.name}
-                      </Text>
-                    </View>
-                  )}
           </View>
 
           <Pressable
@@ -238,6 +214,17 @@ function createStyles(colors: ColorTokens, radii: RadiiTokens) {
           elevation: 8,
         },
       }),
+    },
+    symbolBadge: {
+      fontSize: 11,
+      fontWeight: "600",
+      letterSpacing: 0.5,
+      textTransform: "uppercase",
+      borderWidth: 1,
+      borderRadius: 10,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      overflow: "hidden",
     },
     deliveredEmoji: {
       fontSize: 48,
