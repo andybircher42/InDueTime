@@ -1,8 +1,8 @@
 /**
  * ESLint rule: version-sync
  *
- * Ensures that "version" and "runtimeVersion" in app.json are always
- * equal.  Runs on app.json only (configure via eslint file matching).
+ * Ensures that "version" and "runtimeVersion" match in app.json.
+ * Checks both top-level and per-platform (ios/android) pairs.
  */
 
 const fs = require("fs");
@@ -18,7 +18,7 @@ module.exports = {
     },
     messages: {
       mismatch:
-        'app.json "version" ({{version}}) and "runtimeVersion" ({{runtimeVersion}}) must match.',
+        'app.json {{scope}} "version" ({{version}}) and "runtimeVersion" ({{runtimeVersion}}) must match.',
     },
     schema: [],
   },
@@ -45,22 +45,32 @@ module.exports = {
         }
 
         const expo = config.expo ?? config;
-        const version = expo.version;
-        const runtimeVersion = expo.runtimeVersion;
 
-        if (
-          version &&
-          runtimeVersion &&
-          typeof runtimeVersion === "string" &&
-          version !== runtimeVersion
-        ) {
-          context.report({
-            loc: { line: 1, column: 0 },
-            messageId: "mismatch",
-            data: { version, runtimeVersion },
-          });
-        }
+        // Check top-level version/runtimeVersion (if present)
+        checkPair(context, expo, "top-level");
+
+        // Check per-platform version/runtimeVersion
+        if (expo.ios) checkPair(context, expo.ios, "ios");
+        if (expo.android) checkPair(context, expo.android, "android");
       },
     };
   },
 };
+
+function checkPair(context, obj, scope) {
+  const version = obj.version;
+  const runtimeVersion = obj.runtimeVersion;
+
+  if (
+    version &&
+    runtimeVersion &&
+    typeof runtimeVersion === "string" &&
+    version !== runtimeVersion
+  ) {
+    context.report({
+      loc: { line: 1, column: 0 },
+      messageId: "mismatch",
+      data: { version, runtimeVersion, scope },
+    });
+  }
+}
