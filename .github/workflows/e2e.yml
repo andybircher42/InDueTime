@@ -63,9 +63,11 @@ jobs:
           disable-animations: true
           script: |
             adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
+            sleep 10
             adb install android/app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -n com.andybircher.induetime/.MainActivity
-            sleep 5
+            sleep 15
+            export MAESTRO_DRIVER_STARTUP_TIMEOUT=120000
             maestro test .maestro/ --format junit --output maestro-results.xml
 
       - name: Upload Maestro results
