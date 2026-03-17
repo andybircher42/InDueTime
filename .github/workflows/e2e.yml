@@ -1,13 +1,8 @@
 name: E2E (Maestro)
 on:
   workflow_dispatch: # manual trigger
-  push:
-    branches: [main]
-    paths:
-      - "src/**"
-      - "app/**"
-      - ".maestro/**"
-      - "package.json"
+  schedule:
+    - cron: "0 9,21 * * *" # twice daily at 9am and 9pm UTC
 
 jobs:
   maestro:
