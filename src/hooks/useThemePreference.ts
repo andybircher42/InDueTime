@@ -42,7 +42,7 @@ export default function useThemePreference() {
   const [brightness, setBrightnessState] = useState<Brightness>("system");
   const [layout, setLayoutState] = useState<Layout>("compact");
   const [celebrationStyle, setCelebrationStyleState] =
-    useState<CelebrationStyle>("confetti");
+    useState<CelebrationStyle>("random");
 
   /** Hydrates theme preferences from AsyncStorage. Call once during app initialization. */
   const loadThemePreference = useCallback(async () => {
