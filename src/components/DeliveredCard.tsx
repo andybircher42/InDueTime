@@ -10,6 +10,7 @@ import {
   getBirthFlowerImage,
   getBirthstone,
   getBirthstoneImage,
+  getZodiacSignImage,
 } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
@@ -29,12 +30,17 @@ const DeliveredCard = React.memo(function DeliveredCard({
   const { colors, radii } = useTheme();
   const dueDateMonth = new Date(entry.dueDate + "T00:00:00").getMonth() + 1;
   const isFlower = entry.symbolType === "flower";
-  const symbol = isFlower
-    ? (entry.birthFlower ?? getBirthFlower(dueDateMonth))
-    : (entry.birthstone ?? getBirthstone(dueDateMonth));
-  const symbolImage = isFlower
-    ? getBirthFlowerImage(symbol.name)
-    : getBirthstoneImage(symbol.name);
+  const isZodiac = entry.symbolType === "zodiac";
+  const symbol = isZodiac
+    ? (entry.zodiacSign ?? { name: "Aries", color: "#E53935" })
+    : isFlower
+      ? (entry.birthFlower ?? getBirthFlower(dueDateMonth))
+      : (entry.birthstone ?? getBirthstone(dueDateMonth));
+  const symbolImage = isZodiac
+    ? getZodiacSignImage(symbol.name)
+    : isFlower
+      ? getBirthFlowerImage(symbol.name)
+      : getBirthstoneImage(symbol.name);
 
   const timing = entry.deliveredAt
     ? deliveryTimingLabel(entry.dueDate, entry.deliveredAt)

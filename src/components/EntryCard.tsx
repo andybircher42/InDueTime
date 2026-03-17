@@ -10,6 +10,7 @@ import {
   getBirthFlowerImage,
   getBirthstone,
   getBirthstoneImage,
+  getZodiacSignImage,
 } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
@@ -33,12 +34,17 @@ const EntryCard = React.memo(function EntryCard({
     [entry.dueDate],
   );
   const isFlower = entry.symbolType === "flower";
-  const symbol = isFlower
-    ? (entry.birthFlower ?? getBirthFlower(dueDateMonth))
-    : (entry.birthstone ?? getBirthstone(dueDateMonth));
-  const symbolImage = isFlower
-    ? getBirthFlowerImage(symbol.name)
-    : getBirthstoneImage(symbol.name);
+  const isZodiac = entry.symbolType === "zodiac";
+  const symbol = isZodiac
+    ? (entry.zodiacSign ?? { name: "Aries", color: "#E53935" })
+    : isFlower
+      ? (entry.birthFlower ?? getBirthFlower(dueDateMonth))
+      : (entry.birthstone ?? getBirthstone(dueDateMonth));
+  const symbolImage = isZodiac
+    ? getZodiacSignImage(symbol.name)
+    : isFlower
+      ? getBirthFlowerImage(symbol.name)
+      : getBirthstoneImage(symbol.name);
 
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const cardStyle = useMemo(

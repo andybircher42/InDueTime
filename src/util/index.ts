@@ -36,3 +36,9 @@ export {
   gestationalAgeFromDueDate,
 } from "./gestationalAge";
 export { reportError } from "./reportError";
+export type { ZodiacSign } from "./zodiacSigns";
+export {
+  getZodiacSign,
+  getZodiacSignForDate,
+  getZodiacSignImage,
+} from "./zodiacSigns";

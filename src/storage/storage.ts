@@ -3,9 +3,12 @@ import * as Crypto from "expo-crypto";
 
 import { BirthFlower, getBirthFlowerForDate } from "@/util/birthFlowers";
 import { Birthstone, getBirthstoneForDate } from "@/util/birthstones";
+import { getZodiacSignForDate,ZodiacSign } from "@/util/zodiacSigns";
 
 /** Which birth symbol type to display for this entry. */
-export type SymbolType = "gem" | "flower";
+export type SymbolType = "gem" | "flower" | "zodiac";
+
+const SYMBOL_TYPES: SymbolType[] = ["gem", "flower", "zodiac"];
 
 /** A single gestation tracking entry. */
 export interface Entry {
@@ -16,7 +19,8 @@ export interface Entry {
   deliveredAt?: number;
   birthstone?: Birthstone;
   birthFlower?: BirthFlower;
-  /** Which symbol to display — "gem" or "flower". Randomly assigned on creation. */
+  zodiacSign?: ZodiacSign;
+  /** Which symbol to display — "gem", "flower", or "zodiac". Randomly assigned on creation. */
   symbolType?: SymbolType;
 }
 
@@ -222,10 +226,21 @@ export const loadEntries = async (
         needsMigration = true;
       }
 
-      const symbolType =
-        obj.symbolType === "gem" || obj.symbolType === "flower"
-          ? (obj.symbolType as SymbolType)
+      const zodiacSign =
+        obj.zodiacSign != null &&
+        typeof obj.zodiacSign === "object" &&
+        typeof (obj.zodiacSign as Record<string, unknown>).name === "string" &&
+        typeof (obj.zodiacSign as Record<string, unknown>).color === "string"
+          ? (obj.zodiacSign as ZodiacSign)
           : undefined;
+
+      if (!zodiacSign) {
+        needsMigration = true;
+      }
+
+      const symbolType = SYMBOL_TYPES.includes(obj.symbolType as SymbolType)
+        ? (obj.symbolType as SymbolType)
+        : undefined;
 
       if (!symbolType) {
         needsMigration = true;
@@ -239,7 +254,10 @@ export const loadEntries = async (
         deliveredAt,
         birthstone: birthstone ?? getBirthstoneForDate(item.dueDate),
         birthFlower: birthFlower ?? getBirthFlowerForDate(item.dueDate),
-        symbolType: symbolType ?? (Math.random() < 0.5 ? "gem" : "flower"),
+        zodiacSign: zodiacSign ?? getZodiacSignForDate(item.dueDate),
+        symbolType:
+          symbolType ??
+          SYMBOL_TYPES[Math.floor(Math.random() * SYMBOL_TYPES.length)],
       });
     } else {
       discardedCount++;

@@ -3,7 +3,12 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
-import { getBirthFlowerImage, getBirthstoneImage, lineHeight } from "@/util";
+import {
+  getBirthFlowerImage,
+  getBirthstoneImage,
+  getZodiacSignImage,
+  lineHeight,
+} from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
 
@@ -152,13 +157,17 @@ export default function CalendarMonth({
                             <BirthstoneIcon
                               key={e.id}
                               image={
-                                e.symbolType === "flower"
-                                  ? getBirthFlowerImage(
-                                      e.birthFlower?.name ?? "Rose",
+                                e.symbolType === "zodiac"
+                                  ? getZodiacSignImage(
+                                      e.zodiacSign?.name ?? "Aries",
                                     )
-                                  : getBirthstoneImage(
-                                      e.birthstone?.name ?? "Garnet",
-                                    )
+                                  : e.symbolType === "flower"
+                                    ? getBirthFlowerImage(
+                                        e.birthFlower?.name ?? "Rose",
+                                      )
+                                    : getBirthstoneImage(
+                                        e.birthstone?.name ?? "Garnet",
+                                      )
                               }
                               size={14}
                             />
@@ -167,15 +176,20 @@ export default function CalendarMonth({
                           <>
                             <BirthstoneIcon
                               image={
-                                cell.dueEntries[0].symbolType === "flower"
-                                  ? getBirthFlowerImage(
-                                      cell.dueEntries[0].birthFlower?.name ??
-                                        "Rose",
+                                cell.dueEntries[0].symbolType === "zodiac"
+                                  ? getZodiacSignImage(
+                                      cell.dueEntries[0].zodiacSign?.name ??
+                                        "Aries",
                                     )
-                                  : getBirthstoneImage(
-                                      cell.dueEntries[0].birthstone?.name ??
-                                        "Garnet",
-                                    )
+                                  : cell.dueEntries[0].symbolType === "flower"
+                                    ? getBirthFlowerImage(
+                                        cell.dueEntries[0].birthFlower?.name ??
+                                          "Rose",
+                                      )
+                                    : getBirthstoneImage(
+                                        cell.dueEntries[0].birthstone?.name ??
+                                          "Garnet",
+                                      )
                               }
                               size={14}
                             />

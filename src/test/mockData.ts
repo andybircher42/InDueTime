@@ -12,6 +12,7 @@ export function makeEntry(
     createdAt: 1000,
     birthstone: { name: "Pearl", color: "#B0B8E8" },
     birthFlower: { name: "Rose", color: "#C8465C" },
+    zodiacSign: { name: "Gemini", color: "#FFB300" },
     symbolType: "gem",
     ...fields,
   };
@@ -25,5 +26,6 @@ export const mockEntry: Entry = {
   createdAt: 1000,
   birthstone: { name: "Sapphire", color: "#1565C0" },
   birthFlower: { name: "Aster", color: "#9B72B0" },
+  zodiacSign: { name: "Virgo", color: "#8D6E63" },
   symbolType: "gem",
 };

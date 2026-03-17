@@ -8,9 +8,11 @@ import {
   saveDeliveredTTL,
   saveEntries,
 } from "@/storage";
+import { SymbolType } from "@/storage";
 import { reportError } from "@/util";
 import { getBirthFlowerForDate } from "@/util/birthFlowers";
 import { getBirthstoneForDate } from "@/util/birthstones";
+import { getZodiacSignForDate } from "@/util/zodiacSigns";
 
 let idCounter = 0;
 
@@ -68,7 +70,10 @@ export default function useEntries() {
         createdAt: Date.now(),
         birthstone: getBirthstoneForDate(dueDate),
         birthFlower: getBirthFlowerForDate(dueDate),
-        symbolType: Math.random() < 0.5 ? "gem" : "flower",
+        zodiacSign: getZodiacSignForDate(dueDate),
+        symbolType: (["gem", "flower", "zodiac"] as SymbolType[])[
+          Math.floor(Math.random() * 3)
+        ],
       };
       setEntries((prev) => {
         const updated = [entry, ...prev];

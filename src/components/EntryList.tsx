@@ -27,6 +27,7 @@ import {
   getBirthFlowerImage,
   getBirthstone,
   getBirthstoneImage,
+  getZodiacSignImage,
 } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
@@ -215,12 +216,14 @@ const EntryRow = React.memo(function EntryRow({
           <Text style={[styles.entryDueDate, { color: textColor }]}>
             {formatDueDate(item.dueDate)}
           </Text>
-          {(item.birthstone || item.birthFlower) && (
+          {(item.birthstone || item.birthFlower || item.zodiacSign) && (
             <BirthstoneIcon
               image={
-                item.symbolType === "flower"
-                  ? getBirthFlowerImage(item.birthFlower?.name ?? "Rose")
-                  : getBirthstoneImage(item.birthstone?.name ?? "Garnet")
+                item.symbolType === "zodiac"
+                  ? getZodiacSignImage(item.zodiacSign?.name ?? "Aries")
+                  : item.symbolType === "flower"
+                    ? getBirthFlowerImage(item.birthFlower?.name ?? "Rose")
+                    : getBirthstoneImage(item.birthstone?.name ?? "Garnet")
               }
               size={24}
             />

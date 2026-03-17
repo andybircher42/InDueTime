@@ -27,6 +27,7 @@ describe("saveEntries", () => {
         createdAt: 1000,
         birthstone: { name: "Sapphire", color: "#1565C0" },
         birthFlower: { name: "Aster", color: "#9B72B0" },
+        zodiacSign: { name: "Virgo", color: "#8B7355" },
         symbolType: "gem",
       },
       {
@@ -36,6 +37,7 @@ describe("saveEntries", () => {
         createdAt: 2000,
         birthstone: { name: "Pearl", color: "#B0B8E8" },
         birthFlower: { name: "Rose", color: "#C8465C" },
+        zodiacSign: { name: "Gemini", color: "#E8C547" },
         symbolType: "flower",
       },
     ];
@@ -117,6 +119,7 @@ describe("loadEntries", () => {
         createdAt: 1000,
         birthstone: { name: "Sapphire", color: "#1565C0" },
         birthFlower: { name: "Aster", color: "#9B72B0" },
+        zodiacSign: { name: "Virgo", color: "#8B7355" },
         symbolType: "gem",
       },
       {
@@ -126,6 +129,7 @@ describe("loadEntries", () => {
         createdAt: 2000,
         birthstone: { name: "Pearl", color: "#B0B8E8" },
         birthFlower: { name: "Rose", color: "#C8465C" },
+        zodiacSign: { name: "Gemini", color: "#E8C547" },
         symbolType: "flower",
       },
     ];
@@ -189,6 +193,7 @@ describe("loadEntries", () => {
         createdAt: 1000,
         birthstone: { name: "Sapphire", color: "#1565C0" },
         birthFlower: { name: "Aster", color: "#9B72B0" },
+        zodiacSign: { name: "Virgo", color: "#8B7355" },
         symbolType: "gem",
       },
     ];
@@ -225,6 +230,7 @@ describe("loadEntries", () => {
         dueDate: "2026-06-15",
         birthstone: { name: "Pearl", color: "#B0B8E8" },
         birthFlower: { name: "Rose", color: "#C8465C" },
+        zodiacSign: { name: "Gemini", color: "#E8C547" },
         symbolType: "flower",
       },
       {
@@ -280,6 +286,7 @@ describe("loadEntries", () => {
         createdAt: 1000,
         birthstone: { name: "Pearl", color: "#B0B8E8" },
         birthFlower: { name: "Rose", color: "#C8465C" },
+        zodiacSign: { name: "Gemini", color: "#E8C547" },
         symbolType: "flower",
       },
     ];
