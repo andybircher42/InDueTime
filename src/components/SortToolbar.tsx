@@ -6,6 +6,7 @@ import { ColorTokens, useTheme } from "@/theme";
 
 import { SORT_FIELDS, type SortBy, type SortDir } from "./SortPickerModal";
 
+
 interface SortToolbarProps {
   sortBy: SortBy;
   sortDir: SortDir;
@@ -69,7 +70,7 @@ export default function SortToolbar({
       </Pressable>
       <View style={styles.toolbarSpacer} />
       <Pressable
-        style={styles.overflowButton}
+        style={styles.removeAllButton}
         onPress={() =>
           Alert.alert(deleteAllTitle, message, [
             { text: "Cancel", style: "cancel" },
@@ -81,14 +82,10 @@ export default function SortToolbar({
           ])
         }
         accessibilityRole="button"
-        accessibilityLabel="More options"
+        accessibilityLabel="Remove all"
         hitSlop={8}
       >
-        <Ionicons
-          name="ellipsis-horizontal"
-          size={20}
-          color={colors.textTertiary}
-        />
+        <Text style={styles.removeAllLabel}>Remove all</Text>
       </Pressable>
     </View>
   );
@@ -129,12 +126,15 @@ function createStyles(colors: ColorTokens) {
     toolbarSpacer: {
       flex: 1,
     },
-    overflowButton: {
-      width: 44,
+    removeAllButton: {
       height: 44,
-      borderRadius: 22,
       justifyContent: "center",
       alignItems: "center",
+      paddingHorizontal: 8,
+    },
+    removeAllLabel: {
+      fontSize: 13,
+      color: colors.textTertiary,
     },
   });
 }
