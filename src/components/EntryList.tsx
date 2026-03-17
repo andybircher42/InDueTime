@@ -29,6 +29,7 @@ import {
 } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
+import EmptyState from "./EmptyState";
 import EntryDetailModal from "./EntryDetailModal";
 import InlineFormWrapper from "./InlineFormWrapper";
 import SortToolbar from "./SortToolbar";
@@ -364,22 +365,13 @@ export default function EntryList({
           sorted.length === 0 ? styles.emptyList : undefined
         }
         ListEmptyComponent={
-          <Pressable
-            style={styles.emptyContent}
+          <EmptyState
+            icon="calendar-outline"
+            title="Track your first pregnancy"
+            subtitle="Enter a name and due date to start"
             onPress={toggleForm}
-            accessibilityRole="button"
             accessibilityLabel="Track your first pregnancy"
-          >
-            <Ionicons
-              name="calendar-outline"
-              size={48}
-              color={colors.textTertiary}
-            />
-            <Text style={styles.emptyTitle}>Track your first pregnancy</Text>
-            <Text style={styles.emptySubtitle}>
-              Enter a name and due date to start
-            </Text>
-          </Pressable>
+          />
         }
       />
       <EntryDetailModal
@@ -418,19 +410,6 @@ function createStyles(colors: ColorTokens, radii: RadiiTokens) {
       flexGrow: 1,
       justifyContent: "center",
       alignItems: "center",
-    },
-    emptyContent: {
-      alignItems: "center",
-      gap: 8,
-    },
-    emptyTitle: {
-      color: colors.textPrimary,
-      fontSize: 16,
-      fontWeight: "600",
-    },
-    emptySubtitle: {
-      color: colors.textTertiary,
-      fontSize: 14,
     },
     entryWrapper: {
       marginHorizontal: 16,

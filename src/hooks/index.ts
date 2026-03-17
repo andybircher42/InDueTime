@@ -1,3 +1,4 @@
+export { default as useConfirmAlert } from "./useConfirmAlert";
 export { default as useEntries } from "./useEntries";
 export { default as useFormToggle } from "./useFormToggle";
 export { default as useShakeUndo } from "./useShakeUndo";

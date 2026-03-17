@@ -1,14 +1,13 @@
 import { useMemo } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { calendarHeatMap } from "@/engine/probabilityEngine";
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
-import { lineHeight } from "@/util";
 
 import CalendarMonth, { DayCell } from "./CalendarMonth";
+import EmptyState from "./EmptyState";
 import HelpButton from "./HelpButton";
 
 interface CalendarViewProps {
@@ -105,17 +104,11 @@ export default function CalendarView({
 
   if (entries.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Ionicons
-          name="calendar-outline"
-          size={48}
-          color={colors.textTertiary}
-        />
-        <Text style={styles.emptyTitle}>No one to show yet</Text>
-        <Text style={styles.emptySubtitle}>
-          Add someone in the Expecting tab to see when they're due
-        </Text>
-      </View>
+      <EmptyState
+        icon="calendar-outline"
+        title="No one to show yet"
+        subtitle="Add someone in the Expecting tab to see when they're due"
+      />
     );
   }
 
@@ -184,24 +177,6 @@ function createStyles(colors: ColorTokens) {
     legendLabel: {
       fontSize: 11,
       color: colors.textTertiary,
-    },
-    emptyContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 32,
-      gap: 8,
-    },
-    emptyTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: colors.textPrimary,
-    },
-    emptySubtitle: {
-      fontSize: 14,
-      color: colors.textTertiary,
-      textAlign: "center",
-      lineHeight: lineHeight(20),
     },
   });
 }

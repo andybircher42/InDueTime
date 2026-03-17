@@ -11,12 +11,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { useSwipeDismiss } from "@/hooks";
+import { useConfirmAlert, useSwipeDismiss } from "@/hooks";
 import { Entry } from "@/storage";
 import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
-import { deliveryTimingLabel, formatDueDate, lineHeight } from "@/util";
+import { deliveryTimingLabel, formatDueDate } from "@/util";
 
 import DeliveredCard from "./DeliveredCard";
+import EmptyState from "./EmptyState";
 import EntryDetailModal from "./EntryDetailModal";
 
 interface DeliveredListProps {
@@ -168,6 +169,7 @@ export default function DeliveredList({
 }: DeliveredListProps) {
   const { colors, layout, radii } = useTheme();
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
+  const confirmAlert = useConfirmAlert();
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
 
   const deliveredEntries = useMemo(
@@ -259,18 +261,11 @@ export default function DeliveredList({
           <Pressable
             style={styles.removeAllButton}
             onPress={() =>
-              Alert.alert(
-                "Remove all delivered?",
-                `This will remove all ${deliveredEntries.length} delivered people from your list. This can\u2019t be undone.`,
-                [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Remove all",
-                    style: "destructive",
-                    onPress: onDeleteAll,
-                  },
-                ],
-              )
+              confirmAlert({
+                title: "Remove all delivered?",
+                message: `This will remove all ${deliveredEntries.length} delivered people from your list. This can\u2019t be undone.`,
+                onConfirm: onDeleteAll,
+              })
             }
             accessibilityRole="button"
             accessibilityLabel="Remove all"
@@ -307,13 +302,11 @@ export default function DeliveredList({
 
   if (deliveredEntries.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyEmoji}>👶</Text>
-        <Text style={styles.emptyTitle}>No deliveries yet</Text>
-        <Text style={styles.emptySubtitle}>
-          Swipe right on someone in the Expecting tab to mark them as delivered
-        </Text>
-      </View>
+      <EmptyState
+        emoji="👶"
+        title="No deliveries yet"
+        subtitle="Swipe right on someone in the Expecting tab to mark them as delivered"
+      />
     );
   }
 
@@ -362,27 +355,6 @@ function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       flex: 1,
-    },
-    emptyContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 32,
-      gap: 8,
-    },
-    emptyEmoji: {
-      fontSize: 48,
-    },
-    emptyTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: colors.textPrimary,
-    },
-    emptySubtitle: {
-      fontSize: 14,
-      color: colors.textTertiary,
-      textAlign: "center",
-      lineHeight: lineHeight(20),
     },
     listContent: {
       padding: 16,

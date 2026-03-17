@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+import { useConfirmAlert } from "@/hooks";
 import { ColorTokens, useTheme } from "@/theme";
 
 import { SORT_FIELDS, type SortBy, type SortDir } from "./SortPickerModal";
@@ -33,6 +34,7 @@ export default function SortToolbar({
 }: SortToolbarProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const confirmAlert = useConfirmAlert();
 
   const message =
     deleteAllMessage ??
@@ -72,14 +74,11 @@ export default function SortToolbar({
       <Pressable
         style={styles.removeAllButton}
         onPress={() =>
-          Alert.alert(deleteAllTitle, message, [
-            { text: "Cancel", style: "cancel" },
-            {
-              text: "Remove all",
-              style: "destructive",
-              onPress: onDeleteAll,
-            },
-          ])
+          confirmAlert({
+            title: deleteAllTitle,
+            message,
+            onConfirm: onDeleteAll,
+          })
         }
         accessibilityRole="button"
         accessibilityLabel="Remove all"

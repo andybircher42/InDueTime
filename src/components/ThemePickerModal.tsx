@@ -20,6 +20,7 @@ import {
 } from "@/theme";
 
 import HelpButton from "./HelpButton";
+import PillSelector from "./PillSelector";
 
 const appVersion = Constants.expoConfig?.version ?? "";
 
@@ -182,113 +183,25 @@ export default function ThemePickerModal({
             <>
               <Text style={styles.sectionHeader}>Appearance</Text>
               <Text style={styles.title}>Theme</Text>
-              <View style={styles.pillRow}>
-                {THEME_OPTIONS.map(({ value, label, icon }) => (
-                  <Pressable
-                    key={value}
-                    style={[
-                      styles.pill,
-                      currentPersonality === value && styles.pillActive,
-                    ]}
-                    onPress={() => onSelectPersonality(value)}
-                    accessibilityRole="button"
-                    accessibilityLabel={label}
-                    accessibilityState={{
-                      selected: currentPersonality === value,
-                    }}
-                  >
-                    <Ionicons
-                      name={icon}
-                      size={18}
-                      color={
-                        currentPersonality === value
-                          ? colors.primary
-                          : colors.textTertiary
-                      }
-                    />
-                    <Text
-                      style={[
-                        styles.pillLabel,
-                        currentPersonality === value && styles.pillLabelActive,
-                      ]}
-                    >
-                      {label}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
+              <PillSelector
+                options={THEME_OPTIONS}
+                selected={currentPersonality}
+                onSelect={onSelectPersonality}
+              />
               <View style={styles.separator} />
               <Text style={styles.title}>Brightness</Text>
-              <View style={styles.pillRow}>
-                {BRIGHTNESS_OPTIONS.map(({ value, label, icon }) => (
-                  <Pressable
-                    key={value}
-                    style={[
-                      styles.pill,
-                      currentBrightness === value && styles.pillActive,
-                    ]}
-                    onPress={() => onSelectBrightness(value)}
-                    accessibilityRole="button"
-                    accessibilityLabel={label}
-                    accessibilityState={{
-                      selected: currentBrightness === value,
-                    }}
-                  >
-                    <Ionicons
-                      name={icon}
-                      size={18}
-                      color={
-                        currentBrightness === value
-                          ? colors.primary
-                          : colors.textTertiary
-                      }
-                    />
-                    <Text
-                      style={[
-                        styles.pillLabel,
-                        currentBrightness === value && styles.pillLabelActive,
-                      ]}
-                    >
-                      {label}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
+              <PillSelector
+                options={BRIGHTNESS_OPTIONS}
+                selected={currentBrightness}
+                onSelect={onSelectBrightness}
+              />
               <View style={styles.separator} />
               <Text style={styles.title}>Layout</Text>
-              <View style={styles.pillRow}>
-                {LAYOUT_OPTIONS.map(({ value, label, icon }) => (
-                  <Pressable
-                    key={value}
-                    style={[
-                      styles.pill,
-                      currentLayout === value && styles.pillActive,
-                    ]}
-                    onPress={() => onSelectLayout(value)}
-                    accessibilityRole="button"
-                    accessibilityLabel={label}
-                    accessibilityState={{ selected: currentLayout === value }}
-                  >
-                    <Ionicons
-                      name={icon}
-                      size={18}
-                      color={
-                        currentLayout === value
-                          ? colors.primary
-                          : colors.textTertiary
-                      }
-                    />
-                    <Text
-                      style={[
-                        styles.pillLabel,
-                        currentLayout === value && styles.pillLabelActive,
-                      ]}
-                    >
-                      {label}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
+              <PillSelector
+                options={LAYOUT_OPTIONS}
+                selected={currentLayout}
+                onSelect={onSelectLayout}
+              />
               <View style={styles.separator} />
               <Text style={styles.sectionHeader}>Data</Text>
               <Pressable
@@ -417,34 +330,6 @@ function createStyles(colors: ColorTokens, radii: RadiiTokens) {
       fontSize: 13,
       color: colors.textTertiary,
       marginRight: 6,
-    },
-    pillRow: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 8,
-      marginBottom: 4,
-    },
-    pill: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-      paddingVertical: 6,
-      paddingHorizontal: 10,
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    pillActive: {
-      borderColor: colors.primary,
-      backgroundColor: colors.primaryLightBg,
-    },
-    pillLabel: {
-      fontSize: 12,
-      color: colors.textTertiary,
-    },
-    pillLabelActive: {
-      color: colors.primary,
-      fontWeight: "600",
     },
     separator: {
       borderBottomWidth: StyleSheet.hairlineWidth,
