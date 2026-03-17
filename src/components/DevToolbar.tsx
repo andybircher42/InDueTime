@@ -9,10 +9,12 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { Entry } from "@/storage";
+import { Entry, SymbolType } from "@/storage";
 import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import { toISODateString } from "@/util";
+import { getBirthFlowerForDate } from "@/util/birthFlowers";
 import { getBirthstoneForDate } from "@/util/birthstones";
+import { getZodiacSignForDate } from "@/util/zodiacSigns";
 
 interface DevToolbarProps {
   visible: boolean;
@@ -79,6 +81,9 @@ export function generateSeedEntries(): Entry[] {
       dueDate: dueDateStr,
       createdAt: Date.now() + i,
       birthstone: getBirthstoneForDate(dueDateStr),
+      birthFlower: getBirthFlowerForDate(dueDateStr),
+      zodiacSign: getZodiacSignForDate(dueDateStr),
+      symbolType: (["gem", "flower", "zodiac"] as SymbolType[])[i % 3],
     };
   });
 }
@@ -111,6 +116,9 @@ export function generateSeedDeliveries(): Entry[] {
       createdAt: now + i,
       deliveredAt: deliveredDate.getTime(),
       birthstone: getBirthstoneForDate(dueDateStr),
+      birthFlower: getBirthFlowerForDate(dueDateStr),
+      zodiacSign: getZodiacSignForDate(dueDateStr),
+      symbolType: (["gem", "flower", "zodiac"] as SymbolType[])[i % 3],
     };
   });
 }

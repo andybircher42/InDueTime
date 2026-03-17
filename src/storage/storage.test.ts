@@ -277,6 +277,36 @@ describe("loadEntries", () => {
     });
   });
 
+  it("backfills birthFlower for entries that lack one", async () => {
+    const data = [{ id: "1", name: "Baby", dueDate: "2026-06-15" }];
+    await AsyncStorage.setItem("@gestation_entries", JSON.stringify(data));
+
+    const result = await loadEntries();
+    expect(result.entries[0].birthFlower).toEqual({
+      name: "Rose",
+      color: "#C8465C",
+    });
+  });
+
+  it("backfills zodiacSign for entries that lack one", async () => {
+    const data = [{ id: "1", name: "Baby", dueDate: "2026-06-15" }];
+    await AsyncStorage.setItem("@gestation_entries", JSON.stringify(data));
+
+    const result = await loadEntries();
+    expect(result.entries[0].zodiacSign).toEqual({
+      name: "Gemini",
+      color: "#E8C547",
+    });
+  });
+
+  it("backfills symbolType for entries that lack one", async () => {
+    const data = [{ id: "1", name: "Baby", dueDate: "2026-06-15" }];
+    await AsyncStorage.setItem("@gestation_entries", JSON.stringify(data));
+
+    const result = await loadEntries();
+    expect(["gem", "flower", "zodiac"]).toContain(result.entries[0].symbolType);
+  });
+
   it("preserves existing birthstone from storage", async () => {
     const data = [
       {

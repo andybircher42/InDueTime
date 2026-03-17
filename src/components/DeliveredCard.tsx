@@ -48,7 +48,7 @@ const DeliveredCard = React.memo(function DeliveredCard({
     : formatDueDate(entry.dueDate);
 
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
-  const textColor = contrastText(symbol.color);
+  const textColor = useMemo(() => contrastText(symbol.color), [symbol.color]);
   const cardStyle = useMemo(
     () => [styles.card, { backgroundColor: symbol.color }],
     [styles.card, symbol.color],
@@ -60,7 +60,7 @@ const DeliveredCard = React.memo(function DeliveredCard({
       onPress={() => onPress?.(entry)}
       onLongPress={() => onLongPress?.(entry)}
       accessibilityRole="button"
-      accessibilityLabel={`${entry.name}, ${timing}`}
+      accessibilityLabel={`${entry.name}, ${symbol.name} ${entry.symbolType ?? "gem"}, ${timing}`}
       testID="delivered-card"
     >
       <View style={styles.inner}>

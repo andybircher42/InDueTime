@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Image, ImageSourcePropType, View } from "react-native";
 
 interface BirthstoneIconProps {
@@ -13,6 +13,7 @@ const BirthstoneIcon = React.memo(function BirthstoneIcon({
   image,
   size = 40,
 }: BirthstoneIconProps) {
+  const [error, setError] = useState(false);
   const padding = size * SHADOW_INSET;
   const imageSize = size + padding * 2;
 
@@ -30,12 +31,15 @@ const BirthstoneIcon = React.memo(function BirthstoneIcon({
 
   return (
     <View style={containerStyle}>
-      <Image
-        source={image}
-        style={imageStyle}
-        resizeMode="contain"
-        accessible={false}
-      />
+      {!error && (
+        <Image
+          source={image}
+          style={imageStyle}
+          resizeMode="contain"
+          accessible={false}
+          onError={() => setError(true)}
+        />
+      )}
     </View>
   );
 });

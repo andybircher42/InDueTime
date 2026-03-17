@@ -36,26 +36,32 @@ export default function EntryDetailModal({
   const { colors, radii } = useTheme();
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
 
+  const bgColor = entry
+    ? entry.symbolType === "zodiac" && entry.zodiacSign
+      ? entry.zodiacSign.color
+      : entry.symbolType === "flower" && entry.birthFlower
+        ? entry.birthFlower.color
+        : entry.birthstone
+          ? entry.birthstone.color
+          : colors.primary
+    : colors.primary;
+  const { textColor, mutedTextColor, overlayColor } = useMemo(() => {
+    const tc = contrastText(bgColor);
+    return {
+      textColor: tc,
+      mutedTextColor:
+        tc === "#ffffff" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.5)",
+      overlayColor:
+        tc === "#ffffff" ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)",
+    };
+  }, [bgColor]);
+
   if (!entry) {
     return null;
   }
 
   const { weeks, days } = gestationalAgeFromDueDate(entry.dueDate);
   const isDelivered = !!entry.deliveredAt;
-
-  const bgColor =
-    entry.symbolType === "zodiac" && entry.zodiacSign
-      ? entry.zodiacSign.color
-      : entry.symbolType === "flower" && entry.birthFlower
-        ? entry.birthFlower.color
-        : entry.birthstone
-          ? entry.birthstone.color
-          : colors.primary;
-  const textColor = contrastText(bgColor);
-  const mutedTextColor =
-    textColor === "#ffffff" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.5)";
-  const overlayColor =
-    textColor === "#ffffff" ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)";
 
   const deliveredDateStr = isDelivered
     ? new Date(entry.deliveredAt!).toLocaleDateString("en-US", {
@@ -68,6 +74,20 @@ export default function EntryDetailModal({
   const timingLabel = isDelivered
     ? deliveryTimingLabel(entry.dueDate, entry.deliveredAt!)
     : "";
+
+  const symbolName =
+    entry.symbolType === "zodiac"
+      ? entry.zodiacSign?.name
+      : entry.symbolType === "flower"
+        ? entry.birthFlower?.name
+        : entry.birthstone?.name;
+
+  const symbolBadgeLabel =
+    entry.symbolType === "zodiac"
+      ? `Zodiac \u2013 ${symbolName}`
+      : entry.symbolType === "flower"
+        ? `Flower \u2013 ${symbolName}`
+        : `Birthstone \u2013 ${symbolName}`;
 
   return (
     <Modal
@@ -88,18 +108,15 @@ export default function EntryDetailModal({
           onPress={() => {}}
           accessible={false}
         >
-          {entry.symbolType && (
+          {entry.symbolType && symbolName && (
             <Text
               style={[
                 styles.symbolBadge,
                 { color: mutedTextColor, borderColor: mutedTextColor },
               ]}
+              accessibilityLabel={`Symbol: ${symbolBadgeLabel}`}
             >
-              {entry.symbolType === "zodiac"
-                ? `Zodiac \u2013 ${entry.zodiacSign?.name ?? ""}`
-                : entry.symbolType === "flower"
-                  ? `Flower \u2013 ${entry.birthFlower?.name ?? ""}`
-                  : `Birthstone \u2013 ${entry.birthstone?.name ?? ""}`}
+              {symbolBadgeLabel}
             </Text>
           )}
           {isDelivered && <Text style={styles.deliveredEmoji}>👶</Text>}

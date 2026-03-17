@@ -70,7 +70,6 @@ describe("EntryCard", () => {
     });
     renderWithTheme(<EntryCard entry={customEntry} />);
     const card = screen.getByTestId("entry-card");
-    // The card style array should include the custom birthstone color
     const styles = Array.isArray(card.props.style)
       ? card.props.style
       : [card.props.style];
@@ -79,5 +78,56 @@ describe("EntryCard", () => {
       .map((s: Record<string, unknown>) => s.backgroundColor)
       .filter(Boolean);
     expect(bgColors).toContain("#E53935");
+  });
+
+  it("uses birth flower color when symbolType is flower", () => {
+    const flowerEntry = makeEntry({
+      id: "3",
+      name: "Carol",
+      symbolType: "flower",
+      birthFlower: { name: "Rose", color: "#C8465C" },
+    });
+    renderWithTheme(<EntryCard entry={flowerEntry} />);
+    const card = screen.getByTestId("entry-card");
+    const styles = Array.isArray(card.props.style)
+      ? card.props.style
+      : [card.props.style];
+    const bgColors = styles
+      .filter(Boolean)
+      .map((s: Record<string, unknown>) => s.backgroundColor)
+      .filter(Boolean);
+    expect(bgColors).toContain("#C8465C");
+  });
+
+  it("uses zodiac sign color when symbolType is zodiac", () => {
+    const zodiacEntry = makeEntry({
+      id: "4",
+      name: "Diana",
+      symbolType: "zodiac",
+      zodiacSign: { name: "Leo", color: "#E8A030" },
+    });
+    renderWithTheme(<EntryCard entry={zodiacEntry} />);
+    const card = screen.getByTestId("entry-card");
+    const styles = Array.isArray(card.props.style)
+      ? card.props.style
+      : [card.props.style];
+    const bgColors = styles
+      .filter(Boolean)
+      .map((s: Record<string, unknown>) => s.backgroundColor)
+      .filter(Boolean);
+    expect(bgColors).toContain("#E8A030");
+  });
+
+  it("includes symbol type in accessibility label", () => {
+    const flowerEntry = makeEntry({
+      id: "5",
+      name: "Eve",
+      symbolType: "flower",
+      birthFlower: { name: "Daisy", color: "#F5F5F0" },
+    });
+    renderWithTheme(<EntryCard entry={flowerEntry} />);
+    const card = screen.getByTestId("entry-card");
+    expect(card.props.accessibilityLabel).toContain("Daisy");
+    expect(card.props.accessibilityLabel).toContain("flower");
   });
 });

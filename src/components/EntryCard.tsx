@@ -48,7 +48,7 @@ const EntryCard = React.memo(function EntryCard({
       : getBirthstoneImage(symbol.name);
 
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
-  const textColor = contrastText(symbol.color);
+  const textColor = useMemo(() => contrastText(symbol.color), [symbol.color]);
   const cardStyle = useMemo(
     () => [styles.card, { backgroundColor: symbol.color }],
     [styles.card, symbol.color],
@@ -60,7 +60,7 @@ const EntryCard = React.memo(function EntryCard({
       onPress={() => onPress?.(entry)}
       onLongPress={() => onLongPress?.(entry)}
       accessibilityRole="button"
-      accessibilityLabel={`${entry.name}, ${weeks} weeks ${days} days, due ${formatDueDate(entry.dueDate)}`}
+      accessibilityLabel={`${entry.name}, ${symbol.name} ${entry.symbolType ?? "gem"}, ${weeks} weeks ${days} days, due ${formatDueDate(entry.dueDate)}`}
       testID="entry-card"
     >
       <View style={styles.inner}>
