@@ -1,4 +1,3 @@
-import { Linking } from "react-native";
 import { fireEvent, screen } from "@testing-library/react-native";
 
 import renderWithTheme from "@/test/renderWithTheme";
@@ -150,42 +149,13 @@ describe("ThemePickerModal", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("opens bug report form with pre-filled version and closes modal on press", () => {
-    const spy = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
-    const onClose = jest.fn();
-    renderWithTheme(<ThemePickerModal {...defaultProps} onClose={onClose} />);
-
-    fireEvent.press(screen.getByLabelText("Report a Bug"));
-
-    const url = spy.mock.calls[0][0] as string;
-    expect(url).toContain("docs.google.com/forms");
-    expect(url).toContain("entry.1845428880=");
-    expect(url).toContain("entry.765646897=");
-    expect(onClose).toHaveBeenCalledTimes(1);
-    spy.mockRestore();
-  });
-
-  it("opens feature request form and closes modal on press", () => {
-    const spy = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
-    const onClose = jest.fn();
-    renderWithTheme(<ThemePickerModal {...defaultProps} onClose={onClose} />);
-
-    fireEvent.press(screen.getByLabelText("Request a Feature"));
-
-    expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining("docs.google.com/forms"),
-    );
-    expect(onClose).toHaveBeenCalledTimes(1);
-    spy.mockRestore();
-  });
-
   it("does not render content when visible=false", () => {
     renderWithTheme(<ThemePickerModal {...defaultProps} visible={false} />);
 
     expect(screen.queryByText("Theme")).toBeNull();
   });
 
-  it("calls onAppInfo and onClose when App Info row is pressed", () => {
+  it("calls onAppInfo and onClose when version row is pressed", () => {
     const onAppInfo = jest.fn();
     const onClose = jest.fn();
     renderWithTheme(
@@ -196,7 +166,7 @@ describe("ThemePickerModal", () => {
       />,
     );
 
-    fireEvent.press(screen.getByLabelText("App Info"));
+    fireEvent.press(screen.getByLabelText("About and help"));
 
     expect(onAppInfo).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);

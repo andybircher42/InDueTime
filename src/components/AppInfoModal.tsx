@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -25,6 +26,51 @@ if (!__DEV__) {
 }
 
 import { ColorTokens, useTheme } from "@/theme";
+
+const BUG_REPORT_BASE_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSd3VdvE17NHIR7qQD8Ams10nBgAgf1n0JQ1mvWUUFKf7C3Z-w/viewform";
+
+/** Builds the bug report URL with app version and OS version pre-filled. */
+function buildBugReportUrl(): string {
+  const version = Constants.expoConfig?.version ?? "unknown";
+  const buildId = (Constants.expoConfig?.extra?.easBuildId as string) || "";
+  const updateId = Updates?.updateId ?? null;
+
+  let appVersion =
+    buildId !== "" ? `${version} (${buildId.slice(0, 8)})` : version;
+  if (updateId != null) {
+    appVersion += ` update:${updateId.slice(0, 8)}`;
+  }
+
+  const osName = Platform.OS === "ios" ? "iOS" : "Android";
+  const osVersion = `${osName} ${Platform.Version}`;
+
+  const params = new URLSearchParams({
+    "entry.1845428880": appVersion,
+    "entry.765646897": osVersion,
+  });
+  return `${BUG_REPORT_BASE_URL}?${params.toString()}`;
+}
+
+const FEATURE_REQUEST_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSeLS03h_8s3t0-IYXM04UjVv2fAhH37i2n56fPHB83OuHaQhw/viewform";
+const USER_GUIDE_URL = "https://andybircher42.github.io/InDueTime/guide/";
+const USER_GUIDE_FALLBACK_URL =
+  "https://github.com/andybircher42/InDueTime/blob/main/docs/user-guide.md";
+
+/** Opens the hosted user guide, falling back to GitHub if it 404s. */
+async function openUserGuide(): Promise<void> {
+  try {
+    const res = await fetch(USER_GUIDE_URL, { method: "HEAD" });
+    if (res.ok) {
+      await Linking.openURL(USER_GUIDE_URL);
+      return;
+    }
+  } catch {
+    // Network error — fall through to fallback
+  }
+  await Linking.openURL(USER_GUIDE_FALLBACK_URL);
+}
 
 interface AppInfoModalProps {
   visible: boolean;
@@ -137,7 +183,65 @@ export default function AppInfoModal({ visible, onClose }: AppInfoModalProps) {
               color={colors.textTertiary}
             />
           </Pressable>
-          <View style={styles.lastDetail} />
+          <View style={styles.supportSection}>
+            <Pressable
+              style={styles.supportRow}
+              onPress={() => openUserGuide()}
+              accessibilityRole="button"
+              accessibilityLabel="Help and FAQ"
+            >
+              <Ionicons
+                name="help-circle-outline"
+                size={20}
+                color={colors.textPrimary}
+                style={styles.supportIcon}
+              />
+              <Text style={styles.supportLabel}>Help & FAQ</Text>
+              <Ionicons
+                name="open-outline"
+                size={14}
+                color={colors.textTertiary}
+              />
+            </Pressable>
+            <Pressable
+              style={styles.supportRow}
+              onPress={() => Linking.openURL(buildBugReportUrl())}
+              accessibilityRole="button"
+              accessibilityLabel="Report a Bug"
+            >
+              <Ionicons
+                name="bug-outline"
+                size={20}
+                color={colors.textPrimary}
+                style={styles.supportIcon}
+              />
+              <Text style={styles.supportLabel}>Report a Bug</Text>
+              <Ionicons
+                name="open-outline"
+                size={14}
+                color={colors.textTertiary}
+              />
+            </Pressable>
+            <Pressable
+              style={styles.supportRow}
+              onPress={() => Linking.openURL(FEATURE_REQUEST_URL)}
+              accessibilityRole="button"
+              accessibilityLabel="Request a Feature"
+            >
+              <Ionicons
+                name="bulb-outline"
+                size={20}
+                color={colors.textPrimary}
+                style={styles.supportIcon}
+              />
+              <Text style={styles.supportLabel}>Request a Feature</Text>
+              <Ionicons
+                name="open-outline"
+                size={14}
+                color={colors.textTertiary}
+              />
+            </Pressable>
+          </View>
           <Pressable
             style={styles.closeButton}
             onPress={onClose}
@@ -205,7 +309,27 @@ function createStyles(colors: ColorTokens) {
       marginBottom: 4,
     },
     lastDetail: {
-      marginBottom: 20,
+      marginBottom: 8,
+    },
+    supportSection: {
+      width: "100%",
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+      paddingTop: 8,
+      marginBottom: 16,
+    },
+    supportRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      minHeight: 44,
+    },
+    supportIcon: {
+      marginRight: 12,
+    },
+    supportLabel: {
+      flex: 1,
+      fontSize: 15,
+      color: colors.textPrimary,
     },
     closeButton: {
       backgroundColor: colors.primary,

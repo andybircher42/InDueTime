@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Linking,
   Modal,
   Platform,
   Pressable,
@@ -11,16 +10,6 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 
-let Updates: { updateId: string | null } | undefined;
-if (!__DEV__) {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    Updates = require("expo-updates");
-  } catch {
-    // Not available in Expo Go
-  }
-}
-
 import {
   Brightness,
   ColorTokens,
@@ -30,6 +19,8 @@ import {
 } from "@/theme";
 
 import HelpButton from "./HelpButton";
+
+const appVersion = Constants.expoConfig?.version ?? "";
 
 interface ThemePickerModalProps {
   visible: boolean;
@@ -46,50 +37,6 @@ interface ThemePickerModalProps {
   onClose: () => void;
   onAppInfo?: () => void;
   anchor?: { top: number; right: number };
-}
-
-const BUG_REPORT_BASE_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSd3VdvE17NHIR7qQD8Ams10nBgAgf1n0JQ1mvWUUFKf7C3Z-w/viewform";
-
-/** Builds the bug report URL with app version and OS version pre-filled. */
-function buildBugReportUrl(): string {
-  const version = Constants.expoConfig?.version ?? "unknown";
-  const buildId = (Constants.expoConfig?.extra?.easBuildId as string) || "";
-  const updateId = Updates?.updateId ?? null;
-
-  let appVersion =
-    buildId !== "" ? `${version} (${buildId.slice(0, 8)})` : version;
-  if (updateId != null) {
-    appVersion += ` update:${updateId.slice(0, 8)}`;
-  }
-
-  const osName = Platform.OS === "ios" ? "iOS" : "Android";
-  const osVersion = `${osName} ${Platform.Version}`;
-
-  const params = new URLSearchParams({
-    "entry.1845428880": appVersion,
-    "entry.765646897": osVersion,
-  });
-  return `${BUG_REPORT_BASE_URL}?${params.toString()}`;
-}
-const FEATURE_REQUEST_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSeLS03h_8s3t0-IYXM04UjVv2fAhH37i2n56fPHB83OuHaQhw/viewform";
-const USER_GUIDE_URL = "https://andybircher42.github.io/InDueTime/guide/";
-const USER_GUIDE_FALLBACK_URL =
-  "https://github.com/andybircher42/InDueTime/blob/main/docs/user-guide.md";
-
-/** Opens the hosted user guide, falling back to GitHub if it 404s. */
-async function openUserGuide(): Promise<void> {
-  try {
-    const res = await fetch(USER_GUIDE_URL, { method: "HEAD" });
-    if (res.ok) {
-      await Linking.openURL(USER_GUIDE_URL);
-      return;
-    }
-  } catch {
-    // Network error — fall through to fallback
-  }
-  await Linking.openURL(USER_GUIDE_FALLBACK_URL);
 }
 
 const THEME_OPTIONS: {
@@ -384,73 +331,20 @@ export default function ThemePickerModal({
               </Pressable>
               <View style={styles.separator} />
               <Pressable
-                style={styles.row}
-                onPress={() => {
-                  openUserGuide();
-                  onClose();
-                }}
-                accessibilityRole="button"
-                accessibilityLabel="Help and FAQ"
-              >
-                <Ionicons
-                  name="help-circle-outline"
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>Help & FAQ</Text>
-              </Pressable>
-              <Pressable
-                style={styles.row}
-                onPress={() => {
-                  Linking.openURL(buildBugReportUrl());
-                  onClose();
-                }}
-                accessibilityRole="button"
-                accessibilityLabel="Report a Bug"
-              >
-                <Ionicons
-                  name="bug-outline"
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>Report a Bug</Text>
-              </Pressable>
-              <Pressable
-                style={styles.row}
-                onPress={() => {
-                  Linking.openURL(FEATURE_REQUEST_URL);
-                  onClose();
-                }}
-                accessibilityRole="button"
-                accessibilityLabel="Request a Feature"
-              >
-                <Ionicons
-                  name="bulb-outline"
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
-                />
-                <Text style={styles.rowLabel}>Request a Feature</Text>
-              </Pressable>
-              <View style={styles.separator} />
-              <Pressable
-                style={styles.row}
+                style={styles.versionRow}
                 onPress={() => {
                   onAppInfo?.();
                   onClose();
                 }}
                 accessibilityRole="button"
-                accessibilityLabel="App Info"
+                accessibilityLabel="About and help"
               >
+                <Text style={styles.versionLabel}>v{appVersion}</Text>
                 <Ionicons
                   name="information-circle-outline"
-                  size={20}
-                  color={colors.textPrimary}
-                  style={styles.rowIcon}
+                  size={16}
+                  color={colors.textTertiary}
                 />
-                <Text style={styles.rowLabel}>App Info</Text>
               </Pressable>
             </>
           )}
@@ -563,6 +457,17 @@ function createStyles(colors: ColorTokens) {
       fontSize: 16,
       fontWeight: "700",
       color: colors.primary,
+    },
+    versionRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+      paddingVertical: 4,
+    },
+    versionLabel: {
+      fontSize: 12,
+      color: colors.textTertiary,
     },
   });
 }
