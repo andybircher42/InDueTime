@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
-import { getBirthstoneImage, lineHeight } from "@/util";
+import { getBirthFlowerImage, getBirthstoneImage, lineHeight } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
 
@@ -151,18 +151,32 @@ export default function CalendarMonth({
                           cell.dueEntries.map((e) => (
                             <BirthstoneIcon
                               key={e.id}
-                              image={getBirthstoneImage(
-                                e.birthstone?.name ?? "Garnet",
-                              )}
+                              image={
+                                e.symbolType === "flower"
+                                  ? getBirthFlowerImage(
+                                      e.birthFlower?.name ?? "Rose",
+                                    )
+                                  : getBirthstoneImage(
+                                      e.birthstone?.name ?? "Garnet",
+                                    )
+                              }
                               size={14}
                             />
                           ))
                         ) : (
                           <>
                             <BirthstoneIcon
-                              image={getBirthstoneImage(
-                                cell.dueEntries[0].birthstone?.name ?? "Garnet",
-                              )}
+                              image={
+                                cell.dueEntries[0].symbolType === "flower"
+                                  ? getBirthFlowerImage(
+                                      cell.dueEntries[0].birthFlower?.name ??
+                                        "Rose",
+                                    )
+                                  : getBirthstoneImage(
+                                      cell.dueEntries[0].birthstone?.name ??
+                                        "Garnet",
+                                    )
+                              }
                               size={14}
                             />
                             <Text style={styles.overflowText}>

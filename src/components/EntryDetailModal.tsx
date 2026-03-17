@@ -14,6 +14,7 @@ import {
   deliveryTimingLabel,
   formatDueDate,
   gestationalAgeFromDueDate,
+  getBirthFlowerImage,
   getBirthstoneImage,
   lineHeight,
 } from "@/util";
@@ -69,18 +70,30 @@ export default function EntryDetailModal({
         <Pressable
           style={[
             styles.card,
-            entry.birthstone && { backgroundColor: entry.birthstone.color },
+            entry.symbolType === "flower" && entry.birthFlower
+              ? { backgroundColor: entry.birthFlower.color }
+              : entry.birthstone
+                ? { backgroundColor: entry.birthstone.color }
+                : undefined,
           ]}
           onPress={() => {}}
           accessible={false}
         >
           {isDelivered && <Text style={styles.deliveredEmoji}>👶</Text>}
-          {entry.birthstone && !isDelivered && (
-            <BirthstoneIcon
-              image={getBirthstoneImage(entry.birthstone.name)}
-              size={48}
-            />
-          )}
+          {!isDelivered &&
+            (entry.symbolType === "flower"
+              ? entry.birthFlower && (
+                  <BirthstoneIcon
+                    image={getBirthFlowerImage(entry.birthFlower.name)}
+                    size={48}
+                  />
+                )
+              : entry.birthstone && (
+                  <BirthstoneIcon
+                    image={getBirthstoneImage(entry.birthstone.name)}
+                    size={48}
+                  />
+                ))}
           <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
             {entry.name}
           </Text>
@@ -112,12 +125,23 @@ export default function EntryDetailModal({
                 </Text>
               </View>
             )}
-            {entry.birthstone && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Birthstone</Text>
-                <Text style={styles.detailValue}>{entry.birthstone.name}</Text>
-              </View>
-            )}
+            {entry.symbolType === "flower"
+              ? entry.birthFlower && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Birth flower</Text>
+                    <Text style={styles.detailValue}>
+                      {entry.birthFlower.name}
+                    </Text>
+                  </View>
+                )
+              : entry.birthstone && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Birthstone</Text>
+                    <Text style={styles.detailValue}>
+                      {entry.birthstone.name}
+                    </Text>
+                  </View>
+                )}
           </View>
 
           <Pressable

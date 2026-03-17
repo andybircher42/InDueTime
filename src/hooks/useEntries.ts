@@ -9,6 +9,7 @@ import {
   saveEntries,
 } from "@/storage";
 import { reportError } from "@/util";
+import { getBirthFlowerForDate } from "@/util/birthFlowers";
 import { getBirthstoneForDate } from "@/util/birthstones";
 
 let idCounter = 0;
@@ -66,6 +67,8 @@ export default function useEntries() {
         dueDate,
         createdAt: Date.now(),
         birthstone: getBirthstoneForDate(dueDate),
+        birthFlower: getBirthFlowerForDate(dueDate),
+        symbolType: Math.random() < 0.5 ? "gem" : "flower",
       };
       setEntries((prev) => {
         const updated = [entry, ...prev];

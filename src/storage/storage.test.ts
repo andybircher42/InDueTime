@@ -26,6 +26,8 @@ describe("saveEntries", () => {
         dueDate: "2026-09-01",
         createdAt: 1000,
         birthstone: { name: "Sapphire", color: "#1565C0" },
+        birthFlower: { name: "Aster", color: "#9B72B0" },
+        symbolType: "gem",
       },
       {
         id: "2",
@@ -33,6 +35,8 @@ describe("saveEntries", () => {
         dueDate: "2026-06-15",
         createdAt: 2000,
         birthstone: { name: "Pearl", color: "#B0B8E8" },
+        birthFlower: { name: "Rose", color: "#C8465C" },
+        symbolType: "flower",
       },
     ];
     await saveEntries(data);
@@ -112,6 +116,8 @@ describe("loadEntries", () => {
         dueDate: "2026-09-01",
         createdAt: 1000,
         birthstone: { name: "Sapphire", color: "#1565C0" },
+        birthFlower: { name: "Aster", color: "#9B72B0" },
+        symbolType: "gem",
       },
       {
         id: "2",
@@ -119,6 +125,8 @@ describe("loadEntries", () => {
         dueDate: "2026-06-15",
         createdAt: 2000,
         birthstone: { name: "Pearl", color: "#B0B8E8" },
+        birthFlower: { name: "Rose", color: "#C8465C" },
+        symbolType: "flower",
       },
     ];
     await AsyncStorage.setItem("@gestation_entries", JSON.stringify(data));
@@ -180,6 +188,8 @@ describe("loadEntries", () => {
         dueDate: "2026-09-01",
         createdAt: 1000,
         birthstone: { name: "Sapphire", color: "#1565C0" },
+        birthFlower: { name: "Aster", color: "#9B72B0" },
+        symbolType: "gem",
       },
     ];
     await AsyncStorage.setItem("@gestation_entries", JSON.stringify(data));
@@ -214,6 +224,8 @@ describe("loadEntries", () => {
         name: "First",
         dueDate: "2026-06-15",
         birthstone: { name: "Pearl", color: "#B0B8E8" },
+        birthFlower: { name: "Rose", color: "#C8465C" },
+        symbolType: "flower",
       },
       {
         id: "2",
@@ -267,6 +279,8 @@ describe("loadEntries", () => {
         dueDate: "2026-06-15",
         createdAt: 1000,
         birthstone: { name: "Pearl", color: "#B0B8E8" },
+        birthFlower: { name: "Rose", color: "#C8465C" },
+        symbolType: "flower",
       },
     ];
     await AsyncStorage.setItem("@gestation_entries", JSON.stringify(data));

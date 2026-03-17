@@ -1,4 +1,4 @@
-export type { Entry, LoadResult } from "./storage";
+export type { Entry, LoadResult, SymbolType } from "./storage";
 export {
   acceptAgreement,
   checkAgreement,

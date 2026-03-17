@@ -24,6 +24,7 @@ import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import {
   formatDueDate,
   gestationalAgeFromDueDate,
+  getBirthFlowerImage,
   getBirthstone,
   getBirthstoneImage,
 } from "@/util";
@@ -214,9 +215,13 @@ const EntryRow = React.memo(function EntryRow({
           <Text style={[styles.entryDueDate, { color: textColor }]}>
             {formatDueDate(item.dueDate)}
           </Text>
-          {item.birthstone && (
+          {(item.birthstone || item.birthFlower) && (
             <BirthstoneIcon
-              image={getBirthstoneImage(item.birthstone.name)}
+              image={
+                item.symbolType === "flower"
+                  ? getBirthFlowerImage(item.birthFlower?.name ?? "Rose")
+                  : getBirthstoneImage(item.birthstone?.name ?? "Garnet")
+              }
               size={24}
             />
           )}

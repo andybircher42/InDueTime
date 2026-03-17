@@ -6,6 +6,8 @@ import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import {
   formatDueDate,
   gestationalAgeFromDueDate,
+  getBirthFlower,
+  getBirthFlowerImage,
   getBirthstone,
   getBirthstoneImage,
 } from "@/util";
@@ -30,13 +32,18 @@ const EntryCard = React.memo(function EntryCard({
     () => new Date(entry.dueDate + "T00:00:00").getMonth() + 1,
     [entry.dueDate],
   );
-  const birthstone = entry.birthstone ?? getBirthstone(dueDateMonth);
-  const birthstoneImage = getBirthstoneImage(birthstone.name);
+  const isFlower = entry.symbolType === "flower";
+  const symbol = isFlower
+    ? (entry.birthFlower ?? getBirthFlower(dueDateMonth))
+    : (entry.birthstone ?? getBirthstone(dueDateMonth));
+  const symbolImage = isFlower
+    ? getBirthFlowerImage(symbol.name)
+    : getBirthstoneImage(symbol.name);
 
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const cardStyle = useMemo(
-    () => [styles.card, { backgroundColor: birthstone.color }],
-    [styles.card, birthstone.color],
+    () => [styles.card, { backgroundColor: symbol.color }],
+    [styles.card, symbol.color],
   );
 
   return (
@@ -49,7 +56,7 @@ const EntryCard = React.memo(function EntryCard({
       testID="entry-card"
     >
       <View style={styles.inner}>
-        <BirthstoneIcon image={birthstoneImage} size={56} />
+        <BirthstoneIcon image={symbolImage} size={56} />
         <View style={styles.textGroup}>
           <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
             {entry.name}

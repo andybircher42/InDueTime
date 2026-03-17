@@ -4,6 +4,12 @@ export type {
   ParsedDateOrAge,
 } from "./batchParse";
 export { parseBatchInput, parseDateOrAge } from "./batchParse";
+export type { BirthFlower } from "./birthFlowers";
+export {
+  getBirthFlower,
+  getBirthFlowerForDate,
+  getBirthFlowerImage,
+} from "./birthFlowers";
 export type { Birthstone } from "./birthstones";
 export {
   getBirthstone,

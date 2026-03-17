@@ -1,7 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Crypto from "expo-crypto";
 
+import { BirthFlower, getBirthFlowerForDate } from "@/util/birthFlowers";
 import { Birthstone, getBirthstoneForDate } from "@/util/birthstones";
+
+/** Which birth symbol type to display for this entry. */
+export type SymbolType = "gem" | "flower";
 
 /** A single gestation tracking entry. */
 export interface Entry {
@@ -11,6 +15,9 @@ export interface Entry {
   createdAt: number;
   deliveredAt?: number;
   birthstone?: Birthstone;
+  birthFlower?: BirthFlower;
+  /** Which symbol to display — "gem" or "flower". Randomly assigned on creation. */
+  symbolType?: SymbolType;
 }
 
 const STORAGE_KEY = "@gestation_entries";
@@ -203,6 +210,27 @@ export const loadEntries = async (
       const deliveredAt =
         typeof obj.deliveredAt === "number" ? obj.deliveredAt : undefined;
 
+      const birthFlower =
+        obj.birthFlower != null &&
+        typeof obj.birthFlower === "object" &&
+        typeof (obj.birthFlower as Record<string, unknown>).name === "string" &&
+        typeof (obj.birthFlower as Record<string, unknown>).color === "string"
+          ? (obj.birthFlower as BirthFlower)
+          : undefined;
+
+      if (!birthFlower) {
+        needsMigration = true;
+      }
+
+      const symbolType =
+        obj.symbolType === "gem" || obj.symbolType === "flower"
+          ? (obj.symbolType as SymbolType)
+          : undefined;
+
+      if (!symbolType) {
+        needsMigration = true;
+      }
+
       entries.push({
         id: item.id,
         name: item.name,
@@ -210,6 +238,8 @@ export const loadEntries = async (
         createdAt: createdAt ?? MIGRATION_BASE_DATE + entries.length * 1000,
         deliveredAt,
         birthstone: birthstone ?? getBirthstoneForDate(item.dueDate),
+        birthFlower: birthFlower ?? getBirthFlowerForDate(item.dueDate),
+        symbolType: symbolType ?? (Math.random() < 0.5 ? "gem" : "flower"),
       });
     } else {
       discardedCount++;
