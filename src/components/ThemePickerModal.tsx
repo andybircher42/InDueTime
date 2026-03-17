@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
+import type { Ionicons } from "@expo/vector-icons";
 
 import {
   Brightness,
@@ -19,7 +20,6 @@ import {
 
 import type { CelebrationStyle } from "./CelebrationOverlay";
 import PillSelector from "./PillSelector";
-import type { Ionicons } from "@expo/vector-icons";
 
 const THEME_OPTIONS: {
   value: Personality;

@@ -1,10 +1,9 @@
 import { useCallback, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import type { CelebrationStyle } from "@/components/CelebrationOverlay";
 import { Brightness, Layout, Personality } from "@/theme";
 import { reportError } from "@/util";
-
-import type { CelebrationStyle } from "@/components/CelebrationOverlay";
 
 const PERSONALITY_KEY = "@theme_personality";
 const BRIGHTNESS_KEY = "@theme_brightness";

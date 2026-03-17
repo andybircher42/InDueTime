@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Animated, Dimensions, Modal, StyleSheet, Text, View } from "react-native";
+import { Animated, Dimensions, Modal, StyleSheet, Text } from "react-native";
 
-import { ColorTokens, useTheme } from "@/theme";
 import { Entry } from "@/storage";
+import { ColorTokens, useTheme } from "@/theme";
 import { getBirthstoneImage } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
@@ -49,14 +49,14 @@ export default function CelebrationOverlay({
 
   // Resolve "random" to a concrete style per delivery
   const resolvedStyle = useMemo(() => {
-    if (style !== "random") return style;
+    if (style !== "random") {return style;}
     return RANDOM_STYLES[Math.floor(Math.random() * RANDOM_STYLES.length)];
   }, [style, entry]);
 
   const emojis = resolvedStyle === "gentle" ? GENTLE_EMOJIS : CONFETTI_EMOJIS;
 
   const particles = useMemo<Particle[]>(() => {
-    if (!entry || resolvedStyle === "none") return [];
+    if (!entry || resolvedStyle === "none") {return [];}
     return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
       emoji: emojis[i % emojis.length],
       x: Math.random() * SCREEN_WIDTH,
@@ -135,7 +135,7 @@ export default function CelebrationOverlay({
     return () => clearTimeout(timer);
   }, [entry, resolvedStyle, particles, fadeIn, nameScale, onComplete]);
 
-  if (!entry || resolvedStyle === "none") return null;
+  if (!entry || resolvedStyle === "none") {return null;}
 
   const birthstoneImage = entry.birthstone
     ? getBirthstoneImage(entry.birthstone.name)
