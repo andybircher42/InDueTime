@@ -52,6 +52,26 @@ export type Brightness = "system" | "light" | "dark";
 /** Available layout modes. */
 export type Layout = "compact" | "cozy";
 
+/** Border radius tokens that vary per personality. */
+export interface RadiiTokens {
+  /** Small elements: buttons, pills, form inputs, toasts. */
+  sm: number;
+  /** Medium elements: entry rows, delivered rows. */
+  md: number;
+  /** Large elements: cards, modals, add button, form wrapper. */
+  lg: number;
+}
+
+/** Border radii per personality — shape language varies by theme. */
+export const radii: Record<Personality, RadiiTokens> = {
+  classic: { sm: 8, md: 10, lg: 12 },
+  warm: { sm: 10, md: 12, lg: 14 },
+  elegant: { sm: 6, md: 8, lg: 10 },
+  playful: { sm: 12, md: 16, lg: 20 },
+  modern: { sm: 4, md: 6, lg: 8 },
+  mono: { sm: 4, md: 6, lg: 8 },
+};
+
 // ---------------------------------------------------------------------------
 // Classic (the original blue theme)
 // ---------------------------------------------------------------------------

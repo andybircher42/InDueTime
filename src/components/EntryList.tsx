@@ -20,7 +20,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { useFormToggle, useSort, useSwipeDismiss } from "@/hooks";
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import {
   formatDueDate,
   gestationalAgeFromDueDate,
@@ -233,8 +233,8 @@ export default function EntryList({
   onDeleteAll,
   onAdd,
 }: EntryListProps) {
-  const { colors, rowColors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, rowColors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
 
   const { sortBy, sortDir, sorted, cycleSortField, toggleSortDir } = useSort(
     entries,
@@ -391,7 +391,7 @@ export default function EntryList({
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     listContainer: {
       flex: 1,
@@ -403,7 +403,7 @@ function createStyles(colors: ColorTokens) {
       marginHorizontal: 16,
       marginTop: 12,
       paddingVertical: 12,
-      borderRadius: 12,
+      borderRadius: radii.lg,
       borderWidth: 2,
       gap: 10,
     },
@@ -435,7 +435,7 @@ function createStyles(colors: ColorTokens) {
     entryWrapper: {
       marginHorizontal: 16,
       marginTop: 8,
-      borderRadius: 10,
+      borderRadius: radii.md,
       overflow: "hidden",
     },
     swipeBackground: {

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { setOnboardingComplete } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import { lineHeight } from "@/util";
 
 interface OnboardingOverlayProps {
@@ -31,8 +31,8 @@ export default function OnboardingOverlay({
   visible,
   onComplete,
 }: OnboardingOverlayProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const opacities = useRef(LINES.map(() => new Animated.Value(0))).current;
   const buttonOpacity = useRef(new Animated.Value(0)).current;
 
@@ -118,7 +118,7 @@ export default function OnboardingOverlay({
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -142,7 +142,7 @@ function createStyles(colors: ColorTokens) {
     },
     button: {
       backgroundColor: colors.primary,
-      borderRadius: 16,
+      borderRadius: radii.lg,
       paddingHorizontal: 48,
       paddingVertical: 16,
     },

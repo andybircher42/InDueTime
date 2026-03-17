@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useSwipeDismiss } from "@/hooks";
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import { gestationalAgeFromDueDate } from "@/util";
 
 interface UndoToastProps {
@@ -26,9 +26,9 @@ export default function UndoToast({
   onDismiss,
   embedded = false,
 }: UndoToastProps) {
-  const { colors } = useTheme();
+  const { colors, radii } = useTheme();
   const insets = useSafeAreaInsets();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const { weeks, days } = gestationalAgeFromDueDate(entry.dueDate);
   const { animatedValue: translateY, panHandlers } = useSwipeDismiss({
     axis: "y",
@@ -78,11 +78,11 @@ export default function UndoToast({
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       backgroundColor: colors.toastBackground,
-      borderRadius: 10,
+      borderRadius: radii.md,
       flexDirection: "row",
       alignItems: "center",
       paddingVertical: 12,
@@ -98,7 +98,7 @@ function createStyles(colors: ColorTokens) {
       paddingHorizontal: 12,
       paddingVertical: 6,
       backgroundColor: colors.primary,
-      borderRadius: 6,
+      borderRadius: radii.sm,
     },
     undoText: {
       color: colors.white,

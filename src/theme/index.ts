@@ -4,6 +4,7 @@ export type {
   Layout,
   Personality,
   PersonalityPalette,
+  RadiiTokens,
 } from "./colors";
 export {
   darkColors,
@@ -13,6 +14,7 @@ export {
   monoColors,
   monoRowColors,
   palettes,
+  radii,
 } from "./colors";
 export type { ResolvedTheme, ThemeMode } from "./ThemeContext";
 export { ThemeProvider, useTheme } from "./ThemeContext";

@@ -2,7 +2,13 @@ import React, { Component, ErrorInfo, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { ColorTokens, lightColors, useTheme } from "@/theme";
+import {
+  ColorTokens,
+  lightColors,
+  radii,
+  RadiiTokens,
+  useTheme,
+} from "@/theme";
 
 interface Props {
   children: React.ReactNode;
@@ -10,6 +16,7 @@ interface Props {
 
 interface InnerProps extends Props {
   colors: ColorTokens;
+  radii: RadiiTokens;
 }
 
 interface State {
@@ -38,7 +45,11 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <ErrorFallback onRetry={this.handleRetry} colors={this.props.colors} />
+        <ErrorFallback
+          onRetry={this.handleRetry}
+          colors={this.props.colors}
+          radii={this.props.radii}
+        />
       );
     }
 
@@ -50,11 +61,13 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
 function ErrorFallback({
   onRetry,
   colors,
+  radii: r,
 }: {
   onRetry: () => void;
   colors: ColorTokens;
+  radii: RadiiTokens;
 }) {
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, r), [colors, r]);
 
   return (
     <View style={styles.container} testID="error-boundary">
@@ -77,22 +90,27 @@ function ErrorFallback({
   );
 }
 
-/** Hook that returns theme colors, falling back to classic light if outside ThemeProvider. */
-function useThemeSafe(): ColorTokens {
+/** Hook that returns theme colors and radii, falling back to classic light if outside ThemeProvider. */
+function useThemeSafe(): { colors: ColorTokens; radii: RadiiTokens } {
   try {
-    return useTheme().colors;
+    const { colors, radii: r } = useTheme();
+    return { colors, radii: r };
   } catch {
-    return lightColors;
+    return { colors: lightColors, radii: radii.classic };
   }
 }
 
 /** Catches unhandled errors and shows a themed recovery UI instead of a blank screen. */
 export default function ErrorBoundary({ children }: Props) {
-  const colors = useThemeSafe();
-  return <ErrorBoundaryInner colors={colors}>{children}</ErrorBoundaryInner>;
+  const { colors, radii: r } = useThemeSafe();
+  return (
+    <ErrorBoundaryInner colors={colors} radii={r}>
+      {children}
+    </ErrorBoundaryInner>
+  );
 }
 
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -121,7 +139,7 @@ function createStyles(colors: ColorTokens) {
       backgroundColor: colors.primary,
       paddingHorizontal: 24,
       paddingVertical: 12,
-      borderRadius: 10,
+      borderRadius: radii.md,
       marginTop: 12,
     },
     buttonText: {

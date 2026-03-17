@@ -7,6 +7,8 @@ import {
   Layout,
   palettes,
   Personality,
+  radii,
+  RadiiTokens,
 } from "./colors";
 
 /** The effective visual brightness after resolving system preference. */
@@ -21,6 +23,7 @@ export type ThemeMode = Brightness;
 interface ThemeContextValue {
   colors: ColorTokens;
   rowColors: readonly string[];
+  radii: RadiiTokens;
   resolvedTheme: ResolvedTheme;
   personality: Personality;
   brightness: Brightness;
@@ -71,6 +74,7 @@ export function ThemeProvider({
     return {
       colors: variant.colors,
       rowColors: variant.rowColors,
+      radii: radii[personality],
       resolvedTheme,
       personality,
       brightness,

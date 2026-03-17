@@ -13,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { useSwipeDismiss } from "@/hooks";
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import { deliveryTimingLabel, formatDueDate, lineHeight } from "@/util";
 
 import DeliveredCard from "./DeliveredCard";
@@ -166,8 +166,8 @@ export default function DeliveredList({
   deliveredTTLDays,
   onChangeDeliveredTTL,
 }: DeliveredListProps) {
-  const { colors, layout } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, layout, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
 
   const deliveredEntries = useMemo(
@@ -358,7 +358,7 @@ export default function DeliveredList({
   );
 }
 
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -452,7 +452,7 @@ function createStyles(colors: ColorTokens) {
     },
     rowWrapper: {
       marginBottom: 6,
-      borderRadius: 10,
+      borderRadius: radii.md,
       overflow: "hidden",
     },
     swipeBackground: {
@@ -482,7 +482,7 @@ function createStyles(colors: ColorTokens) {
       alignItems: "center",
       paddingVertical: 10,
       paddingHorizontal: 12,
-      borderRadius: 10,
+      borderRadius: radii.md,
       backgroundColor: colors.primaryLightBg,
       gap: 10,
     },

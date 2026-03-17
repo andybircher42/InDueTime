@@ -10,7 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import { toISODateString } from "@/util";
 import { getBirthstoneForDate } from "@/util/birthstones";
 
@@ -123,8 +123,8 @@ export default function DevToolbar({
   onClose,
   anchor,
 }: DevToolbarProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const dropdownPosition = anchor ?? { top: 100, right: 12 };
 
   return (
@@ -196,7 +196,7 @@ export default function DevToolbar({
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -204,7 +204,7 @@ function createStyles(colors: ColorTokens) {
     dropdown: {
       position: "absolute",
       backgroundColor: colors.contentBackground,
-      borderRadius: 12,
+      borderRadius: radii.lg,
       paddingVertical: 8,
       paddingHorizontal: 16,
       minWidth: 180,

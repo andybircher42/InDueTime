@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import {
   deliveryTimingLabel,
   formatDueDate,
@@ -30,8 +30,8 @@ export default function EntryDetailModal({
   entry,
   onClose,
 }: EntryDetailModalProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
 
   if (!entry) {
     return null;
@@ -134,7 +134,7 @@ export default function EntryDetailModal({
   );
 }
 
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     backdrop: {
       flex: 1,
@@ -146,7 +146,7 @@ function createStyles(colors: ColorTokens) {
     card: {
       width: "100%",
       backgroundColor: colors.primary,
-      borderRadius: 16,
+      borderRadius: radii.lg,
       padding: 24,
       alignItems: "center",
       gap: 12,
@@ -195,7 +195,7 @@ function createStyles(colors: ColorTokens) {
       marginTop: 8,
       paddingVertical: 10,
       paddingHorizontal: 32,
-      borderRadius: 8,
+      borderRadius: radii.sm,
       backgroundColor: colors.overlayOnColor,
     },
     closeText: {

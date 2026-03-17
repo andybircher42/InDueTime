@@ -3,7 +3,7 @@ import { Animated, StyleSheet, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useSwipeDismiss } from "@/hooks";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 
 interface InfoToastProps {
   message: string;
@@ -20,9 +20,9 @@ export default function InfoToast({
   onDismiss,
   embedded = false,
 }: InfoToastProps) {
-  const { colors } = useTheme();
+  const { colors, radii } = useTheme();
   const insets = useSafeAreaInsets();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const { animatedValue: translateY, panHandlers } = useSwipeDismiss({
     axis: "y",
     threshold: 30,
@@ -60,11 +60,11 @@ export default function InfoToast({
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       backgroundColor: colors.toastBackground,
-      borderRadius: 10,
+      borderRadius: radii.md,
       flexDirection: "row",
       alignItems: "center",
       paddingVertical: 12,

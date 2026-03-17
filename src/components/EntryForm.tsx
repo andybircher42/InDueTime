@@ -17,7 +17,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import {
   BatchEntryError,
   getDateBounds,
@@ -43,8 +43,8 @@ if (
 
 /** Form for adding a new gestation entry with name, weeks, and days fields. */
 export default function EntryForm({ onAdd, batch }: EntryFormProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
 
   const [name, setName] = useState("");
   const [dateAgeText, setDateAgeText] = useState("");
@@ -388,7 +388,7 @@ export default function EntryForm({ onAdd, batch }: EntryFormProps) {
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     form: {
       backgroundColor: colors.contentBackground,
@@ -403,7 +403,7 @@ function createStyles(colors: ColorTokens) {
     nameInput: {
       borderWidth: 1,
       borderColor: colors.inputBorder,
-      borderRadius: 10,
+      borderRadius: radii.md,
       paddingVertical: 14,
       paddingHorizontal: 16,
       fontSize: 20,
@@ -438,7 +438,7 @@ function createStyles(colors: ColorTokens) {
       flex: 1,
       borderWidth: 1,
       borderColor: colors.inputBorder,
-      borderRadius: 8,
+      borderRadius: radii.sm,
       padding: 12,
       fontSize: 16,
       backgroundColor: colors.inputBackground,
@@ -447,7 +447,7 @@ function createStyles(colors: ColorTokens) {
     calendarButton: {
       borderWidth: 1,
       borderColor: colors.inputBorder,
-      borderRadius: 8,
+      borderRadius: radii.sm,
       paddingHorizontal: 12,
       justifyContent: "center",
       alignItems: "center",
@@ -474,7 +474,7 @@ function createStyles(colors: ColorTokens) {
     },
     addButton: {
       backgroundColor: colors.primary,
-      borderRadius: 8,
+      borderRadius: radii.sm,
       paddingHorizontal: 24,
       paddingVertical: 12,
       justifyContent: "center",
@@ -501,7 +501,7 @@ function createStyles(colors: ColorTokens) {
     batchInput: {
       borderWidth: 1,
       borderColor: colors.inputBorder,
-      borderRadius: 8,
+      borderRadius: radii.sm,
       padding: 12,
       fontSize: 15,
       backgroundColor: colors.inputBackground,

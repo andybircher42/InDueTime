@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 
 import EntryForm from "./EntryForm";
 
@@ -22,8 +22,8 @@ export default function InlineFormWrapper({
   onToggleBatchMode,
   onClose,
 }: InlineFormWrapperProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
 
   return (
     <View style={styles.container}>
@@ -53,12 +53,12 @@ export default function InlineFormWrapper({
   );
 }
 
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       marginHorizontal: 16,
       marginTop: 12,
-      borderRadius: 12,
+      borderRadius: radii.lg,
       backgroundColor: colors.contentBackground,
       borderWidth: 1,
       borderColor: colors.border,

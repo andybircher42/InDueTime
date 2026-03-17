@@ -11,7 +11,7 @@ import {
 
 import { useFormToggle, useSort } from "@/hooks";
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import { getBirthstone, getBirthstoneImage } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
@@ -38,8 +38,8 @@ export default function EntryGrid({
   onDeleteAll,
   onAdd,
 }: EntryGridProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const { showForm, batchMode, formKey, toggleForm, toggleBatchMode } =
     useFormToggle();
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
@@ -175,7 +175,7 @@ export default function EntryGrid({
   );
 }
 
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -193,7 +193,7 @@ function createStyles(colors: ColorTokens) {
     addCard: {
       flex: 1,
       aspectRatio: 1,
-      borderRadius: 12,
+      borderRadius: radii.lg,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.contentBackground,
@@ -210,7 +210,7 @@ function createStyles(colors: ColorTokens) {
       marginHorizontal: 32,
       marginTop: 32,
       paddingVertical: 40,
-      borderRadius: 16,
+      borderRadius: radii.lg,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.contentBackground,

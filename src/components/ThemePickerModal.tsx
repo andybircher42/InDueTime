@@ -15,6 +15,7 @@ import {
   ColorTokens,
   Layout,
   Personality,
+  RadiiTokens,
   useTheme,
 } from "@/theme";
 
@@ -102,8 +103,8 @@ export default function ThemePickerModal({
   onAppInfo,
   anchor,
 }: ThemePickerModalProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const dropdownPosition = anchor ?? { top: 100, right: 12 };
   const [subPage, setSubPage] = useState<SubPage>("main");
 
@@ -355,7 +356,7 @@ export default function ThemePickerModal({
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -363,7 +364,7 @@ function createStyles(colors: ColorTokens) {
     dropdown: {
       position: "absolute",
       backgroundColor: colors.contentBackground,
-      borderRadius: 12,
+      borderRadius: radii.lg,
       paddingVertical: 8,
       paddingHorizontal: 16,
       minWidth: 220,

@@ -25,7 +25,7 @@ if (!__DEV__) {
   }
 }
 
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 
 const BUG_REPORT_BASE_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSd3VdvE17NHIR7qQD8Ams10nBgAgf1n0JQ1mvWUUFKf7C3Z-w/viewform";
@@ -79,8 +79,8 @@ interface AppInfoModalProps {
 
 /** Centered overlay modal that displays basic app information (name and version). */
 export default function AppInfoModal({ visible, onClose }: AppInfoModalProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, radii } = useTheme();
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const [isTester, setIsTester] = useState(false);
 
   useEffect(() => {
@@ -257,7 +257,7 @@ export default function AppInfoModal({ visible, onClose }: AppInfoModalProps) {
 }
 
 /** Creates styles based on the active color palette. */
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     modalOverlay: {
       flex: 1,
@@ -268,7 +268,7 @@ function createStyles(colors: ColorTokens) {
     },
     modalContent: {
       backgroundColor: colors.contentBackground,
-      borderRadius: 16,
+      borderRadius: radii.lg,
       padding: 24,
       width: "100%",
       alignItems: "center",
@@ -333,7 +333,7 @@ function createStyles(colors: ColorTokens) {
     },
     closeButton: {
       backgroundColor: colors.primary,
-      borderRadius: 8,
+      borderRadius: radii.sm,
       padding: 14,
       alignItems: "center",
       width: "100%",

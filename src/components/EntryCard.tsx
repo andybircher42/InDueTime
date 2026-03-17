@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Entry } from "@/storage";
-import { ColorTokens, useTheme } from "@/theme";
+import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import {
   formatDueDate,
   gestationalAgeFromDueDate,
@@ -24,7 +24,7 @@ const EntryCard = React.memo(function EntryCard({
   onPress,
   onLongPress,
 }: EntryCardProps) {
-  const { colors } = useTheme();
+  const { colors, radii } = useTheme();
   const { weeks, days } = gestationalAgeFromDueDate(entry.dueDate);
   const dueDateMonth = useMemo(
     () => new Date(entry.dueDate + "T00:00:00").getMonth() + 1,
@@ -33,7 +33,7 @@ const EntryCard = React.memo(function EntryCard({
   const birthstone = entry.birthstone ?? getBirthstone(dueDateMonth);
   const birthstoneImage = getBirthstoneImage(birthstone.name);
 
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const cardStyle = useMemo(
     () => [styles.card, { backgroundColor: birthstone.color }],
     [styles.card, birthstone.color],
@@ -67,12 +67,12 @@ const EntryCard = React.memo(function EntryCard({
 
 export default EntryCard;
 
-function createStyles(colors: ColorTokens) {
+function createStyles(colors: ColorTokens, radii: RadiiTokens) {
   return StyleSheet.create({
     card: {
       flex: 1,
       aspectRatio: 1,
-      borderRadius: 12,
+      borderRadius: radii.lg,
       padding: 16,
       ...Platform.select({
         ios: {
