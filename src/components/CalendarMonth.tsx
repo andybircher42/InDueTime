@@ -3,12 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Entry } from "@/storage";
 import { ColorTokens, useTheme } from "@/theme";
-import {
-  getBirthFlowerImage,
-  getBirthstoneImage,
-  getZodiacSignImage,
-  lineHeight,
-} from "@/util";
+import { lineHeight, resolveSymbol } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
 
@@ -156,41 +151,14 @@ export default function CalendarMonth({
                           cell.dueEntries.map((e) => (
                             <BirthstoneIcon
                               key={e.id}
-                              image={
-                                e.symbolType === "zodiac"
-                                  ? getZodiacSignImage(
-                                      e.zodiacSign?.name ?? "Aries",
-                                    )
-                                  : e.symbolType === "flower"
-                                    ? getBirthFlowerImage(
-                                        e.birthFlower?.name ?? "Rose",
-                                      )
-                                    : getBirthstoneImage(
-                                        e.birthstone?.name ?? "Garnet",
-                                      )
-                              }
+                              image={resolveSymbol(e).image}
                               size={14}
                             />
                           ))
                         ) : (
                           <>
                             <BirthstoneIcon
-                              image={
-                                cell.dueEntries[0].symbolType === "zodiac"
-                                  ? getZodiacSignImage(
-                                      cell.dueEntries[0].zodiacSign?.name ??
-                                        "Aries",
-                                    )
-                                  : cell.dueEntries[0].symbolType === "flower"
-                                    ? getBirthFlowerImage(
-                                        cell.dueEntries[0].birthFlower?.name ??
-                                          "Rose",
-                                      )
-                                    : getBirthstoneImage(
-                                        cell.dueEntries[0].birthstone?.name ??
-                                          "Garnet",
-                                      )
-                              }
+                              image={resolveSymbol(cell.dueEntries[0]).image}
                               size={14}
                             />
                             <Text style={styles.overflowText}>

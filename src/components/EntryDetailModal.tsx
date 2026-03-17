@@ -15,10 +15,8 @@ import {
   deliveryTimingLabel,
   formatDueDate,
   gestationalAgeFromDueDate,
-  getBirthFlowerImage,
-  getBirthstoneImage,
-  getZodiacSignImage,
   lineHeight,
+  resolveSymbol,
 } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
@@ -36,15 +34,8 @@ export default function EntryDetailModal({
   const { colors, radii } = useTheme();
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
 
-  const bgColor = entry
-    ? entry.symbolType === "zodiac" && entry.zodiacSign
-      ? entry.zodiacSign.color
-      : entry.symbolType === "flower" && entry.birthFlower
-        ? entry.birthFlower.color
-        : entry.birthstone
-          ? entry.birthstone.color
-          : colors.primary
-    : colors.primary;
+  const symbol = entry ? resolveSymbol(entry) : null;
+  const bgColor = symbol?.color ?? colors.primary;
   const { textColor, mutedTextColor, overlayColor } = useMemo(() => {
     const tc = contrastText(bgColor);
     return {
@@ -75,19 +66,8 @@ export default function EntryDetailModal({
     ? deliveryTimingLabel(entry.dueDate, entry.deliveredAt!)
     : "";
 
-  const symbolName =
-    entry.symbolType === "zodiac"
-      ? entry.zodiacSign?.name
-      : entry.symbolType === "flower"
-        ? entry.birthFlower?.name
-        : entry.birthstone?.name;
-
-  const symbolBadgeLabel =
-    entry.symbolType === "zodiac"
-      ? `Zodiac \u2013 ${symbolName}`
-      : entry.symbolType === "flower"
-        ? `Flower \u2013 ${symbolName}`
-        : `Birthstone \u2013 ${symbolName}`;
+  const symbolName = symbol?.name;
+  const symbolBadgeLabel = symbol ? `${symbol.label} \u2013 ${symbolName}` : "";
 
   return (
     <Modal
@@ -125,27 +105,9 @@ export default function EntryDetailModal({
             </View>
           )}
           {isDelivered && <Text style={styles.deliveredEmoji}>👶</Text>}
-          {!isDelivered &&
-            (entry.symbolType === "zodiac"
-              ? entry.zodiacSign && (
-                  <BirthstoneIcon
-                    image={getZodiacSignImage(entry.zodiacSign.name)}
-                    size={48}
-                  />
-                )
-              : entry.symbolType === "flower"
-                ? entry.birthFlower && (
-                    <BirthstoneIcon
-                      image={getBirthFlowerImage(entry.birthFlower.name)}
-                      size={48}
-                    />
-                  )
-                : entry.birthstone && (
-                    <BirthstoneIcon
-                      image={getBirthstoneImage(entry.birthstone.name)}
-                      size={48}
-                    />
-                  ))}
+          {!isDelivered && symbol && (
+            <BirthstoneIcon image={symbol.image} size={48} />
+          )}
           <Text
             style={[styles.name, { color: textColor }]}
             numberOfLines={2}

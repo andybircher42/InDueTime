@@ -24,10 +24,9 @@ import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
 import {
   formatDueDate,
   gestationalAgeFromDueDate,
-  getBirthFlowerImage,
   getBirthstone,
   getBirthstoneImage,
-  getZodiacSignImage,
+  resolveSymbol,
 } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
@@ -217,16 +216,7 @@ const EntryRow = React.memo(function EntryRow({
             {formatDueDate(item.dueDate)}
           </Text>
           {(item.birthstone || item.birthFlower || item.zodiacSign) && (
-            <BirthstoneIcon
-              image={
-                item.symbolType === "zodiac"
-                  ? getZodiacSignImage(item.zodiacSign?.name ?? "Aries")
-                  : item.symbolType === "flower"
-                    ? getBirthFlowerImage(item.birthFlower?.name ?? "Rose")
-                    : getBirthstoneImage(item.birthstone?.name ?? "Garnet")
-              }
-              size={24}
-            />
+            <BirthstoneIcon image={resolveSymbol(item).image} size={24} />
           )}
         </Pressable>
       </Animated.View>

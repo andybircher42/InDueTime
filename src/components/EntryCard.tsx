@@ -7,11 +7,7 @@ import {
   contrastText,
   formatDueDate,
   gestationalAgeFromDueDate,
-  getBirthFlower,
-  getBirthFlowerImage,
-  getBirthstone,
-  getBirthstoneImage,
-  getZodiacSignImage,
+  resolveSymbol,
 } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
@@ -30,22 +26,7 @@ const EntryCard = React.memo(function EntryCard({
 }: EntryCardProps) {
   const { colors, radii } = useTheme();
   const { weeks, days } = gestationalAgeFromDueDate(entry.dueDate);
-  const dueDateMonth = useMemo(
-    () => new Date(entry.dueDate + "T00:00:00").getMonth() + 1,
-    [entry.dueDate],
-  );
-  const isFlower = entry.symbolType === "flower";
-  const isZodiac = entry.symbolType === "zodiac";
-  const symbol = isZodiac
-    ? (entry.zodiacSign ?? { name: "Aries", color: "#E53935" })
-    : isFlower
-      ? (entry.birthFlower ?? getBirthFlower(dueDateMonth))
-      : (entry.birthstone ?? getBirthstone(dueDateMonth));
-  const symbolImage = isZodiac
-    ? getZodiacSignImage(symbol.name)
-    : isFlower
-      ? getBirthFlowerImage(symbol.name)
-      : getBirthstoneImage(symbol.name);
+  const symbol = resolveSymbol(entry);
 
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const textColor = useMemo(() => contrastText(symbol.color), [symbol.color]);
@@ -60,11 +41,11 @@ const EntryCard = React.memo(function EntryCard({
       onPress={() => onPress?.(entry)}
       onLongPress={() => onLongPress?.(entry)}
       accessibilityRole="button"
-      accessibilityLabel={`${entry.name}, ${symbol.name} ${entry.symbolType ?? "gem"}, ${weeks} weeks ${days} days, due ${formatDueDate(entry.dueDate)}`}
+      accessibilityLabel={`${entry.name}, ${symbol.name} ${symbol.type}, ${weeks} weeks ${days} days, due ${formatDueDate(entry.dueDate)}`}
       testID="entry-card"
     >
       <View style={styles.inner}>
-        <BirthstoneIcon image={symbolImage} size={56} />
+        <BirthstoneIcon image={symbol.image} size={56} />
         <View style={styles.textGroup}>
           <Text
             style={[styles.name, { color: textColor }]}

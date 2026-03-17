@@ -7,11 +7,7 @@ import {
   contrastText,
   deliveryTimingLabel,
   formatDueDate,
-  getBirthFlower,
-  getBirthFlowerImage,
-  getBirthstone,
-  getBirthstoneImage,
-  getZodiacSignImage,
+  resolveSymbol,
 } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
@@ -29,19 +25,7 @@ const DeliveredCard = React.memo(function DeliveredCard({
   onLongPress,
 }: DeliveredCardProps) {
   const { colors, radii } = useTheme();
-  const dueDateMonth = new Date(entry.dueDate + "T00:00:00").getMonth() + 1;
-  const isFlower = entry.symbolType === "flower";
-  const isZodiac = entry.symbolType === "zodiac";
-  const symbol = isZodiac
-    ? (entry.zodiacSign ?? { name: "Aries", color: "#E53935" })
-    : isFlower
-      ? (entry.birthFlower ?? getBirthFlower(dueDateMonth))
-      : (entry.birthstone ?? getBirthstone(dueDateMonth));
-  const symbolImage = isZodiac
-    ? getZodiacSignImage(symbol.name)
-    : isFlower
-      ? getBirthFlowerImage(symbol.name)
-      : getBirthstoneImage(symbol.name);
+  const symbol = resolveSymbol(entry);
 
   const timing = entry.deliveredAt
     ? deliveryTimingLabel(entry.dueDate, entry.deliveredAt)
@@ -60,11 +44,11 @@ const DeliveredCard = React.memo(function DeliveredCard({
       onPress={() => onPress?.(entry)}
       onLongPress={() => onLongPress?.(entry)}
       accessibilityRole="button"
-      accessibilityLabel={`${entry.name}, ${symbol.name} ${entry.symbolType ?? "gem"}, ${timing}`}
+      accessibilityLabel={`${entry.name}, ${symbol.name} ${symbol.type}, ${timing}`}
       testID="delivered-card"
     >
       <View style={styles.inner}>
-        <BirthstoneIcon image={symbolImage} size={56} />
+        <BirthstoneIcon image={symbol.image} size={56} />
         <View style={styles.textGroup}>
           <Text
             style={[styles.name, { color: textColor }]}
