@@ -58,6 +58,7 @@ const CELEBRATION_OPTIONS: {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
 }[] = [
+  { value: "random", label: "Random", icon: "shuffle-outline" },
   { value: "confetti", label: "Confetti", icon: "sparkles-outline" },
   { value: "gentle", label: "Gentle", icon: "heart-outline" },
   { value: "none", label: "None", icon: "remove-circle-outline" },

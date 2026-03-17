@@ -7,7 +7,9 @@ import { getBirthstoneImage } from "@/util";
 
 import BirthstoneIcon from "./BirthstoneIcon";
 
-export type CelebrationStyle = "confetti" | "gentle" | "none";
+export type CelebrationStyle = "confetti" | "gentle" | "random" | "none";
+
+const RANDOM_STYLES: ("confetti" | "gentle")[] = ["confetti", "gentle"];
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const PARTICLE_COUNT = 24;
@@ -45,10 +47,16 @@ export default function CelebrationOverlay({
   const fadeIn = useRef(new Animated.Value(0)).current;
   const nameScale = useRef(new Animated.Value(0.5)).current;
 
-  const emojis = style === "gentle" ? GENTLE_EMOJIS : CONFETTI_EMOJIS;
+  // Resolve "random" to a concrete style per delivery
+  const resolvedStyle = useMemo(() => {
+    if (style !== "random") return style;
+    return RANDOM_STYLES[Math.floor(Math.random() * RANDOM_STYLES.length)];
+  }, [style, entry]);
+
+  const emojis = resolvedStyle === "gentle" ? GENTLE_EMOJIS : CONFETTI_EMOJIS;
 
   const particles = useMemo<Particle[]>(() => {
-    if (!entry || style === "none") return [];
+    if (!entry || resolvedStyle === "none") return [];
     return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
       emoji: emojis[i % emojis.length],
       x: Math.random() * SCREEN_WIDTH,
@@ -59,10 +67,10 @@ export default function CelebrationOverlay({
       rotate: new Animated.Value(0),
       scale: 0.6 + Math.random() * 0.8,
     }));
-  }, [entry, style, emojis]);
+  }, [entry, resolvedStyle, emojis]);
 
   useEffect(() => {
-    if (!entry || style === "none") {
+    if (!entry || resolvedStyle === "none") {
       onComplete();
       return;
     }
@@ -89,22 +97,22 @@ export default function CelebrationOverlay({
         Animated.parallel([
           Animated.timing(p.translateY, {
             toValue: SCREEN_HEIGHT + 60,
-            duration: style === "gentle" ? 2200 : 1800,
+            duration: resolvedStyle === "gentle" ? 2200 : 1800,
             useNativeDriver: true,
           }),
           Animated.timing(p.translateX, {
             toValue: (Math.random() - 0.5) * 200,
-            duration: style === "gentle" ? 2200 : 1800,
+            duration: resolvedStyle === "gentle" ? 2200 : 1800,
             useNativeDriver: true,
           }),
           Animated.timing(p.rotate, {
             toValue: (Math.random() - 0.5) * 4,
-            duration: style === "gentle" ? 2200 : 1800,
+            duration: resolvedStyle === "gentle" ? 2200 : 1800,
             useNativeDriver: true,
           }),
           Animated.timing(p.opacity, {
             toValue: 0,
-            duration: style === "gentle" ? 2200 : 1800,
+            duration: resolvedStyle === "gentle" ? 2200 : 1800,
             useNativeDriver: true,
           }),
         ]),
@@ -114,7 +122,8 @@ export default function CelebrationOverlay({
     Animated.stagger(30, particleAnimations).start();
 
     // Auto-dismiss — gentle needs longer for slower particles
-    const duration = style === "gentle" ? GENTLE_DURATION : CONFETTI_DURATION;
+    const duration =
+      resolvedStyle === "gentle" ? GENTLE_DURATION : CONFETTI_DURATION;
     const timer = setTimeout(() => {
       Animated.timing(fadeIn, {
         toValue: 0,
@@ -124,9 +133,9 @@ export default function CelebrationOverlay({
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [entry, style, particles, fadeIn, nameScale, onComplete]);
+  }, [entry, resolvedStyle, particles, fadeIn, nameScale, onComplete]);
 
-  if (!entry || style === "none") return null;
+  if (!entry || resolvedStyle === "none") return null;
 
   const birthstoneImage = entry.birthstone
     ? getBirthstoneImage(entry.birthstone.name)

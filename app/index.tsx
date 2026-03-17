@@ -135,11 +135,17 @@ export default function HomeScreen() {
       : undefined;
   useShakeUndo(shakeHandler, !!(deletedEntry || deliveredEntry));
 
-  // Trigger celebration overlay when a delivery happens
+  // Trigger celebration overlay only when a new delivery happens
+  const prevDeliveredRef = useRef(deliveredEntry);
   useEffect(() => {
-    if (deliveredEntry && celebrationStyle !== "none") {
+    if (
+      deliveredEntry &&
+      deliveredEntry !== prevDeliveredRef.current &&
+      celebrationStyle !== "none"
+    ) {
       setCelebrating(true);
     }
+    prevDeliveredRef.current = deliveredEntry;
   }, [deliveredEntry, celebrationStyle]);
 
   const styles = useMemo(() => createStyles(colors), [colors]);

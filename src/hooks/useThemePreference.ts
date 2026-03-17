@@ -23,7 +23,12 @@ const VALID_PERSONALITIES: Personality[] = [
 ];
 const VALID_BRIGHTNESSES: Brightness[] = ["system", "light", "dark"];
 const VALID_LAYOUTS: Layout[] = ["compact", "cozy"];
-const VALID_CELEBRATIONS: CelebrationStyle[] = ["confetti", "gentle", "none"];
+const VALID_CELEBRATIONS: CelebrationStyle[] = [
+  "confetti",
+  "gentle",
+  "random",
+  "none",
+];
 
 /**
  * Manages theme preference persistence via AsyncStorage.
