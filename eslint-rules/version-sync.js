@@ -50,8 +50,12 @@ module.exports = {
         checkPair(context, expo, "top-level");
 
         // Check per-platform version/runtimeVersion
-        if (expo.ios) checkPair(context, expo.ios, "ios");
-        if (expo.android) checkPair(context, expo.android, "android");
+        if (expo.ios) {
+          checkPair(context, expo.ios, "ios");
+        }
+        if (expo.android) {
+          checkPair(context, expo.android, "android");
+        }
       },
     };
   },
