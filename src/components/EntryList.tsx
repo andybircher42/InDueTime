@@ -56,6 +56,7 @@ interface EntryListProps {
   onDeliver: (id: string) => void;
   onDeleteAll: () => void;
   onAdd: (entry: { name: string; dueDate: string }) => void;
+  onUpdateDueDate?: (id: string, dueDate: string) => void;
 }
 
 /** Individual entry row with swipe-to-delete support. */
@@ -231,6 +232,7 @@ export default function EntryList({
   onDeliver,
   onDeleteAll,
   onAdd,
+  onUpdateDueDate,
 }: EntryListProps) {
   const { colors, rowColors, radii } = useTheme();
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
@@ -239,7 +241,12 @@ export default function EntryList({
     entries,
     { defaultField: "dueDate" },
   );
-  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedEntry = useMemo(
+    () =>
+      selectedId ? (entries.find((e) => e.id === selectedId) ?? null) : null,
+    [entries, selectedId],
+  );
   const nameWidths = useRef(new Map<string, number>());
   const [maxNameWidth, setMaxNameWidth] = useState(0);
   const { showForm, batchMode, formKey, toggleForm, toggleBatchMode } =
@@ -285,7 +292,7 @@ export default function EntryList({
         textColor={colors.textEntryRow}
         onDelete={onDelete}
         onDeliver={onDeliver}
-        onPress={setSelectedEntry}
+        onPress={(e: Entry) => setSelectedId(e.id)}
         nameWidth={maxNameWidth}
         onNameLayout={handleNameLayout}
         styles={styles}
@@ -374,7 +381,8 @@ export default function EntryList({
       />
       <EntryDetailModal
         entry={selectedEntry}
-        onClose={() => setSelectedEntry(null)}
+        onClose={() => setSelectedId(null)}
+        onUpdateDueDate={onUpdateDueDate}
       />
     </View>
   );

@@ -24,10 +24,13 @@ import {
 
 import BirthstoneIcon from "./BirthstoneIcon";
 
+type DatePickerTarget = "delivered" | "dueDate" | null;
+
 interface EntryDetailModalProps {
   entry: Entry | null;
   onClose: () => void;
   onUpdateDeliveredDate?: (id: string, deliveredAt: number) => void;
+  onUpdateDueDate?: (id: string, dueDate: string) => void;
 }
 
 /** Modal showing detailed info for a single entry. */
@@ -35,16 +38,16 @@ export default function EntryDetailModal({
   entry,
   onClose,
   onUpdateDeliveredDate,
+  onUpdateDueDate,
 }: EntryDetailModalProps) {
   const { colors, radii } = useTheme();
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [activePicker, setActivePicker] = useState<DatePickerTarget>(null);
 
-  const handleDateChange = useCallback(
+  const handleDeliveredDateChange = useCallback(
     (_event: DateTimePickerEvent, selected?: Date) => {
-      setShowDatePicker(false);
+      setActivePicker(null);
       if (selected && entry && onUpdateDeliveredDate) {
-        // Use noon to avoid timezone-related date shifts
         const noon = new Date(selected);
         noon.setHours(12, 0, 0, 0);
         onUpdateDeliveredDate(entry.id, noon.getTime());
@@ -53,10 +56,21 @@ export default function EntryDetailModal({
     [entry, onUpdateDeliveredDate],
   );
 
+  const handleDueDateChange = useCallback(
+    (_event: DateTimePickerEvent, selected?: Date) => {
+      setActivePicker(null);
+      if (selected && entry && onUpdateDueDate) {
+        const iso = selected.toISOString().split("T")[0];
+        onUpdateDueDate(entry.id, iso);
+      }
+    },
+    [entry, onUpdateDueDate],
+  );
+
   // Reset date picker when modal closes
   useEffect(() => {
     if (!entry) {
-      setShowDatePicker(false);
+      setActivePicker(null);
     }
   }, [entry]);
 
@@ -147,7 +161,7 @@ export default function EntryDetailModal({
               <>
                 <Pressable
                   style={styles.editableRow}
-                  onPress={() => setShowDatePicker(true)}
+                  onPress={() => setActivePicker("delivered")}
                   hitSlop={8}
                   accessibilityRole="button"
                   accessibilityLabel={`Delivered ${deliveredDateStr}, tap to change`}
@@ -170,12 +184,12 @@ export default function EntryDetailModal({
                     )}
                   </View>
                 </Pressable>
-                {showDatePicker && (
+                {activePicker === "delivered" && (
                   <DateTimePicker
                     value={new Date(entry.deliveredAt!)}
                     mode="date"
                     display={Platform.OS === "ios" ? "inline" : "default"}
-                    onChange={handleDateChange}
+                    onChange={handleDeliveredDateChange}
                     maximumDate={new Date()}
                   />
                 )}
@@ -189,14 +203,37 @@ export default function EntryDetailModal({
                 </View>
               </>
             )}
-            <View style={styles.detailRow}>
+            <Pressable
+              style={styles.editableRow}
+              onPress={() => setActivePicker("dueDate")}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={`Due date ${formatDueDate(entry.dueDate)}, tap to change`}
+              accessibilityHint="Opens a date picker to change the due date"
+              disabled={!onUpdateDueDate}
+            >
               <Text style={[styles.detailLabel, { color: mutedTextColor }]}>
                 Due date
               </Text>
-              <Text style={[styles.detailValue, { color: textColor }]}>
-                {formatDueDate(entry.dueDate)}
-              </Text>
-            </View>
+              <View style={styles.editableValue}>
+                <Text style={[styles.detailValue, { color: textColor }]}>
+                  {formatDueDate(entry.dueDate)}
+                </Text>
+                {onUpdateDueDate && (
+                  <Text style={[styles.editHint, { color: mutedTextColor }]}>
+                    Edit
+                  </Text>
+                )}
+              </View>
+            </Pressable>
+            {activePicker === "dueDate" && (
+              <DateTimePicker
+                value={new Date(entry.dueDate + "T12:00:00")}
+                mode="date"
+                display={Platform.OS === "ios" ? "inline" : "default"}
+                onChange={handleDueDateChange}
+              />
+            )}
             {!isDelivered && (
               <View style={styles.detailRow}>
                 <Text style={[styles.detailLabel, { color: mutedTextColor }]}>

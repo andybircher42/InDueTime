@@ -144,6 +144,27 @@ export default function useEntries() {
     [persistEntries],
   );
 
+  const updateDueDate = useCallback(
+    (id: string, dueDate: string) => {
+      setEntries((prev) => {
+        const updated = prev.map((e) =>
+          e.id === id
+            ? {
+                ...e,
+                dueDate,
+                birthstone: getBirthstoneForDate(dueDate),
+                birthFlower: getBirthFlowerForDate(dueDate),
+                zodiacSign: getZodiacSignForDate(dueDate),
+              }
+            : e,
+        );
+        persistEntries(updated);
+        return updated;
+      });
+    },
+    [persistEntries],
+  );
+
   const updateDeliveredDate = useCallback(
     (id: string, deliveredAt: number) => {
       setEntries((prev) => {
@@ -217,6 +238,7 @@ export default function useEntries() {
     dismissUndo,
     undoDeliver,
     dismissDelivered,
+    updateDueDate,
     updateDeliveredDate,
     updateDeliveredTTL,
     dismissDiscarded,

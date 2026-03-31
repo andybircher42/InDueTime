@@ -26,6 +26,7 @@ interface EntryGridProps {
   onDeliver: (id: string) => void;
   onDeleteAll: () => void;
   onAdd: (entry: { name: string; dueDate: string }) => void;
+  onUpdateDueDate?: (id: string, dueDate: string) => void;
 }
 
 type GridItem = Entry | "add" | "spacer";
@@ -37,12 +38,18 @@ export default function EntryGrid({
   onDeliver,
   onDeleteAll,
   onAdd,
+  onUpdateDueDate,
 }: EntryGridProps) {
   const { colors, radii } = useTheme();
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const { showForm, batchMode, formKey, toggleForm, toggleBatchMode } =
     useFormToggle();
-  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedEntry = useMemo(
+    () =>
+      selectedId ? (entries.find((e) => e.id === selectedId) ?? null) : null,
+    [entries, selectedId],
+  );
   const { sortBy, sortDir, sorted, cycleSortField, toggleSortDir } = useSort(
     entries,
     { defaultField: "none" },
@@ -101,7 +108,7 @@ export default function EntryGrid({
       return (
         <EntryCard
           entry={item}
-          onPress={setSelectedEntry}
+          onPress={(e: Entry) => setSelectedId(e.id)}
           onLongPress={handleLongPress}
         />
       );
@@ -169,7 +176,8 @@ export default function EntryGrid({
       />
       <EntryDetailModal
         entry={selectedEntry}
-        onClose={() => setSelectedEntry(null)}
+        onClose={() => setSelectedId(null)}
+        onUpdateDueDate={onUpdateDueDate}
       />
     </View>
   );

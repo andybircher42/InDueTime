@@ -27,6 +27,7 @@ interface DeliveredListProps {
   deliveredTTLDays: number;
   onChangeDeliveredTTL: (days: number) => void;
   onUpdateDeliveredDate?: (id: string, deliveredAt: number) => void;
+  onUpdateDueDate?: (id: string, dueDate: string) => void;
 }
 
 type GridItem = Entry | "spacer";
@@ -168,6 +169,7 @@ export default function DeliveredList({
   deliveredTTLDays,
   onChangeDeliveredTTL,
   onUpdateDeliveredDate,
+  onUpdateDueDate,
 }: DeliveredListProps) {
   const { colors, layout, radii } = useTheme();
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
@@ -335,6 +337,7 @@ export default function DeliveredList({
           entry={selectedEntry}
           onClose={() => setSelectedId(null)}
           onUpdateDeliveredDate={onUpdateDeliveredDate}
+          onUpdateDueDate={onUpdateDueDate}
         />
       </View>
     );

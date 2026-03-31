@@ -122,6 +122,7 @@ export default function HomeScreen() {
     dismissUndo,
     undoDeliver,
     dismissDelivered,
+    updateDueDate,
     updateDeliveredDate,
     updateDeliveredTTL,
     dismissDiscarded,
@@ -306,6 +307,7 @@ export default function HomeScreen() {
               onDeliver={deliver}
               onDeleteAll={() => removeAll("expecting")}
               onAdd={add}
+              onUpdateDueDate={updateDueDate}
             />
           ) : (
             <EntryList
@@ -314,6 +316,7 @@ export default function HomeScreen() {
               onDeliver={deliver}
               onDeleteAll={() => removeAll("expecting")}
               onAdd={add}
+              onUpdateDueDate={updateDueDate}
             />
           )}
         </View>
@@ -327,6 +330,7 @@ export default function HomeScreen() {
             deliveredTTLDays={deliveredTTLDays}
             onChangeDeliveredTTL={updateDeliveredTTL}
             onUpdateDeliveredDate={updateDeliveredDate}
+            onUpdateDueDate={updateDueDate}
           />
         </View>
         <View style={[styles.tabContent, view !== "calendar" && styles.hidden]}>
