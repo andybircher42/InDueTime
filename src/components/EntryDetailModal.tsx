@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Modal,
   Platform,
@@ -7,6 +7,9 @@ import {
   Text,
   View,
 } from "react-native";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 
 import { Entry } from "@/storage";
 import { ColorTokens, RadiiTokens, useTheme } from "@/theme";
@@ -24,15 +27,38 @@ import BirthstoneIcon from "./BirthstoneIcon";
 interface EntryDetailModalProps {
   entry: Entry | null;
   onClose: () => void;
+  onUpdateDeliveredDate?: (id: string, deliveredAt: number) => void;
 }
 
 /** Modal showing detailed info for a single entry. */
 export default function EntryDetailModal({
   entry,
   onClose,
+  onUpdateDeliveredDate,
 }: EntryDetailModalProps) {
   const { colors, radii } = useTheme();
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const handleDateChange = useCallback(
+    (_event: DateTimePickerEvent, selected?: Date) => {
+      setShowDatePicker(false);
+      if (selected && entry && onUpdateDeliveredDate) {
+        // Use noon to avoid timezone-related date shifts
+        const noon = new Date(selected);
+        noon.setHours(12, 0, 0, 0);
+        onUpdateDeliveredDate(entry.id, noon.getTime());
+      }
+    },
+    [entry, onUpdateDeliveredDate],
+  );
+
+  // Reset date picker when modal closes
+  useEffect(() => {
+    if (!entry) {
+      setShowDatePicker(false);
+    }
+  }, [entry]);
 
   const symbol = entry ? resolveSymbol(entry) : null;
   const bgColor = symbol?.color ?? colors.primary;
@@ -119,14 +145,40 @@ export default function EntryDetailModal({
           <View style={styles.details}>
             {isDelivered && (
               <>
-                <View style={styles.detailRow}>
+                <Pressable
+                  style={styles.editableRow}
+                  onPress={() => setShowDatePicker(true)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Delivered ${deliveredDateStr}, tap to change`}
+                  accessibilityHint="Opens a date picker to change the delivered date"
+                  disabled={!onUpdateDeliveredDate}
+                >
                   <Text style={[styles.detailLabel, { color: mutedTextColor }]}>
                     Delivered
                   </Text>
-                  <Text style={[styles.detailValue, { color: textColor }]}>
-                    {deliveredDateStr}
-                  </Text>
-                </View>
+                  <View style={styles.editableValue}>
+                    <Text style={[styles.detailValue, { color: textColor }]}>
+                      {deliveredDateStr}
+                    </Text>
+                    {onUpdateDeliveredDate && (
+                      <Text
+                        style={[styles.editHint, { color: mutedTextColor }]}
+                      >
+                        Edit
+                      </Text>
+                    )}
+                  </View>
+                </Pressable>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={new Date(entry.deliveredAt!)}
+                    mode="date"
+                    display={Platform.OS === "ios" ? "inline" : "default"}
+                    onChange={handleDateChange}
+                    maximumDate={new Date()}
+                  />
+                )}
                 <View style={styles.detailRow}>
                   <Text style={[styles.detailLabel, { color: mutedTextColor }]}>
                     Timing
@@ -235,6 +287,22 @@ function createStyles(colors: ColorTokens, radii: RadiiTokens) {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
+    },
+    editableRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 6,
+      marginVertical: -6,
+    },
+    editableValue: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    editHint: {
+      fontSize: 12,
+      fontWeight: "500",
     },
     detailLabel: {
       fontSize: 14,

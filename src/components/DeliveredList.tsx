@@ -26,6 +26,7 @@ interface DeliveredListProps {
   onDeleteAll: () => void;
   deliveredTTLDays: number;
   onChangeDeliveredTTL: (days: number) => void;
+  onUpdateDeliveredDate?: (id: string, deliveredAt: number) => void;
 }
 
 type GridItem = Entry | "spacer";
@@ -166,11 +167,17 @@ export default function DeliveredList({
   onDeleteAll,
   deliveredTTLDays,
   onChangeDeliveredTTL,
+  onUpdateDeliveredDate,
 }: DeliveredListProps) {
   const { colors, layout, radii } = useTheme();
   const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
   const confirmAlert = useConfirmAlert();
-  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedEntry = useMemo(
+    () =>
+      selectedId ? (entries.find((e) => e.id === selectedId) ?? null) : null,
+    [entries, selectedId],
+  );
 
   const deliveredEntries = useMemo(
     () =>
@@ -210,7 +217,7 @@ export default function DeliveredList({
       return (
         <DeliveredCard
           entry={item}
-          onPress={setSelectedEntry}
+          onPress={(e: Entry) => setSelectedId(e.id)}
           onLongPress={handleLongPress}
         />
       );
@@ -228,7 +235,7 @@ export default function DeliveredList({
       <DeliveredRow
         item={item}
         onDelete={onDelete}
-        onPress={setSelectedEntry}
+        onPress={(e: Entry) => setSelectedId(e.id)}
         colors={colors}
         styles={styles}
       />
@@ -326,7 +333,8 @@ export default function DeliveredList({
         />
         <EntryDetailModal
           entry={selectedEntry}
-          onClose={() => setSelectedEntry(null)}
+          onClose={() => setSelectedId(null)}
+          onUpdateDeliveredDate={onUpdateDeliveredDate}
         />
       </View>
     );
@@ -345,7 +353,8 @@ export default function DeliveredList({
       />
       <EntryDetailModal
         entry={selectedEntry}
-        onClose={() => setSelectedEntry(null)}
+        onClose={() => setSelectedId(null)}
+        onUpdateDeliveredDate={onUpdateDeliveredDate}
       />
     </View>
   );

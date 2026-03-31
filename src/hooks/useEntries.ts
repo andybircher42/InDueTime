@@ -85,11 +85,11 @@ export default function useEntries() {
   );
 
   const deliver = useCallback(
-    (id: string) => {
+    (id: string, deliveredAt?: number) => {
       setEntries((prev) => {
         const entry = prev.find((e) => e.id === id);
         const updated = prev.map((e) =>
-          e.id === id ? { ...e, deliveredAt: Date.now() } : e,
+          e.id === id ? { ...e, deliveredAt: deliveredAt ?? Date.now() } : e,
         );
         persistEntries(updated);
         if (entry) {
@@ -137,6 +137,19 @@ export default function useEntries() {
     (seeded: Entry[]) => {
       setEntries((prev) => {
         const updated = [...seeded, ...prev];
+        persistEntries(updated);
+        return updated;
+      });
+    },
+    [persistEntries],
+  );
+
+  const updateDeliveredDate = useCallback(
+    (id: string, deliveredAt: number) => {
+      setEntries((prev) => {
+        const updated = prev.map((e) =>
+          e.id === id ? { ...e, deliveredAt } : e,
+        );
         persistEntries(updated);
         return updated;
       });
@@ -204,6 +217,7 @@ export default function useEntries() {
     dismissUndo,
     undoDeliver,
     dismissDelivered,
+    updateDeliveredDate,
     updateDeliveredTTL,
     dismissDiscarded,
     dismissSaveError,
