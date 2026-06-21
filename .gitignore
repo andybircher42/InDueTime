@@ -36,6 +36,9 @@ yarn-error.*
 # Claude Code
 .claude/
 
+# JetBrains IDEs
+.idea/
+
 # local env files
 .env*.local
 login.ps1
