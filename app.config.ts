@@ -3,8 +3,8 @@ import { ConfigContext, ExpoConfig } from "expo/config";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const appJson = require("./app.json") as { expo: ExpoConfig };
 
-// Version 1.3.2 already pushed w/ unused permissions removed.
-// Bump version AND runtimeVersion together in app.json when native deps change.
+// Version/runtimeVersion are set per-platform in app.json (iOS 1.3.3, Android 1.4.0).
+// Bump both version AND runtimeVersion together in app.json when native deps change.
 
 const IS_DEV = process.env.APP_VARIANT === "development";
 

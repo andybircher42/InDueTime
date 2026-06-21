@@ -9,8 +9,18 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.3.3] — 2026-06-20
+
+Editable dates, two new birth-symbol types, and a leaner permission footprint.
+
 ### Added
 
+- **Editable dates** — tap the due date or delivery date in an entry's detail modal to change it with a native date picker; birthstone, birth flower, and zodiac sign recalculate automatically
+- **Birth flowers** — each entry can show its birth-month flower as an alternate symbol
+- **Zodiac signs** — added as a third entry symbol type alongside birthstones and birth flowers
+- **Birth symbol explanation** — the detail modal now explains the active symbol and shows a type badge
 - **Privacy policy** — published `docs/privacy-policy.md` covering data collection, analytics opt-out, and Google Play compliance
 
 ### Changed
@@ -20,6 +30,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - **Sort labels clarified** — renamed "Due date (newest/oldest first)" to "Due date (soonest/furthest first)"
 - **Entry card label removed** — dropped redundant "Calculated:" prefix from cozy card due dates
 - **Toast copy humanized** — error messages now use plain language instead of developer terminology
+- **Symbol cards hardened** — symbol images normalized to 128×128 with contrast-aware text colors
+- **OTA checks decoupled** — over-the-air update checks no longer depend on the analytics opt-out setting
+
+### Removed
+
+- **Unused native modules** — removed camera, image picker, media library, location, sharing, local authentication, and secure store; the corresponding Android permissions (camera, media, location) are now blocked, so the app requests fewer permissions
 
 ---
 

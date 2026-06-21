@@ -42,15 +42,17 @@ Alex, 34w0d
 Your main list of people with upcoming due dates. Each entry shows:
 - Name
 - Gestational age (e.g., "35w 2d")
-- A birthstone gem icon based on the due date month
+- A birth symbol based on the due date — a birthstone gem, a birth-month flower, or a zodiac sign (one is assigned to each entry)
 
 **Sorting**: Tap the sort icon to change the order — by name, due date, or recently added.
 
-**Tap an entry** to see full details in a popup.
+**Tap an entry** to see full details in a popup. From there you can **tap the due date to change it** with a date picker — the gestational age and birth symbol update automatically.
 
 ### Delivered
 
 People you've marked as delivered move here. Each entry shows timing info like "2 days early" or "right on time."
+
+**Tap a delivered entry** to view its details — and tap the delivery date there to correct it with a date picker if the baby arrived on a different day.
 
 Delivered entries are automatically removed after a configurable number of days (default: 3 days). The current cleanup setting is shown at the top of the Delivered tab — tap **Change** to cycle through options without opening Settings. You can also change this in **Settings > Preferences > Delivered cleanup**.
 
@@ -156,9 +158,14 @@ The color intensity represents how likely it is that someone on your list will d
 
 Delivered entries are automatically removed after a set number of days to keep your list focused on active patients. You can change the cleanup interval in **Settings > Preferences > Delivered cleanup**, or set it to **Never** to keep them indefinitely.
 
-### What are the gem icons?
+### What are the symbol icons?
 
-Each entry shows a **birthstone** based on the due date month — garnet for January, amethyst for February, and so on. It's a small visual touch to make each entry feel personal.
+Each entry is assigned a **birth symbol** based on its due date — one of three types:
+- **Birthstone** — e.g., garnet for January, amethyst for February
+- **Birth flower** — the traditional flower for the due-date month
+- **Zodiac sign** — the astrological sign for the due date
+
+The type is assigned automatically when you add someone. Tap an entry to see which symbol it has, along with a short explanation in the detail popup. It's a small visual touch to make each entry feel personal.
 
 ### How do I undo a delete or deliver?
 
