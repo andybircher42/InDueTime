@@ -1,6 +1,7 @@
 import { Alert } from "react-native";
 import { fireEvent, screen } from "@testing-library/react-native";
 
+import { Entry } from "@/storage";
 import { setupFakeTimers, teardownFakeTimers } from "@/test/fakeTimers";
 import { makeEntry } from "@/test/mockData";
 import renderWithTheme from "@/test/renderWithTheme";

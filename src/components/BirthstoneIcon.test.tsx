@@ -6,6 +6,9 @@ import BirthstoneIcon from "./BirthstoneIcon";
 // Use a numeric placeholder as the image source for tests
 const TEST_IMAGE = 1 as unknown as import("react-native").ImageSourcePropType;
 
+// Minimal shape of a react-test-renderer JSON node for style assertions
+type TestNode = { props: { style?: unknown }; children: TestNode[] };
+
 describe("BirthstoneIcon", () => {
   it("renders an image", () => {
     render(<BirthstoneIcon image={TEST_IMAGE} />);
@@ -19,14 +22,14 @@ describe("BirthstoneIcon", () => {
     const tree = toJSON();
     expect(tree).not.toBeNull();
     // Outer View should have width/height = 40
-    const outerStyle = (tree as Record<string, unknown>).props.style;
+    const outerStyle = (tree as unknown as TestNode).props.style;
     expect(outerStyle).toEqual({ width: 40, height: 40 });
   });
 
   it("applies custom size", () => {
     const { toJSON } = render(<BirthstoneIcon image={TEST_IMAGE} size={56} />);
     const tree = toJSON();
-    const outerStyle = (tree as Record<string, unknown>).props.style;
+    const outerStyle = (tree as unknown as TestNode).props.style;
     expect(outerStyle).toEqual({ width: 56, height: 56 });
   });
 
@@ -41,7 +44,7 @@ describe("BirthstoneIcon", () => {
     );
     const tree = toJSON();
     // Image is the child of the outer View
-    const imageNode = (tree as Record<string, unknown>).children[0];
+    const imageNode = (tree as unknown as TestNode).children[0];
     expect(imageNode.props.style).toEqual({
       width: imageSize,
       height: imageSize,

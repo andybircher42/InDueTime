@@ -21,9 +21,11 @@ function Wrapper({ children }: { children: React.ReactNode }) {
       personality="classic"
       brightness="light"
       layout="compact"
+      celebrationStyle="random"
       setPersonality={jest.fn()}
       setBrightness={jest.fn()}
       setLayout={jest.fn()}
+      setCelebrationStyle={jest.fn()}
     >
       {children}
     </ThemeProvider>

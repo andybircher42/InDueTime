@@ -13,6 +13,7 @@ function makeCells(daysInMonth: number): DayCell[] {
     color: "transparent",
     load: 0,
     dueEntries: [],
+    deliveredEntries: [],
   }));
 }
 

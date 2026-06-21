@@ -44,9 +44,11 @@ function renderForLayoutSwitch(
       personality="classic"
       brightness="light"
       layout={currentLayout}
+      celebrationStyle="random"
       setPersonality={jest.fn()}
       setBrightness={jest.fn()}
       setLayout={jest.fn()}
+      setCelebrationStyle={jest.fn()}
     >
       {children}
     </ThemeProvider>

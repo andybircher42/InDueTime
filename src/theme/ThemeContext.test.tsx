@@ -27,9 +27,11 @@ function renderTheme(personality: Personality, brightness: Brightness) {
       personality={personality}
       brightness={brightness}
       layout="compact"
+      celebrationStyle="random"
       setPersonality={noopSet}
       setBrightness={noopSet}
       setLayout={noopSet}
+      setCelebrationStyle={noopSet}
     >
       <TestConsumer />
     </ThemeProvider>,

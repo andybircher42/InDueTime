@@ -4,6 +4,7 @@ import {
   acceptAgreement,
   checkAgreement,
   checkOnboardingComplete,
+  Entry,
   getOrCreateDeviceId,
   isValidEntry,
   loadEntries,
@@ -19,7 +20,7 @@ beforeEach(() => {
 
 describe("saveEntries", () => {
   it("round-trips with loadEntries", async () => {
-    const data = [
+    const data: Entry[] = [
       {
         id: "1",
         name: "A",
