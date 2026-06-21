@@ -16,8 +16,8 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "version": "1.3.2",
-      "runtimeVersion": "1.3.2"
+      "version": "1.3.3",
+      "runtimeVersion": "1.3.3"
     },
     "android": {
       "adaptiveIcon": {
